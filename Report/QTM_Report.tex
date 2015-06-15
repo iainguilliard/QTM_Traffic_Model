@@ -1,0 +1,422 @@
+\documentclass[11pt,twosided,reqno]{amsart}
+\usepackage[inner=2cm,outer=2cm]{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{a4paper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{gensymb}
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{subfigure}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\usetikzlibrary{shapes.geometric, arrows}
+\definecolor{Brown}{cmyk}{0,0.81,1,0.60}
+\definecolor{OliveGreen}{cmyk}{0.64,0,0.95,0.40}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{gray}{rgb}{0.9,0.9,0.9}
+\definecolor{lightlightgray}{rgb}{0.95,0.95,0.95}
+
+\lstset{basicstyle=\footnotesize\ttfamily,
+keywordstyle=\color{blue},        % Keywords font ('*' = uppercase)
+commentstyle=\color{OliveGreen},              % Comments font
+numbers=left,                           % Line nums position
+numberstyle=\tiny,                      % Line-numbers fonts
+stepnumber=1,                           % Step between two line-numbers
+numbersep=5pt,                          % How far are line-numbers from code
+backgroundcolor=\color{lightlightgray}, % Choose background color
+frame=none,                             % A frame around the code
+tabsize=2,                              % Default tab size
+captionpos=b,                           % Caption-position = bottom
+breaklines=true,                        % Automatic line breaking?
+breakatwhitespace=false,                % Automatic breaks only at whitespace?
+keepspaces=true,
+columns=flexible,
+showstringspaces=false}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\bibliographystyle{ieeetr}
+
+\title{ENGN8602 Research Project Report \\ The Queue Transmission Model}
+\author{Iain Guilliard u5679360}
+%\date{}                                           % Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+
+%
+% 
+%
+
+%===== Contribution ====
+
+%- Quick overview of our model (QTM was the chosen name, right?) with focus on
+ % the non-homogeneity.
+
+\section{Introduction}
+This report describes a new model for optimised traffic signal planning using a MILP formulation. Previously, Lin and Wang \cite{linwang} describe a MILP formulation for optimised traffic signal planning based on the Cell Transmission Model \cite{daganzo}. However a CTM based model is limited in scalability by the requirement that each road way in the network must be partitioned up into segments that take exactly $\Delta t=1$ to traverse at the free flow speed. We get around this limitation by using a queue based model that supports non-homogeneous time steps, and we will show how we can exploit this property to scale a network without significant increase in the number of variables or loss of quality.
+
+
+
+%- Discuss how we can improve the scalability of previous MILP models for traffic
+ % control through non-homogeneity in the QTM. Probably you will need to compare
+ % with Lin and Wang here.
+  
+  
+  
+%- A formal, clean, and structured description of the MILP construction (we
+%  believe you already have a draft of it from the beginning of the project). For
+% each constraint, a little discussion explaining the constraint and why it is
+% necessary.
+
+\section{The Queue Transmission Model}
+The Queue Transmission Model (QTM) consists of a network of FIFO queue's interconnecting intersection nodes. Associated with each queue is a maximum capacity and a time constant for vehicles to travel from one end of the queue to the other. Vehicles travel at the free flow speed and individual flow rates between queues can be defined. Each flow can be individually controlled by a traffic signal phase, and the model also supports flows in and out of the network from any queue - not just at the peripheries. For an example of a QTM network, refer to figure \ref{fig:network3}.
+
+\section{MILP Formulation}
+We have defined a MILP formulation for the QTM supporting in-homogenous $\Delta t$ and a single binary variable per signal phase. The implementation also supports configurable phase and cycle constraints. The model constants are listed in table \ref{tab:constants} and the variables in table \ref{tab:variables}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ll}
+\toprule
+Constant & Desciption\\ 
+\midrule
+$Q$ & number of queues  \\ 
+$N$ & number of intervals \\ 
+$L$ & number of lights\\ 
+$P_l$ & number of phases of light $l$\\ 
+$\Delta t^n$ & time duration of interval $n$\\ 
+$t^n$ & elapsed time at interval $n$\\ 
+$T^{MAX}$ & maximum elapsed time ($t^N$)\\ 
+$Q_j^{MAX}$ & maximum capacity of queue $j$\\ 
+$Q_j^{IN}$ & maximum inflow to queue $j$ from outside the network\\ 
+$Q_j^{OUT}$ & maximum outflow from queue $j$ to outside the network\\
+$Q_j^{DELAY}$ & propagation delay along queue $j$\\
+$F_{i,j}^{MAX}$ & maximum flow from queue $i$ into queue $j$\\ 
+$F_{i,j}^{TURN}$ & proportion of total flow out from queue $i$ into queue $j$ (turn probability)\\ 
+$PT_{l,k}^{MAX}$ & maximum allowed duration of phase $k$ of light $l$\\ 
+$PT_{l,k}^{MIN}$ & minimum allowed duration of phase $k$ of light $l$\\ 
+$CT_l^{MAX}$ & maximum allowed cycle time of light $l$\\ 
+$CT_l^{MIN}$ & minimum allowed cycle time of light $l$\\ 
+\bottomrule\\
+\end{tabular}
+\caption{Constants}
+\label{tab:constants}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llll}
+\toprule
+Variable & Type & Range & Desciption\\ 
+\midrule
+$q_j^{n}$ & continuous & $(0,Q_j^{MAX})$ & traffic volume of queue $j$ during interval $n$\\
+$q_{j,out}^n$ & continuous & $(0,\infty)$ & outflow from queue $j$ during interval $n$\\
+$q_{j,in}^n$ & continuous & $(0,\infty)$ & inflow to queue $j$ during interval $n$\\
+$in_j^n$ & continuous & $(0,Q_j^{IN})$ & inflow to the network via queue $j$ during interval $n$\\
+$out_j^n$ & continuous & $(0,Q_j^{OUT})$ & outflow from the network via queue $j$ during interval $n$\\
+$f_{i,j}^n$ & continuous & $(0,F_{i,j}^{MAX})$ & flow from queue $i$ into queue $j$ during interval $n$\\
+$p_{l,k}^{n}$ & binary & $0,1$ & signal phase $k$ of light $l$ during interval $n$(1=green)\\
+$d_{l,k}^n$ & continuous & $(0,PT_{k,l}^{MAX})$ & duration of phase $k$ of light $l$ during interval $n$\\
+\bottomrule\\
+\end{tabular}
+\caption{Variables}
+\label{tab:variables}
+\end{table}
+
+\subsection{Network Constraints}
+For a set of time intervals over the period $(0,T^{MAX})$, where the duration of each interval $n$ is $\Delta t^n$, we define a set of variables for each interval and each queue in the network in table \ref{tab:variables} and the associated constants in table \ref{tab:constants}.
+
+First, all the variables in table \ref{tab:variables} are constrained to be $> 0$.
+Next we constrain the external flows into and out of $q_j$ during interval $n$,
+\begin{align}
+in_j^n &\le Q_j^{IN} \tag{C1}\label{eq:C1}\\        
+out_j^n &\le Q_j^{OUT} \tag{C2}\label{eq:C2}
+\end{align}
+and the internal flow from $q_j$ to $q_i$,
+\begin{align}
+f_{j,i}^n &= F_{j,i}^{TURN} \sum \limits_{k=1}^Q  f_{j,k}^n \tag{C3}\label{eq:C3}
+\end{align}
+where we find the proportion of flow out of $q_j$ turning into $q_i$ by weighting the total flow by the turn probability $F_{j,i}^{TURN}$, noting that $\sum_k F_{j,k}^{TURN}=1$. The flow out from $q_j$ is controlled by  phase $p_j$, so we modulate $f_{j,i}$ by applying the constraint,
+\begin{align}
+f_{j,i}^n \le F_{j,i}^{MAX} \sum \limits_{k \in Q^P_i} p_j^n \tag{C4}\label{eq:C4}
+\end{align}
+Where $p_j^n$ is 1 if the phase is active during interval n, and 0 otherwise. We can then sum the total flows in and out of each queue,
+\begin{align}
+q_{j,in}^n &= in_j^n \Delta t^n + \sum \limits_{i=1}^Q  f_{i,j}^n \Delta t^n   \tag{C5}\label{eq:C5} \\
+q_{j,out}^n &= out_j^n \Delta t^n + \sum \limits_{i=1}^Q  f_{j,i}^n \Delta t^n \tag{C6}\label{eq:C6}\\
+q_{j,out}^n &\le q_j^{n} \tag{C7}\label{eq:C7}
+\end{align}
+with the constraint \ref{eq:C7} that the total flow out of $q_j$ during interval $n$ cannot exceed the volume of $q_j$ at the start of that interval.
+Now we can perform the update step for $q_j$ over interval $n$,
+\begin{align}
+q_j^n &= q_j^{n-1} - q_{j,out}^{n-1} + (1-\alpha^n_j)q_{j,in}^{m} + \alpha^n_j q_{j,in}^{m+1} \tag{C8}\label{eq:C8}\\
+q_j^n &\le Q_j^{MAX} \tag{C9}\label{eq:C9}
+\end{align}
+where $m$ is the interval containing $t^n - Q_j^{DELAY}$ such that, 
+\begin{equation}
+t^{m} \le t^n-Q_j^{DELAY} < t^{m+1}
+\end{equation}
+Since the model is piecewise linear, we linearly interpolate $q_{j,in}$ across the interval $m$ to find the inflow to $q_j$ at $t^n - Q_j^{DELAY}$, and $\alpha_j^n$ is calculated in a pre-computation step for all $j$ and all $n$,
+\begin{align}
+\alpha_j^n &= \frac{t^n - Q_j^{DELAY} - t^{m}}{\Delta t^{m}}
+\end{align}
+Note that if $Q_j^{DELAY}$ is a homogeneous number of time intervals, $n-m$, then $t^n - Q_j^{DELAY} - t^{m}=0$ and constraint \ref{eq:C8} reduces to
+\begin{equation}
+q_j^n = q_j^{n-1} - q_{j,out}^{n-1} + q_{j,in}^{m}
+\end{equation}
+
+
+\subsection{Phase constraints}
+If we take $p_j^n \in \Pi(0,T^{MAX})$, where $\Pi$ is a fixed signal plan over all the intervals from 0 to $T^{MAX}$, then the constraints \ref{eq:C1} to \ref{eq:C9} form a dynamic, piecewise linear model of flow in the network over time as a function of $\Pi$. Alternatively we can define $p_j^n$ as a binary variable and solve to find both a network flow and an optimal signal plan for a given objective function.
+
+First we map each $p_j^n$ to a signal phase $k$ of a light $l$ as $p_{l,k}$ (Note that there could be more than one queue mapped to each $p_{l,k}$, or their could be none). Then we define a set of constraints for the signal phases. For each traffic light $l$, we constrain the phases of $l$ such that exactly one phase is active in each interval $n$, and so that they activate sequentially,
+\begin{align}
+\sum\limits_{k=1}^{P_l} p_{l,k}^n &= 1\tag{C10}\label{eq:C10}\\
+p_{l,k}^n + p_{l,k+1}^n &\le 1\tag{C11}\label{eq:C11}\\
+p_{l,k}^{n-1} &\le p_{l,k}^n + p_{l,k+1}^n\tag{C12}\label{eq:C12}
+\end{align}
+where $k+1=1$ if $k=P_l$. The constraints \ref{eq:C11} and \ref{eq:C12} ensure that if $p_{l,k}$ was active during interval $n-1$ and has become inactive in interval $n$, then $p_{l,k+1}$ becomes active in interval $n$.
+
+Next we enforce the minimum and maximum phase durations, $PT_{l,k}^{MIN}$ and $PT_{l,k}^{MAX}$ for each $p_{l,k}$, by defining a duration variable $d_{l,k}$ for each phase. When $p_{l,k}$ is active, $d_{l,k}$ holds the elapsed time since the start of phase $k$, and when phase $k$ is inactive $d_{l,k}$ is constant and holds the duration of the last phase until the next activation,
+\begin{equation}
+d^n_{l,k} = 
+\begin{cases}
+d^{n-1}_{l,k} + \Delta t^{n-1} & p^{n-1}_{l,k}=1,p^n_{l,k}=1\\
+d^{n-1}_{l,k} & p^n_{l,k}=0\\
+0 & p^{n-1}_{l,k}=0,p^n_{l,k}=1
+\end{cases}
+\end{equation}
+
+We achieve this by applying a set of linear envelope constraints, using the ``big M'' trick to activate each section of the envelope depending on the state of $p_{l,k}$, where ``big M'' can be limited to $PT_{l,k}^{MAX}$.
+\begin{align}
+d_{l,k}^n &\le d_{l,k}^{n-1} + \Delta t^{n-1} p_{l,k}^{n-1} + PT_{l,k}^{MAX} (1 - p_{l,k}^{n-1})\tag{C13}\label{eq:C13}\\
+d_{l,k}^n &\ge d_{l,k}^{n-1} + \Delta t^{n-1} p_{l,k}^{n-1} - PT_{l,k}^{MAX} (1 - p_{l,k}^{n-1})\tag{C14}\label{eq:C14}\\
+d_{l,k}^n &\le d_{k,i}^{n-1} + PT_{k,i}^{MAX} p_{k,i}^{n-1}\tag{C15}\label{eq:C15}\\
+d_{l,k}^n &\ge d_{l,k}^{n-1} - PT_{l,k}^{MAX} p_{l,k}^n\tag{C16}\label{eq:C16}\\
+d_{l,k}^n &\le PT_{l,k}^{MAX}(1 - p_{l,k}^n + p_{l,k}^{n-1})\tag{C17}\label{eq:C17}
+\end{align}
+Then we constrain the phase duration to be between $PT_{l,k}^{MIN}$ and $PT_{l,k}^{MAX}$,
+\begin{align}
+d_{l,k}^n &\le PT_{l,k}^{MAX}\tag{C18}\label{eq:C18}\\
+d_{l,k}^n &\ge PT_{l,k}^{MIN}(1 - p_{l,k}^n)\tag{C19}\label{eq:C19}
+\end{align}
+Finally, we constrain the sum of all the phase durations for light $l$ to be within the cycle time limits $CT_l^{MIN}$ and $CT_l^{MAX}$ for the light,
+\begin{align}
+d_{l,1}^{n-1} + \sum\limits_{k=2}^{P_l} d_{l,k}^n &\le CT_l^{MAX} \tag{C20}\label{eq:C20}\\
+d_{l,1}^{n-1} + \sum\limits_{k=2}^{P_l} d_{l,k}^n &\ge CT_k^{MIN} (p_{k,1}^n - p_{k,1}^{n-1})\tag{C21}\label{eq:C21}
+\end{align}
+Note, that in \ref{eq:C20} and \ref{eq:C21} we use the duration of phase 1 from the previous interval, $n-1$,  since when we arrive at the beginning of the next cycle of light $l$ and the phase sequence starts again from phase 1, $d_{l,1}^{n}=0$ and $d_{l,1}^{n-1}$ is set to the duration of the previous activation of phase 1, and we can sum the total duration of the last cycle across all the phases. Additionally in \ref{eq:C21} we activate the minimum cycle time constraint at exactly the beginning of the cycle with the signal $p_{k,1}^n - p_{k,1}^{n-1}$. This is illustrated in figure \ref{fig:phase_plots}(d).
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:test1}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_1.pdf}}
+\subfigure[]{
+\label{subfig:test1}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_2.pdf}}
+\subfigure[]{
+\label{subfig:test1}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_3.pdf}}
+\subfigure[]{
+\label{subfig:test1}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_4.pdf}}
+\caption{An example showing the phase and cycle time constraint envelopes. In (a), (b) and (c), $PT_{k,i}^{MIN}=1$ and $PT_{k,i}^{MAX}=3$, the duration of the previous activation was 2 and the duration of the current activation is 3. In (d), the total cycle time is 7 with $CT_l^{MIN}=7$, $CT_l^{MAX}=8$}
+\label{fig:phase_plots}
+\end{figure*}
+
+\subsection{Objective Function}
+Lin and Wang \cite{linwang} derive an objective function for the minimisation of total delay based on the difference between the cumulative departure and arrival curves at the origin and destination. However, such an approach requires the network to be cleared at the end of the optimisation period. We derive an objective function for the maximisation of flow in the network, and apply it to every queue in the network at $q_{j,out}$,
+\begin{equation}
+maximise \left( \sum\limits_{n=1}^N \sum\limits_{j=1}^Q (T^{MAX} - t^n + 1) q_{j,out}^n + \sum\limits_{n=1}^N \sum\limits_{j=1}^Q (T^{MAX} - t^n + 1) in_j^n \right) 
+\tag{O1}\label{eq:O1}
+\end{equation}
+And with the addition of the second $in_j$ term, \ref{eq:O1} also ensures that \ref{eq:C1}, \ref{eq:C2}, and \ref{eq:C4} are also at their maximum upper bound.
+
+
+\section{Analysis}
+
+\subsection{Networks}
+Three networks of increasing complexity were defined for performance analysis and comparison. The first consists of a two-way avenue with three traffic light controlled intersections with 3 one-way side streets, as shown in figure \ref{fig:network3}. The second is an extension of the first to include a second parallel two-way avenue and an additional 3 traffic lights to control the side streets, as shown in figure \ref{fig:network6}. And the third is a grid of three EW two-way avenues, with two NS two-way avenues and one NS one way street and a NE to SW diagonal one-way street, as shown in figure \ref{fig:network9}.
+The traversal time of each queue in all three networks is set at 9 seconds (a distance of about 100m with a free flow speed of 50km/h). The maximum capacity of each queue is set at 60 cars. Flows are defined only straight ahead from the head of each queue into the tail of the next - there is no turning traffic, and in all cases the maximum flow rate is set at 5 cars per second. Each traffic light has two phases - NS and EW. The minimum phase time is 1 second and the maximum phase time is 3 seconds. The minimum cycle time of both the phases is 2 seconds and the maximum is 6.
+For each network a background level of flow is first established and then later increased as a wave of higher volume traffic is injected into the network at some of the streets. Then all the traffic is allowed to clear the network before ending the simulation to support an analysis of the total travel time in the network. The details of the flow levels is given in tables \ref{tab:net1wave},  \ref{tab:net2wave} and  \ref{tab:net3wave}.
+
+\subsection{Experiments}
+With a CTM based model the $\Delta t$ must remain fixed through out the optimisation period, while the QTM supports non-homogeneous time steps mixed with homogeneous time steps. To exploit this we define a mutli-step solver that allows the time step of the plan to increase overtime. Such an increase will reduce the total number of variables for the same optimisation period compared to a homogeneous plan, with the trade off that the plan will be have less resolution over time. But this seems acceptable as the accuracy of the plan will also decrease overtime the further from the initial conditions.
+We start by generating a plan for a longer horizon using an increasing time step so that the solver has greater visibility of the impact of an earlier planning decision across a larger part of the network for the same number of variables as a fixed time step. We then keep the first part of this plan where the accuracy is highest and discard the rest, where the time steps where larger. Once the retained section of plan has be carried out, we generate another long horizon plan and repeat (see figure \ref{fig:multiplan}.
+We call the long term plan a major frame and the shorter section of a major frame that we retain, a minor frame. We use a minor frame of 10 seconds and increasing major frame sizes from 20 upwards and generate such mutlistep plans with both a homogeneous $\Delta t$ of 0.25 seconds and a non-homogenous $\Delta t$ ranging from fixed 0.25 second increments during the minor frame and the increasing linearly until 1 second at the horizon. We generated plans for all three networks using both the homogeneous $\Delta t$ major frames and the non-homogeneous $\Delta t$ major frames. For reference we also performed a full optimal solve using a fixed $\Delta t$ of 0.25 seconds. Once we have generated a set of minor frames, we combined them into a large fixed plan and simulate the flow of in the network with a fixed $\Delta t$ of 0.25, to support a fair comparison.
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\includegraphics[]{non_homogeneous_control.eps}
+\caption{Multi-step planning}
+\label{fig:multiplan}
+\end{figure*}
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\includegraphics[width=0.75\textwidth]{network_3_lights}
+\caption{Network 1}
+\label{fig:network3}
+\end{figure*}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccccc}
+\toprule
+Queue & Background & End & Wave & Start &End\\ 
+\midrule
+$q_0$ & 1 & 85 & 1 & 55 & 70\\
+$q_1$ & 2 & 85 & 4 & 55 & 70\\
+$q_4$ & 4 & 85 & 4 & 55 & 70\\
+$q_7$ & 4 & 85 & 4 & 55 & 70\\
+$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
+\bottomrule\\
+\end{tabular}
+\caption{Network 1 traffic parameters}
+\label{tab:net1wave}
+\end{table}
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\includegraphics[width=0.75\textwidth]{network_6_lights}
+\caption{Network 2}
+\label{fig:network6}
+\end{figure*}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccccc}
+\toprule
+Queue & Background & End & Wave & Start &End\\ 
+\midrule
+$q_0$ & 1 & 85 & 1 & 55 & 70\\
+$q_1$ & 2 & 85 & 4 & 55 & 70\\
+$q_4$ & 4 & 85 & 4 & 55 & 70\\
+$q_7$ & 4 & 85 & 4 & 55 & 70\\
+$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
+$q_{14}$ & 4 & 85 & 4 & 55 & 70\\
+$q_{18}$ & 2 & 85 & 4 & 55 & 70\\
+\bottomrule\\
+\end{tabular}
+\caption{Network 2 traffic parameters}
+\label{tab:net2wave}
+\end{table}
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\includegraphics[width=0.75\textwidth]{network_9_lights}
+\caption{Network 3}
+\label{fig:network9}
+\end{figure*}
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccccc}
+\toprule
+Queue & Background & End & Wave & Start &End\\ 
+\midrule
+$q_0$ & 1 & 85 & 1 & 55 & 70\\
+$q_1$ & 2 & 85 & 4 & 55 & 70\\
+$q_4$ & 4 & 85 & 4 & 55 & 70\\
+$q_7$ & 4 & 85 & 4 & 55 & 70\\
+$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
+$q_{14}$ & 4 & 85 & 4 & 55 & 70\\
+$q_{18}$ & 2 & 85 & 4 & 55 & 70\\
+$q_{25}$ & 4 & 85 & 4 & 55 & 70\\
+$q_{29}$ & 2 & 85 & 4 & 55 & 70\\
+$q_{36}$ & 2 & 85 & 4 & 55 & 70\\
+$q_{40}$ & 2 & 85 & 4 & 55 & 70\\
+$q_{44}$ & 2 & 85 & 4 & 55 & 70\\
+\bottomrule\\
+\end{tabular}
+\caption{Network 3 traffic parameters}
+\label{tab:net3wave}
+\end{table}
+
+\section{Results}
+
+We compared the performance of non-homogeneous and homogeneous $\Delta t$ in two ways: comparing the decrease in total travel time with increasing major frame size. And analysing the distribution of delay in each queue of the network. Figure \ref{fig:results} (a), (c) and (e) show a comparison between the number of time samples used in the major frame vs the \% improvement in total travel time. It can be seen that using a non homogenous $\Delta t$ converges towards the optimum more quickly than the homogeneous $\Delta t$ for the same number of time samples. Figure \ref{fig:results} (b), (d) and (f) show a comparison of distribution of delay across the network. This gives us an indication of the quality of the solution in terms of the number of vehicles that experience significant delay and if the plan may be starving some parts of the network.  The plots show three comparisons: at the point where the non-homogeneous $\Delta t$ first converges on the optimum solution, where the homogeneous $\Delta t$ first converges on the optimum solution, and the optimum solution. With all three networks the quality of the solutions improves or stays the same using an non-homogeneous $\Delta t$ compared to a homogeneous $\Delta t$.
+Finally, figure \ref{fig:cumu} shows the how cumulative arrival and departure curves and the delay develop over time for $q_1$ of network 2. Figure \ref{fig:cumu} (a) shows the comparison at the point where the non-homogeneous $\Delta t$ first converges and shows that with the longer major frame of the non-homogeneous $\Delta t$, it is able to adopt a better signal plan early on to anticipate the wave of traffic that arrives at about the 55 second point, while the homogeneous $\Delta t$ with its shorter major frame initially prioritises the side street ($q_0$, $q_2$, $q_{22}$) over $q_1$ resulting in significant delay once the wave of traffic arrives. Once homogeneous $\Delta t$ has converged in Figure \ref{fig:cumu} (b), both plans are close to the optimum shown in Figure \ref{fig:cumu} (c).
+
+\begin{figure*}[t!]
+\centering
+
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:travel_time_3}
+\includegraphics[width=0.4\textwidth]{samples_plot_3_lights}}
+\subfigure[]{
+\label{subfig:delay_3}
+\includegraphics[height=0.3\textwidth]{box_plot_early_3l.pdf}
+\includegraphics[height=0.3\textwidth]{box_plot_converg_3l.pdf}
+\includegraphics[height=0.3\textwidth]{box_plot_final_3l.pdf}}
+
+\subfigure[]{
+\label{subfig:travel_time_6}
+\includegraphics[width=0.4\textwidth]{samples_plot_6_lights}}
+\subfigure[]{
+\label{subfig:delay_6}
+\includegraphics[height=0.3\textwidth]{box_plot_early_6l.pdf}
+\includegraphics[height=0.3\textwidth]{box_plot_converg_6l.pdf}
+\includegraphics[height=0.3\textwidth]{box_plot_final_6l.pdf}}
+
+\subfigure[]{
+\label{subfig:travel_time_9}
+\includegraphics[width=0.4\textwidth]{samples_plot_9_lights}}
+\subfigure[]{
+\label{subfig:delay_9}
+\includegraphics[height=0.3\textwidth]{box_plot_early_9l.pdf}
+\includegraphics[height=0.3\textwidth]{box_plot_converg_9l.pdf}
+\includegraphics[height=0.3\textwidth]{box_plot_final_9l.pdf}}
+\caption{Results for the three networks showing the comparitive \% improvement in total travel time for the network between using a homogeneous $\Delta t$ and a non-homogeneous $\Delta t$, and the distribution of delay time at the convergence point of non-homogeneous $\Delta t$, the convergence point of homogeneous $\Delta t$ and for the fully solved optimal solution. (a) and (b) 3 light avenue, (c) and (d) 6 light grid, and (e) and (f) 9 light grid,}
+\label{fig:results}
+\end{figure*}
+
+\begin{figure*}[t!]
+\centering
+
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:cumu1}
+\includegraphics[width=0.32\textwidth]{cum_plot_early_6l.pdf}}
+\subfigure[]{
+\label{subfig:cumu2}
+\includegraphics[width=0.32\textwidth]{cum_plot_converg_6l.pdf}}
+\subfigure[]{
+\label{subfig:cumu3}
+\includegraphics[width=0.32\textwidth]{cum_plot_final_6l.pdf}}
+%\includegraphics[width=0.25\textwidth,trim={3cm 1.5cm 3cm 2.3cm},clip]{Satellite_Augmentation/test_17.eps}}
+\caption{Cumulative arrival and departure curves and delay for queue 1 in the 6 light grid. (a) at the convergence point of the non-homogeneous $\Delta t$ it is near to the optimum solution while homogeneous $\Delta t$ lags behind (b) at the convergence point of homogeneous $\Delta t$ both are near optimum, and (c) the fully solved optimal solution}
+\label{fig:cumu}
+\end{figure*}
+
+\section{Conclusion}
+We have demonstrated that by exploiting the non-homogeneous time steps supported by the QTM, we are able to scale the model up to larger networks and using the same number of binary variables as a homogeneous time step, and with the same quality of a homogeneous solution using more binary variables.
+
+\begin{thebibliography}{10}
+
+\bibitem{linwang}
+W.~Lin and C.~Wang, \emph{An Enhanced 0-1 Mixed-Integer LP Formulation for Traffic Signal Control}, IEEE Transactions on Intelligent Transport Systems, Vol. 5, No. 4, pp. 238--245, December 2004.
+\bibitem{daganzo}
+C. F. Daganzo, \emph{The cell transmission model: A dynamic representation of highway traffic consistent with the hydrodynamic theory}, Transport. Res. B., vol. 28, no. 4, pp. 269Ð287, 1994.
+\end{thebibliography}
+ ??
+\end{document}

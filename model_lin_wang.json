@@ -1,0 +1,81 @@
+{
+    "Title" : "Horizon=45",
+
+    "Plans": {
+        "fixed_45_45": {
+            "label": "$\\Delta t=1.0$, $\\Pi=45$, $\\pi=45$",
+            "minor_frame": 45,
+            "major_frame": 45,
+            "horizon" : 45,
+            "DT_fixed": 1.0
+        },
+
+        "vari_45_45": {
+            "label": "$\\Delta t=1.0$, $\\Pi=45$, $\\pi=45$",
+            "minor_frame": 45,
+            "major_frame": 45,
+            "horizon" : 45,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.5, "start": 0.3, "stop": 0.6},
+                      { "DT": 1.0, "start": 0.6, "stop": 1.0}
+            ]
+        }
+    },
+
+    "Nodes" : [
+        {"p": [-50,100]},
+        {"p": [-200,-50]},
+        {"p": [-50,-100]},
+        {"p": [0,0]},
+        {"p": [-50,-50]},
+        {"p": [100,100]},
+        {"p": [100,-100]},
+        {"p": [150,-50]},
+        {"p": [100,-50]}
+        ],
+
+     "Queues": [
+        {"edge": [0,4], "Q_DELAY": 3, "Q_IN": 1, "Q_OUT": 0,  "Q_P": [0,0], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"edge": [1,4], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "Q_P": [0,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"edge": [4,2], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"edge": [4,8], "Q_DELAY": 3, "Q_IN": 0, "Q_OUT": 0,  "Q_P": [1,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+
+        {"edge": [5,8], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "Q_P": [1,0], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+
+        {"edge": [8,6], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"edge": [8,7], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 }
+        ],
+
+      "Flows": {
+          "0_2": { "F_MAX": 5, "f0": 0 },
+          "1_3": { "F_MAX": 5, "f0": 0 },
+          "4_5": { "F_MAX": 5, "f0": 0 },
+          "3_6": { "F_MAX": 5, "f0": 0 }
+      },
+
+      "In_Flow_limit" : 22,
+
+
+      "Lights": [
+          {
+              "node": 4,
+              "P_MAX": [3,3],
+              "P_MIN": [1,1],
+              "C_MAX": 6,
+              "C_MIN": 2,
+              "p0" : [1,0],
+              "c0" : [0,0],
+              "d0" : [0,1]
+          },
+           {
+              "node": 8,
+              "P_MAX": [3,3],
+              "P_MIN": [1,1],
+              "C_MAX": 6,
+              "C_MIN": 2,
+              "p0" : [1,0],
+              "c0" : [0,0],
+              "d0" : [0,1]
+          }
+      ]
+}

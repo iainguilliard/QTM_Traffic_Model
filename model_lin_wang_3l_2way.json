@@ -1,0 +1,696 @@
+{
+    "Title" : "Lin Wang 3l 2way",
+
+     "Plans": {
+        "fixed_160_160": {
+            "label": "$\\Delta t=0.25$, $\\Pi=160$, $\\pi=160$",
+            "minor_frame": 160,
+            "major_frame": 160,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_100": {
+            "label": "$\\Delta t=0.25$, $\\Pi=100$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 100,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_90": {
+            "label": "$\\Delta t=0.25$, $\\Pi=90$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 90,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_80": {
+            "label": "$\\Delta t=0.25$, $\\Pi=80$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 80,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_70": {
+            "label": "$\\Delta t=0.25$, $\\Pi=70$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 70,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_60": {
+            "label": "$\\Delta t=0.25$, $\\Pi=60$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 60,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_50": {
+            "label": "$\\Delta t=0.25$, $\\Pi=50$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 50,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_40": {
+            "label": "$\\Delta t=0.25$, $\\Pi=40$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 40,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_30": {
+            "label": "$\\Delta t=0.25$, $\\Pi=30$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 30,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_25": {
+            "label": "$\\Delta t=0.25$, $\\Pi=25$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 25,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_20": {
+            "label": "$\\Delta t=0.25$, $\\Pi=20$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 20,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_19": {
+            "label": "$\\Delta t=0.25$, $\\Pi=19$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 19,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_18": {
+            "label": "$\\Delta t=0.25$, $\\Pi=18$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 18,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_17": {
+            "label": "$\\Delta t=0.25$, $\\Pi=17$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 17,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_16": {
+            "label": "$\\Delta t=0.25$, $\\Pi=16$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 16,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+         "fixed_15": {
+            "label": "$\\Delta t=0.25$, $\\Pi=15$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 15,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+         "fixed_14": {
+            "label": "$\\Delta t=0.25$, $\\Pi=14$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 14,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+         "fixed_13": {
+            "label": "$\\Delta t=0.25$, $\\Pi=13$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 13,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_12": {
+            "label": "$\\Delta t=0.25$, $\\Pi=12$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 12,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_11": {
+            "label": "$\\Delta t=0.25$, $\\Pi=11$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 11,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_10": {
+            "label": "$\\Delta t=0.25$, $\\Pi=10$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 10,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_9": {
+            "label": "$\\Delta t=0.25$,$\\Pi=9$, $\\pi=5",
+            "minor_frame": 5,
+            "major_frame": 9,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_8": {
+            "label": "$\\Delta t=0.25$,$\\Pi=8$, $\\pi=5",
+            "minor_frame": 5,
+            "major_frame": 8,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_7": {
+            "label": "$\\Delta t=0.25$,$\\Pi=7$, $\\pi=5",
+            "minor_frame": 5,
+            "major_frame": 7,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_6": {
+            "label": "$\\Delta t=0.25$,$\\Pi=6$, $\\pi=5$",
+            "minor_frame": 5,
+            "major_frame": 6,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+        "fixed_5": {
+            "label": "$\\Delta t=0.25$,$\\Pi=5$, $\\pi=5$",
+            "minor_frame": 5,
+            "major_frame": 5,
+            "horizon" : 160,
+            "DT_fixed": 0.25
+        },
+
+
+        "vari_120": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=120$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 120,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.5, "start": 0.3, "stop": 0.6},
+                      { "DT": 1.0, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_100": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=100$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 100,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.5, "start": 0.3, "stop": 0.6},
+                      { "DT": 1.0, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_80": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=80$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 80,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.5, "start": 0.3, "stop": 0.6},
+                      { "DT": 1.0, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_60": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=60$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 60,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.5, "start": 0.3, "stop": 0.6},
+                      { "DT": 1.0, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_40": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=40$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 40,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.5, "start": 0.3, "stop": 0.6},
+                      { "DT": 1.0, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_30": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=30$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 30,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.33},
+                      { "DT": 0.5, "start": 0.33, "stop": 0.6},
+                      { "DT": 1.0, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_25": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=25$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 25,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.4},
+                      { "DT": 0.5, "start": 0.4, "stop": 0.7},
+                      { "DT": 1.0, "start": 0.7, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_20": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=20$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 20,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.5},
+                      { "DT": 0.5, "start": 0.5, "stop": 0.75},
+                      { "DT": 1.0, "start": 0.75, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_15": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=15$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 15,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.66},
+                      { "DT": 0.5, "start": 0.66, "stop": 0.75},
+                      { "DT": 1.0, "start": 0.75, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_10": {
+            "label": "$\\Delta t=0.25,0.5,1$, $\\Pi=10$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 10,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 1.0}
+
+            ]
+
+        },
+
+        "vari_120_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=120$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 120,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.25, "start": 0.3, "stop": 0.6},
+                      { "DT": 0.5, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_100_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=100$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 100,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.25, "start": 0.3, "stop": 0.6},
+                      { "DT": 0.5, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_80_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=80$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 80,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.25, "start": 0.3, "stop": 0.6},
+                      { "DT": 0.5, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_60_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=60$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 60,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.25, "start": 0.3, "stop": 0.6},
+                      { "DT": 0.5, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_40_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=40$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 40,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 0.3},
+                      { "DT": 0.25, "start": 0.3, "stop": 0.6},
+                      { "DT": 0.5, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+        "vari_30_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=30$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 30,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 0.33},
+                      { "DT": 0.25, "start": 0.33, "stop": 0.6},
+                      { "DT": 0.5, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_25_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=25$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 25,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 0.4},
+                      { "DT": 0.25, "start": 0.4, "stop": 0.7},
+                      { "DT": 0.5, "start": 0.7, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_20_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=20$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 20,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 0.5},
+                      { "DT": 0.25, "start": 0.5, "stop": 0.75},
+                      { "DT": 0.5, "start": 0.75, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_15_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=15$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 15,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 0.33},
+                      { "DT": 0.25, "start": 0.33, "stop": 0.6},
+                      { "DT": 0.5, "start": 0.6, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_10_01": {
+            "label": "$\\Delta t=0.1,0.25,0.5$, $\\Pi=10$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 10,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.1, "start": 0.0, "stop": 1.0}
+
+            ]
+
+        },
+
+         "vari_120_1": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=120$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 120,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.0833},
+
+                      { "DT": 1.0, "start": 0.0833, "stop": 1.0}
+            ]
+
+        },
+        "vari_100_1": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=100$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 100,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.1},
+
+                      { "DT": 1.0, "start": 0.1, "stop": 1.0}
+            ]
+
+        },
+        "vari_80_1": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=80$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 80,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.125},
+
+                      { "DT": 1.0, "start": 0.125, "stop": 1.0}
+            ]
+
+        },
+        "vari_60_1": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=60$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 60,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.166},
+
+                      { "DT": 1.0, "start": 0.166, "stop": 1.0}
+            ]
+
+        },
+        "vari_40_1": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=40$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 40,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.25},
+
+                      { "DT": 1.0, "start": 0.25, "stop": 1.0}
+            ]
+
+        },
+        "vari_30_1": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=30$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 30,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.333},
+
+                      { "DT": 1.0, "start": 0.333, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_25_1": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=25$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 25,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.4},
+
+                      { "DT": 1.0, "start": 0.4, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_20_1": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=20$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 20,
+            "horizon" : 160,
+            "DT_vari": [{ "DT": 0.25, "start": 0.0, "stop": 0.5},
+
+                      { "DT": 1.0, "start": 0.5, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_120_T": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=120$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 120,
+            "horizon" : 160,
+            "DT_vari": [
+
+                      { "DT": 1.0, "start": 0.0, "stop": 1.0}
+            ]
+
+        },
+        "vari_100_T": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=100$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 100,
+            "horizon" : 160,
+            "DT_vari": [
+
+                      { "DT": 1.0, "start": 0.0, "stop": 1.0}
+            ]
+
+        },
+        "vari_80_T": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=80$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 80,
+            "horizon" : 160,
+            "DT_vari": [
+                      { "DT": 1.0, "start": 0.0, "stop": 1.0}
+            ]
+
+        },
+        "vari_60_T": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=60$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 60,
+            "horizon" : 160,
+            "DT_vari": [
+
+                      { "DT": 1.0, "start": 0.0, "stop": 1.0}
+            ]
+
+        },
+        "vari_40_T": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=40$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 40,
+            "horizon" : 160,
+            "DT_vari": [
+
+                      { "DT": 1.0, "start": 0.0, "stop": 1.0}
+            ]
+
+        },
+        "vari_30_T": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=30$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 30,
+            "horizon" : 160,
+            "DT_vari": [
+
+                      { "DT": 1.0, "start": 0.0, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_25_T": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=25$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 25,
+            "horizon" : 160,
+            "DT_vari": [
+
+                      { "DT": 1.0, "start": 0.0, "stop": 1.0}
+            ]
+
+        },
+
+        "vari_20_T": {
+            "label": "$\\Delta t=0.25,1$, $\\Pi=20$, $\\pi=10$",
+            "minor_frame": 10,
+            "major_frame": 20,
+            "horizon" : 160,
+            "DT_vari": [
+
+                      { "DT": 1.0, "start": 0.0, "stop": 1.0}
+            ]
+
+        }
+
+
+
+
+    },
+
+    "Plot" : { "extent": [-220,370,-110,110], "fig_size": [15,5] },
+
+    "Nodes" : [
+        {"id":0, "p": [-50,100]},
+        {"id":1, "p": [-200,-50]},
+        {"id":2, "p": [-50,-100]},
+        {"id":3, "p": [0,0]},
+        {"id":4, "p": [-50,-50]},
+        {"id":5, "p": [100,100]},
+        {"id":6, "p": [100,-100]},
+        {"id":7, "p": [250,-50]},
+        {"id":8, "p": [100,-50]},
+
+        {"id":9, "p": [250,100]},
+        {"id":10, "p": [250,-100]},
+        {"id":11, "p": [300,-50]}
+        ],
+
+     "Queues": [
+        {"id": 0, "edge": [0,4], "Q_DELAY": 3, "Q_IN": 1, "Q_OUT": 0, "weights": ["background_1"], "Q_P": [0,0], "Q_MAX": 160,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 1, "edge": [1,4], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "weights": ["background","wave"], "Q_P": [0,1], "Q_MAX": 160,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 2, "edge": [4,2], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 3, "edge": [4,8], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0, "Q_P": [1,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+
+        {"id": 4, "edge": [5,8], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0, "weights": ["background_1"], "Q_P": [1,0], "Q_MAX": 160,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+
+        {"id": 5, "edge": [8,6], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 6, "edge": [8,7], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0,  "Q_P": [2,1],  "Q_MAX": 60,"q0": 0, "q0_in": 0, "q0_out": 0 },
+
+        {"id": 7, "edge": [9,7], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0, "weights": ["background_1"], "Q_P": [2,0],  "Q_MAX": 160,"q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 8, "edge": [7,10],"Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 9, "edge": [7,11],"Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
+
+
+        {"id": 10, "edge": [11,7], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "weights": ["background","wave"], "Q_P": [2,1], "Q_MAX": 160,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+         {"id": 11, "edge": [7,8], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0, "Q_P": [1,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+         {"id": 12, "edge": [8,4], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0,  "Q_P": [0,1],  "Q_MAX": 60,"q0": 0, "q0_in": 0, "q0_out": 0 },
+         {"id": 13, "edge": [4,1],"Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 }
+        ],
+
+      "Flows": {
+          "0_2": { "F_MAX": 5, "f0": 0 },
+          "1_3": { "F_MAX": 5, "f0": 0 },
+          "4_5": { "F_MAX": 5, "f0": 0 },
+          "3_6": { "F_MAX": 5, "f0": 0 },
+          "6_9": { "F_MAX": 5, "f0": 0 },
+          "7_8": { "F_MAX": 5, "f0": 0 },
+
+          "10_11": { "F_MAX": 5, "f0": 0 },
+          "11_12": { "F_MAX": 5, "f0": 0 },
+          "12_13": { "F_MAX": 5, "f0": 0 }
+      },
+
+      "Flow_Weights": {
+          "background": { "start": 0, "end": 85, "weight": 0.5},
+          "background_1": { "start": 0, "end": 85, "weight": 1},
+          "wave": { "start": 55, "end": 70, "weight": 0.5}
+      },
+
+      "In_Flow_limit" : 22,
+
+      "Lights": [
+          {
+              "node": 4,
+              "P_MAX": [3,3],
+              "P_MIN": [1,1],
+              "C_MAX": 6,
+              "C_MIN": 2,
+              "p0" : [1,0],
+              "c0" : [0,0],
+              "d0" : [0,1]
+          },
+           {
+              "node": 8,
+              "P_MAX": [3,3],
+              "P_MIN": [1,1],
+              "C_MAX": 6,
+              "C_MIN": 2,
+              "p0" : [1,0],
+              "c0" : [0,0],
+              "d0" : [0,1]
+          },
+          {
+              "node": 7,
+              "P_MAX": [3,3],
+              "P_MIN": [1,1],
+              "C_MAX": 6,
+              "C_MIN": 2,
+              "p0" : [1,0],
+              "c0" : [0,0],
+              "d0" : [0,1]
+          }
+      ]
+}

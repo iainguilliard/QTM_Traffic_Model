@@ -99,8 +99,8 @@
 % FONTS
 %------------------------------------------
 % Times for text and math
-\usepackage{mathptmx}
-
+%\usepackage{mathptmx}
+\usepackage{newtxmath} 
 
 % Some pdf conversion tricks? Unsure.
 \usepackage[T1]{fontenc}
@@ -290,7 +290,9 @@ The Queue Transmission Model (QTM) consists of a network $\Net = (\Qset,\Lset)$,
 \section{LP Formulation}
 We have defined a LP formulation for the QTM supporting non-homogenous $\DT[]$ and a single binary variable per signal phase. The implementation also supports configurable phase and cycle constraints. The model constants are listed in table \ref{tab:constants} and the variables in table \ref{tab:variables}
 
-\begin{table}[h]
+\begin{table}[t]
+\caption{Constants}
+\label{tab:constants}
 \centering
 \begin{tabular}{ll}
 \toprule
@@ -315,11 +317,11 @@ $\CTMAX{\ell}$ & maximum allowed cycle time of light $\ell$\\ [1mm]
 $\CTMIN{\ell}$ & minimum allowed cycle time of light $\ell$\\ [1mm]
 \bottomrule\\
 \end{tabular}
-\caption{Constants}
-\label{tab:constants}
 \end{table}
 
 \begin{table}[h]
+\caption{Variables}
+\label{tab:variables}
 \centering
 \begin{tabular}{llll}
 \toprule
@@ -335,8 +337,6 @@ $\p{\ell}{k}$ & binary & $\{0,1\}$ & signal phase $k$ of light $\ell$ during int
 $\pd{\ell}{k}$ & continuous & $[0,\PTMAX{\ell}{k}]$ & duration of phase $k$ of light $\ell$ during interval $n$\\[1mm]
 \bottomrule\\
 \end{tabular}
-\caption{Variables}
-\label{tab:variables}
 \end{table}
 
 \subsection{Network Constraints}
@@ -356,7 +356,7 @@ where we find the proportion of flow out of queue $i$ turning into queue $j$ by 
 \begin{align}
 \f{i}{j} \le \FMAX{i}{j} \sum \limits_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}} \tag{C4}\label{eq:C4}
 \end{align}
-Where $\p{ell}{k}$ is 1 if the phase is active during interval n, and 0 otherwise. We can then sum the total flows in and out of each queue,
+Where $\p{\ell}{k}$ is 1 if the phase is active during interval n, and 0 otherwise. We can then sum the total flows in and out of each queue,
 \begin{align}
 \qin{i} &= \inq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{i}{j} \DT   \tag{C5}\label{eq:C5} \\
 \qout{i} &= \outq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{j}{i} \DT \tag{C6}\label{eq:C6}\\
@@ -482,6 +482,8 @@ We call the long term plan a major frame and the shorter section of a major fram
 \end{figure*}
 
 \begin{table}[h]
+\caption{Network 1 traffic parameters}
+\label{tab:net1wave}
 \centering
 \begin{tabular}{cccccc}
 \toprule
@@ -494,8 +496,6 @@ $q_7$ & 4 & 85 & 4 & 55 & 70\\
 $q_{10}$ & 2 & 85 & 4 & 55 & 70\\
 \bottomrule\\
 \end{tabular}
-\caption{Network 1 traffic parameters}
-\label{tab:net1wave}
 \end{table}
 
 
@@ -508,6 +508,8 @@ $q_{10}$ & 2 & 85 & 4 & 55 & 70\\
 \end{figure*}
 
 \begin{table}[h]
+\caption{Network 2 traffic parameters}
+\label{tab:net2wave}
 \centering
 \begin{tabular}{cccccc}
 \toprule
@@ -522,8 +524,6 @@ $q_{14}$ & 4 & 85 & 4 & 55 & 70\\
 $q_{18}$ & 2 & 85 & 4 & 55 & 70\\
 \bottomrule\\
 \end{tabular}
-\caption{Network 2 traffic parameters}
-\label{tab:net2wave}
 \end{table}
 
 
@@ -537,6 +537,8 @@ $q_{18}$ & 2 & 85 & 4 & 55 & 70\\
 
 
 \begin{table}[h]
+\caption{Network 3 traffic parameters}
+\label{tab:net3wave}
 \centering
 \begin{tabular}{cccccc}
 \toprule
@@ -556,8 +558,6 @@ $q_{40}$ & 2 & 85 & 4 & 55 & 70\\
 $q_{44}$ & 2 & 85 & 4 & 55 & 70\\
 \bottomrule\\
 \end{tabular}
-\caption{Network 3 traffic parameters}
-\label{tab:net3wave}
 \end{table}
 
 \section{Results}

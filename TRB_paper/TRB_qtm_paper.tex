@@ -367,7 +367,7 @@ Now we can perform the update step for queue $i$ over interval $n$,
 \begin{align}
 \q{i} &= \q[n-1]{i} - \qout[n-1]{i} + (1-\aph{i})\qin[m]{i} + \aph{i} \qin[m+1]{i} \tag{C8}\label{eq:C8}\\
 \q{i} &\le \QMAX{i} \tag{C9}\label{eq:C9}\\
-(1-\aph{i})\qin[m]{i} + \aph{i} \qin[m+1]{i} + \sum \limits_{k=m+2}^i \qin{n} &\le \QMAX{i} - \q[n-1]{i}\tag{C10}\label{eq:C10}
+(1-\aph{i})\qin[m]{i} + \aph{i} \qin[m+1]{i} + \sum \limits_{k=m+2}^n \qin[k]{i} &\le \QMAX{i} - \q[n-1]{i}\tag{C10}\label{eq:C10}
 \end{align}
 where $m$ is the interval containing $\tn - \QDELAY{i}$ such that, 
 \begin{equation}

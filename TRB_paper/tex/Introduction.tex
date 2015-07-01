@@ -1,2 +1,19 @@
 \section{Introduction}
-This report describes a new model for optimised traffic signal planning using a MILP formulation. Previously, \trbcite{lin2004enhanced} describe a MILP formulation for optimised traffic signal planning based on the Cell Transmission Model of \trbcite{daganzo1995cell}. However a CTM based model is limited in scalability by the requirement that each road way in the network must be partitioned up into segments that take exactly $\DT[]=1$ to traverse at the free flow speed. We get around this limitation by using a queue based model that supports non-homogeneous time steps, and we will show how we can exploit this property to scale a network without significant increase in the number of variables or loss of quality.
+
+This report describes a new model for optimised traffic signal
+planning using a MILP formulation. Previously,
+\trbcite{lin2004enhanced} describe a MILP formulation for optimised
+traffic signal planning based on the Cell Transmission Model of
+\trbcite{daganzo1995cell}. However a CTM based model is limited in
+scalability by the requirement that each road way in the network must
+be partitioned up into segments that take exactly $\DT[]=1$ to
+traverse at the free flow speed. We get around this limitation by
+using a queue based model that supports non-homogeneous time steps,
+and we will show how we can exploit this property to scale a network
+without significant increase in the number of variables or loss of
+quality.
+
+{\bf Scott's suggested structure:}
+\begin{enumerate}
+\item In practice, control of congested urban traffic networks ranges from fixed time to actuated to adaptive (SCATS, SCOOT).  However there is further opportunity for improved traffic scheduling through the use of predictive models and online optimization as proposed in various works (Gartner, Lin and Wang, MARLIN -- Toronto, SURTRAC -- Smith).  In this work, we specifically build on the MILP approach to traffic optimization that extends previous work by Lin and Wang, etc.  [Still working.]
+\end{enumerate}

@@ -3,7 +3,7 @@ The Queue Transmission Model (QTM) consists of a network $\Net = (\Qset,\Lset)$,
 
 
 
-\section{LP Formulation}
+\subsection{LP Formulation}
 We have defined a LP formulation for the QTM supporting non-homogenous $\DT[]$ and a single binary variable per signal phase. The implementation also supports configurable phase and cycle constraints. The model constants are listed in table \ref{tab:constants} and the variables in table \ref{tab:variables}
 
 \begin{table}[t]
@@ -57,7 +57,7 @@ $\pd{\ell}{k}$ & continuous & $[0,\PTMAX{\ell}{k}]$ & duration of phase $k$ of l
 }
 \end{table}
 
-\subsection{Network Constraints}
+\subsubsection{Network Constraints}
 For a set of time intervals over the period $[0,\TMAX]$, where the duration of each interval $n$ is $\DT$, we define a set of variables for each interval and each queue in the network in table \ref{tab:variables} and the associated constants in table \ref{tab:constants}.
 
 First, all the variables in table \ref{tab:variables} are constrained to be $\ge 0$.
@@ -100,10 +100,14 @@ Note that if $\QDELAY{i}$ is a homogeneous number of time intervals, $n-m$, then
 \q{i} = \q[n-1]{i} - \qout[n-1]{i} + \qin[m]{i}
 \end{equation}
 
-\section{MILP Formulation}
+\remark{Show diagrams with traffic predictions converging as time increment gets smaller.
+  Validates that large time-steps are rough approximations while model behavior converges
+for small time steps.}
+
+\subsection{MILP Formulation}
 If we take $p_i^n \in \Pi(0,\TMAX)$, where $\Pi$ is a fixed signal plan over all the intervals from 0 to $T^{MAX}$, then the constraints \ref{eq:C1} to \ref{eq:C10} form a dynamic, piecewise linear model of flow in the network over time as a function of $\Pi$. Alternatively we can define $p_j^n$ as a binary variable and solve to find both a network flow and an optimal signal plan for a given objective function.
 
-\subsection{Phase constraints}
+\subsubsection{Phase constraints}
 First we map each $p_i^n$ to a signal phase $k$ of a light $\ell$ as $\p{\ell}{k}$ (Note that there could be more than one queue mapped to each $\p[]{\ell}{k}$, or their could be none). Then we define a set of constraints for the signal phases. For each traffic light $\ell$, we constrain the phases of $\ell$ such that exactly one phase is active in each interval $n$, and so that they activate sequentially,
 \begin{align}
 \sum\limits_{k=1}^{\Pn} \p{\ell}{k} &= 1\tag{C11}\label{eq:C11}\\
@@ -164,8 +168,9 @@ Note, that in \ref{eq:C21} and \ref{eq:C22} we use the duration of phase 1 from 
 \subsection{Objective Function}
 \trbcite{lin2004enhanced} derive an objective function for the minimisation of total delay based on the difference between the cumulative departure and arrival curves at the origin and destination. However, such an approach requires the network to be cleared at the end of the optimisation period. We derive an objective function for the maximisation of flow in the network, and apply it to every queue in the network at $\qout{i}$,
 \begin{equation}
-maximise \left( \sum\limits_{n=1}^{\Nn} \sum\limits_{i=1}^{\Qn} (\TMAX - \tn + 1) \qout{i} + \sum\limits_{n=1}^{\Nn} \sum\limits_{i=1}^{\Qn} (\TMAX - \tn + 1) \inq{i} \right) 
+\textrm{maximise} \left( \sum\limits_{n=1}^{\Nn} \sum\limits_{i=1}^{\Qn} (\TMAX - \tn + 1) \qout{i} + \sum\limits_{n=1}^{\Nn} \sum\limits_{i=1}^{\Qn} (\TMAX - \tn + 1) \inq{i} \right) 
 \tag{O1}\label{eq:O1}
 \end{equation}
 And with the addition of the second $\inq[]{i}$ term, \ref{eq:O1} also ensures that \ref{eq:C1}, \ref{eq:C2}, and \ref{eq:C4} are also at their maximum upper bound.
 
+\remark{It is explanatory here to show the inflow/outflow and delay curves and explain graphically what is going on and how this objective relates.}

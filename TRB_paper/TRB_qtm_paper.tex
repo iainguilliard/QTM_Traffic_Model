@@ -129,6 +129,10 @@
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 \graphicspath{{plots/}}
 
+%% Toggle comments on next two lines to turn on/off editorial remarks
+%\newcommand{\remark}[1]{}
+\newcommand{\remark}[1]{\color{red} #1 \color{black}}
+
 % All math definitions before start document
 \input{./tex/MathDef.tex}
 
@@ -177,6 +181,8 @@ iguilliard@nicta.com.au\\[0.5cm]
 \input{./tex/Model.tex}
 
 \input{./tex/Experiments.tex}
+
+\input{./tex/RelatedWork.tex}
 
 \input{./tex/Conclusion.tex}
 

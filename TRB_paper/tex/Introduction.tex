@@ -1,5 +1,7 @@
 \section{Introduction}
 
+{\bf Previous content:}
+
 This report describes a new model for optimised traffic signal
 planning using a MILP formulation. Previously,
 \trbcite{lin2004enhanced} describe a MILP formulation for optimised
@@ -13,7 +15,66 @@ and we will show how we can exploit this property to scale a network
 without significant increase in the number of variables or loss of
 quality.
 
-{\bf Scott's suggested structure:}
-\begin{enumerate}
-\item In practice, control of congested urban traffic networks ranges from fixed time to actuated to adaptive (SCATS, SCOOT).  However there is further opportunity for improved traffic scheduling through the use of predictive models and online optimization as proposed in various works (Gartner, Lin and Wang, MARLIN -- Toronto, SURTRAC -- Smith).  In this work, we specifically build on the MILP approach to traffic optimization that extends previous work by Lin and Wang, etc.  [Still working.]
-\end{enumerate}
+{\bf Scott's suggested argument structure:}
+
+\remark{I say we drop the issue of many segments and simply criticize
+  the CTM by saying that it is not easy to make non-homogenous and
+  that is what we need?  In general, the Intro probably has to push on
+  the non-homogenous motivation a little earlier and forcefully since
+  we're claiming *this* is the reason for the paper, the QTM and
+  ultimately our evaluation comparing homogenous vs. non-homogenous.
+  We may have broader (not fully validated) motivations but we need a
+  watertight argument and paper.}
+
+In practice, control of congested urban traffic networks ranges from
+fixed time to actuated to adaptive (SCATS, SCOOT).  However there is
+further opportunity to improve traffic scheduling through the use of
+optimization techniques as proposed in various works
+(Gartner, Lin and Wang, MARLIN -- Toronto, SURTRAC -- Smith).  In this
+work, we specifically build on the MILP approach to traffic
+optimization that extends previous work by Lin and Wang who
+optimize traffic signals (discrete choices at each time step) in a 
+Cell Transmission Model (CTM)~\trbcite{daganzo1995cell} of traffic flow.
+Unfortunately a CTM based model is limited in
+scalability by the requirement that each road way in the network must
+be partitioned up into segments that take exactly $\DT[]=1$ to
+traverse at the free flow speed.
+This leads to a large number of cells
+(and hence variables in the MILP) and it makes it difficult to
+allow for variable length (non-homogenous) time steps in the model
+updates that we demonstrate in this work
+to be useful for optimized traffic signal planning over long horizons.
+
+To allow for more parsimonious models of traffic flow and non-homogenous
+time steps for updates, we introduce the queue transmission model (QTM) [succinct description needed], which offers the following
+benefits:
+\begin{itemize}
+\item non-homogenous time steps which can keep the model compact over long horizons
+\item models platoons without fine-grained cell-based road model or explicit variables to model platoons -- underlies a key precept in urban traffic control to let platoons pass through without stopping,
+\item still leads to a MILP, albeit one with much fewer variables owing to the reduced number of queues vs. cells and the reduced number of time steps.
+\end{itemize}
+Some drawbacks -- does not capture nonlinear flow-density relationship of the
+fundamental diagram.  \remark{Argue why this is OK for saturated
+  urban networks at peak times.  Green waves in SCATS/SCOOT operate on
+  principle of a fixed propagation time, so does Gartner's MILP model.
+Captures the right level of detail without blowing up size of model.}
+
+In the remainder of this paper, we show first how to formulate traffic flow
+with fixed signals as an LP in the QTM; we then proceed to allow the
+traffic signals to become discrete variables subject to optimization leading
+to our final MILP formulation of traffic signal control.  We then experiment
+with QTM-based control in a range of networks demonstrating the improved
+scalability possible with non-homogeneous time steps in comparison to
+the best homogenous time step and also the scalability of the model ---
+we demonstrate near-optimal traffic control models over longer horizons and
+larger networks than shown in previous implementations of MILP-based
+traffic signal control.
+
+\remark{Paper should follow the basic progression outlined above.  We
+  could really use some pictures in the Intro to refer to here and
+  subsequently -- both a traffic network divided into queues, and the
+  concept of the piecewise linear evolution of traffic flow with
+  non-homogenous time steps that I had provided in my early writeup.
+  I think these help visually explain much of the context for the
+  paper and its approach.}
+

@@ -14,6 +14,11 @@ Discrete_Traffic_Kinetic_Model.pdf
 Link_Node_CTM.pdf
 
 Lo_Dynamic_Network_Traffic_Control.pdf
+- CTM based signal planner for arterial links
+- uses genetic algorithm to approximate optimal solution from MILP
+- compares against MILP solution from Lo_Traffic_Signal_Formulation.pdf (DISCO)
+- compares against TRANSYT signal plan
+
 
 Lo_Traffic_Signal_Formulation.pdf
 

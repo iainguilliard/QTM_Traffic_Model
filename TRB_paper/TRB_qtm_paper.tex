@@ -81,7 +81,7 @@
 % TRB likes line numbers on drafts to help reviewers refer to parts of the
 % document. The numbering is activated with the \linenumbers command immediately
 % after \begin{document} You may need to install the lineno  package from CTAN.
-\usepackage[pagewise]{lineno}
+\usepackage[pagewise,displaymath, mathlines]{lineno}
 	\renewcommand\linenumberfont{\normalfont\small}
 
 
@@ -99,9 +99,12 @@
 % FONTS
 %------------------------------------------
 % Times for text and math
+%\usepackage{fontspec}
+%\setmainfont{Times New Roman}
+\usepackage{times} 
 %\usepackage{mathptmx}
-\usepackage{newtxmath} 
-
+%\usepackage{newtxmath} 
+%\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 % Some pdf conversion tricks? Unsure.
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
@@ -128,11 +131,29 @@
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 \graphicspath{{plots/}}
 
+\newcommand*\patchAmsMathEnvironmentForLineno[1]{%
+  \expandafter\let\csname old#1\expandafter\endcsname\csname #1\endcsname
+  \expandafter\let\csname oldend#1\expandafter\endcsname\csname end#1\endcsname
+  \renewenvironment{#1}%
+     {\linenomath\csname old#1\endcsname}%
+     {\csname oldend#1\endcsname\endlinenomath}}% 
+\newcommand*\patchBothAmsMathEnvironmentsForLineno[1]{%
+  \patchAmsMathEnvironmentForLineno{#1}%
+  \patchAmsMathEnvironmentForLineno{#1*}}%
+\AtBeginDocument{%
+\patchBothAmsMathEnvironmentsForLineno{equation}%
+\patchBothAmsMathEnvironmentsForLineno{align}%
+\patchBothAmsMathEnvironmentsForLineno{flalign}%
+\patchBothAmsMathEnvironmentsForLineno{alignat}%
+\patchBothAmsMathEnvironmentsForLineno{gather}%
+\patchBothAmsMathEnvironmentsForLineno{multline}%
+}
+
 % TITLEPAGE
 %-----------------------------------------
 \begin{document}
 
-	\pagewiselinenumbers % comment out for final manuscript
+	\linenumbers % comment out for final manuscript
 	\thispagestyle{empty}
 
 \begin{titlepage}
@@ -158,6 +179,8 @@ iguilliard@nicta.com.au\\[0.5cm]
 
 
 \newpage
+
+
 
 \thispagestyle{empty}
 \newcommand{\Net}{\mathcal{N}}
@@ -220,13 +243,13 @@ iguilliard@nicta.com.au\\[0.5cm]
 \newcommand{\qout}[2][n]{q_{#2,#1}^{\mathrm{out}}}
 \newcommand{\f}[3][n]{f_{#2\to#3,#1}}
 
-\ifdefined\newinoutflow
+%\ifdefined\newinoutflow
 \newcommand{\inq}[2][n]{f_{in\to#2,#1}}
 \newcommand{\outq}[2][n]{f_{#2\to out,#1}}
-\else
-\newcommand{\inq}[2][n]{in_{#2,#1}}
-\newcommand{\outq}[2][n]{out_{#2,#1}}
-\fi
+%\else
+%\newcommand{\inq}[2][n]{in_{#2,#1}}
+%\newcommand{\outq}[2][n]{out_{#2,#1}}
+%\fi
 
 \newcommand{\p}[3][n]{p_{#2,#3,#1}}
 \newcommand{\pd}[3][n]{d_{#2,#3,#1}}

@@ -30,7 +30,7 @@ def get_processor_name():
                 return re.sub( ".*model name.*:", "", line,1)
     return ""
 
-def solver(data,t0,t1,n_samples,DT_vari=None,minor_frame=0,major_frame=0,blend_frame=None,nthreads=0,fixed_plan=None,
+def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,major_frame=0,blend_frame=None,nthreads=0,fixed_plan=None,
            timelimit=0,accuracy=0,verbose=False,label=None,step=None,run=None,obj='NEW',alpha=1.0,beta=0.001,
            DT_offset=0,seed=0,tune=False,tune_file='',param=None):
     start_time = clock_time.time()
@@ -84,6 +84,11 @@ def solver(data,t0,t1,n_samples,DT_vari=None,minor_frame=0,major_frame=0,blend_f
             n_samples = N-2
             print DT
 
+        elif "DT" in data:
+            DT = data["DT"]
+            N = len(DT)
+            n_samples = len(DT)
+
         else:
             N=n_samples+2
             if DT_offset>0:
@@ -97,6 +102,16 @@ def solver(data,t0,t1,n_samples,DT_vari=None,minor_frame=0,major_frame=0,blend_f
                     else:
                         DT = [DT_offset] + [(t_period)/n_samples for n in range(N-n_offset)]
                         N = 1 + N-n_offset
+            elif dt0 != None and dt1 != None:
+                DT = [dt0]
+                t = t0 + dt0
+                while t<=t1:
+                    alpha = (t-t0)/(t1 - t0)
+                    DT.append(dt0*(1-alpha) + dt1*alpha)
+                    t += DT[-1]
+                DT.append(dt1)
+                DT.append(dt1)
+                N = len(DT)
             else:
                 DT = [(t_period)/n_samples for n in range(N)]
         print 'DT_offset=',DT_offset
@@ -925,6 +940,8 @@ if __name__ == '__main__':
     parser.add_argument("file", help="the model file to solve")
     parser.add_argument("--t0", help="start time",type=int)
     parser.add_argument("--t1", help="end time",type=int)
+    parser.add_argument("--dt0", help="start time step",type=float)
+    parser.add_argument("--dt1", help="end time step",type=float)
     parser.add_argument("-t", "--threads", help="number of threads",type=int,default=0)
     parser.add_argument("-n", "--nsamples", help="number of sample points",type=int)
     parser.add_argument("-o", "--out", help="save the solution as OUT")
@@ -982,7 +999,7 @@ if __name__ == '__main__':
         else:
             tune=False
             tune_file = ''
-        data=solver(data,t0=args.t0,t1=args.t1,n_samples=args.nsamples, fixed_plan=fixed,nthreads=args.threads,
+        data=solver(data,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=args.nsamples, fixed_plan=fixed,nthreads=args.threads,
                     timelimit=args.timelimit,accuracy=args.accuracy,
                     verbose=args.verbose,obj=args.obj,alpha=args.alpha,
                     beta=args.beta,DT_offset=args.DT_offset,seed = args.seed,

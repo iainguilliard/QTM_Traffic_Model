@@ -1,5 +1,10 @@
 from __future__ import division
 import matplotlib.pyplot as pl
+import matplotlib as mp
+from matplotlib.patches import Arc,Arrow,Circle
+from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.collections import LineCollection
+import numpy as np
 import json
 import sys
 import argparse
@@ -259,6 +264,423 @@ def plot_delay_histogram(data, step, width, queues=[],line_style=['--'],colours=
 
 
 
+def plot_network_figure(data,figsize,type='arrow'):
+
+    fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
+
+    green_red = LinearSegmentedColormap('green_red', {'red': ((0.0, 0.0, 0.0),
+                                                            (0.5, 1.0, 1.0),
+                                                          (1.0, 1.0, 1.0)),
+                                                'green': ((0.0, 1.0, 1.0),
+                                                          (0.5, 1.0, 1.0),
+                                                          (1.0, 0.0, 0.0)),
+                                                'blue':  ((0.0, 0.0, 0.0),
+                                                          (1.0, 0.0, 0.0))})
+
+    black_green_red = LinearSegmentedColormap('black_green_red', {'red': ((0.0, 0.0, 0.0),
+                                                            (0.5, 1.0, 1.0),
+                                                          (1.0, 1.0, 1.0)),
+                                                'green': ((0.0, 0.0,0.0),
+                                                          (0.1, 1.0, 1.0),
+                                                          (0.5, 1.0, 1.0),
+                                                          (1.0, 0.0, 0.0)),
+                                                'blue':  ((0.0, 0.0, 0.0),
+                                                          (1.0, 0.0, 0.0))})
+
+    mp.cm.register_cmap('green_red',green_red)
+    mp.cm.register_cmap('black_green_red',black_green_red)
+
+    cmap_name = args.colormap
+    gamma = args.gamma
+
+    cmap = pl.get_cmap(cmap_name)
+    cmap.set_gamma(gamma)
+
+    Z = [[0,0],[0,0]]
+    levels = range(0,110,10)
+    CS3 = pl.contourf(Z, levels, cmap=cmap)
+    pl.clf()
+
+    cNorm  = mp.colors.Normalize(vmin=0, vmax=1)
+    scalarMap = mp.cm.ScalarMappable(norm=cNorm,cmap=cmap)
+
+    fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
+    fig.set_size_inches(10, 5)
+
+    cNorm  = mp.colors.Normalize(vmin=0, vmax=1)
+    scalarMap = mp.cm.ScalarMappable(norm=cNorm,cmap=cmap)
+
+    if figsize != None:
+        fig.set_size_inches(figsize)
+    else:
+        fig.set_size_inches((10,5))
+    line_width = 1
+    tail_width = 0
+    head_width = 5
+    line_color = 'k'
+    light_color = 'w'
+    text_color = 'k'
+    ext = [-200,200,-110,110]
+    if 'Plot' in data:
+        ext = data['Plot']['extent']
+        if 'bg_image' in data['Plot']:
+            if data['Plot']['bg_image'] != None:
+                img = mpimg.imread(data['Plot']['bg_image'])
+                bg_alpha = 1.0
+                if 'bg_alpha' in data['Plot']:
+                    if data['Plot']['bg_alpha'] != None:
+                        bg_alpha = data['Plot']['bg_alpha']
+                pl.imshow(img,extent=ext,alpha=bg_alpha)
+
+        fig_size = tuple(data['Plot']['fig_size'])
+        if 'line_width' in data['Plot']:
+            line_width = data['Plot']['line_width']
+            head_width = data['Plot']['head_width']
+            tail_width = data['Plot']['tail_width']
+            line_color = data['Plot']['line_color']
+            light_color = data['Plot']['light_color']
+            text_color = data['Plot']['text_color']
+
+
+    r=15 # radius of intersection nodes
+    d=5 # distance to space two edges that share a pair of nodes
+    width = 3 # width of bar
+    nodes = []
+    edges = {}
+
+
+    x_min=data['Nodes'][0]['p'][0]
+    y_min=data['Nodes'][0]['p'][1]
+    x_max=x_min
+    y_max=y_min
+
+    for i,n in enumerate(data['Nodes']):
+        nodes.append({'n':n,'e':0,'l':None})
+        x=n['p'][0]
+        y=n['p'][1]
+        x_min=min(x_min,x)
+        y_min=min(x_min,y)
+        x_max=max(x_max,x)
+        y_max=max(x_max,y)
+
+    for i,q in enumerate(data['Queues']):
+        n0=q['edge'][0]
+        n1=q['edge'][1]
+        pair = (n0,n1)
+        if n1<n0 : pair = (n1,n0)
+        if pair in edges:
+            edges[pair]+=1
+        else:
+            edges[pair]=1
+        q['pair']=pair
+
+
+    for i,l in enumerate(data['Lights']):
+        n=data['Nodes'][l['node']]
+        nodes[l['node']]['l']=i
+        n['light']=i
+        x=n['p'][0]
+        y=n['p'][1]
+        if type == 'arrow':
+            p = Circle((x,y), r, fc=light_color)
+            ax.add_patch(p)
+            ax.text(x-3,y-3,r'$l_{%d}$' % i,fontsize=16)
+        else:
+            r=15
+
+    for i,q in enumerate(data['Queues']):
+        pair = edges[q['pair']] > 1
+        n0= data['Nodes'][q['edge'][0]]
+        n1= data['Nodes'][q['edge'][1]]
+        rx0=n0['p'][0]
+        ry0=n0['p'][1]
+        rx1=n1['p'][0]
+        ry1=n1['p'][1]
+
+        rx = rx0-rx1
+        ry = ry0-ry1
+        lth = math.sqrt(rx*rx+ry*ry)
+        rx/=lth
+        ry/=lth
+        trx0=rx0
+        try0=ry0
+        if 'light' in n0:
+            if pair:
+                theta = -math.asin(d/r)
+                trx = rx * math.cos(theta) - ry * math.sin(theta);
+                ry = rx * math.sin(theta) + ry * math.cos(theta);
+                rx=trx
+            trx0-=rx * r; try0-=ry * r
+        elif pair:
+            trx0-=ry * d; try0+=rx * d
+        rx = rx1-rx0
+        ry = ry1-ry0
+        lth = math.sqrt(rx*rx+ry*ry)
+        rx/=lth
+        ry/=lth
+        if 'light' in n1:
+            if pair:
+                theta = math.asin(d/r)
+                trx = rx * math.cos(theta) - ry * math.sin(theta);
+                ry = rx * math.sin(theta) + ry * math.cos(theta);
+                rx=trx
+            if type == 'arrow':
+                rx1-=rx * (r+line_width); ry1-=ry * (r+line_width)
+            else:
+                rx1-=rx * (r); ry1-=ry * (r)
+        elif pair:
+            rx1+=ry * d; ry1-=rx * d
+        rx0=trx0
+        ry0=try0
+        rx = rx1-rx0
+        ry = ry1-ry0
+        lth = math.sqrt(rx*rx+ry*ry)
+        tx=rx/lth * r; ty=ry/lth * r
+
+        rx = rx0+(rx1-rx0)/2
+        ry = ry0+(ry1-ry0)/2
+
+        if type == 'arrow':
+            ax.text(rx+(ty-7),ry-(tx),r'$q_{%d}$' % i,fontsize=16,color=text_color)
+            #plot([rx,rx+ty],[ry,ry-tx])
+            arrow = ax.arrow(rx0,ry0,rx1-rx0,ry1-ry0, shape='full', lw=line_width,color=line_color,length_includes_head=True, head_width=head_width, width=tail_width)
+            arrow.set_ec('k')
+            arrow.set_fc(line_color)
+
+        elif type == 'bar' or type == 'carrow':
+            ax.text(rx+(ty-7),ry-(tx),'%d' % i,fontsize=10,color=scalarMap.to_rgba(0))
+            N=len(q['cmap'])
+            t=0
+            #q=0.0
+            rx = rx1-rx0
+            ry = ry1-ry0
+            tx=(rx/lth) * width; ty=(ry/lth) * width
+            qrx0=rx1 #- rx * q
+            qry0=ry1 #- ry * q
+            if N == 1:
+                dt = 1
+            else:
+                dt=(1.0)/(N)
+            # for j in range(N):
+            #     qrx0=rx0 + t * rx
+            #     qry0=ry0 + t * ry
+            #     qrx1=rx0 + (t+dt) * rx
+            #     qry1=ry0 + (t+dt) * ry
+            #     colorVal = scalarMap.to_rgba(q['cmap'][j])
+            #     if type == 'bar':
+            #         ax.add_patch(mp.patches.Polygon([[qrx0-ty,qry0+tx],[qrx1-ty,qry1+tx],[qrx1+ty,qry1-tx],[qrx0+ty,qry0-tx]],closed=True,fill='y',color=colorVal,ec='none',lw=0.9))
+            #     else:
+            #         arrow = ax.arrow(qrx0,qry0,rx1-qrx0,ry1-qry0, shape='full', lw=line_width,color=colorVal,length_includes_head=True, head_width=head_width, width=tail_width)
+            #         arrow.set_ec(colorVal)
+            #         arrow.set_fc(colorVal)
+            #     t+=dt
+
+
+            t = np.linspace(0,1,N)
+            x =rx0 + t * rx
+            y =ry0 + t * ry
+            points = np.array([x,y]).T.reshape(-1,1,2)
+            segments = np.concatenate([points[:-1], points[1:]], axis=1)
+            bar_cmap = np.array([scalarMap.to_rgba(q['cmap'][j]) for j in range(N)])
+            bar_widths = 1 + np.array(q['cmap'])*2*width
+            lc = LineCollection(segments,linewidths=bar_widths,colors=bar_cmap)
+            ax.add_collection(lc)
+        for i,l in enumerate(data['Lights']):
+            n=data['Nodes'][l['node']]
+            nodes[l['node']]['l']=i
+            n['light']=i
+            x=n['p'][0]
+            y=n['p'][1]
+            p = Circle((x,y), r,ec=scalarMap.to_rgba(0),fc='w')
+            ax.add_patch(p)
+            ax.text(x-3,y-3,r'%d' % i,fontsize=10,color=scalarMap.to_rgba(0))
+
+
+    pl.axis('scaled')
+    #ax.set_ylim([x_min-10,x_max+10])
+    #ax.set_xlim([y_min-10,y_max+10])
+    #[-200,200,-110,110]
+    #ax.set_ylim([-110,110])
+    #ax.set_xlim([-200,200])
+    ax.set_ylim(ext[2:4])
+    ax.set_xlim(ext[0:2])
+    pl.axis('off')
+    if type == 'bar' or type == 'carrow':
+        cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
+        pl.colorbar(CS3,cax=cax)
+
+def plot_network(args):
+    for f in args.files:
+        data = open_data_file(f)
+        if data is not None:
+            plot_network_figure(data,args.figsize)
+
+def plot_network_delay(args):
+    """
+    :param args:
+    :return:
+    """
+    type = args.plot_network_delay
+    if type == 'arrow': type = 'carrow'
+
+    for f in args.files:
+        data = open_data_file(f)
+        if data is not None:
+
+            results = data['Out']
+            if 'Run' in results:
+                if args.run:
+                    results = data['Out']['Run'][args.run]
+                else:
+                    results = data['Out']['Run'][0]
+                #if len(data['Out']['Run']) > 1:
+                #        del data['Out']['Run'][1:-1]
+
+            NQ=-1
+            DT = float(results['DT'][0])
+            max_delay = 10
+            if args.delay_lt:
+                max_delay = args.delay_lt
+            if args.n <= 0:
+                for i,q in enumerate(data['Queues']):
+
+                    qi = results['q_%d' %i]
+                    qi_in = np.array(results['q_{%d,in}' %i])
+                    qi_out = results['q_{%d,out}' %i]
+                    Q_DELAY = q['Q_DELAY']
+                    N = len(qi)
+                    c_in  = np.zeros(N)
+                    c_out = np.zeros(N)
+                    c_in[0] = qi_in[0]
+                    c_out[0] = qi_out[0]
+                    for n in range(1,N):
+                        c_in[n]=c_in[n-1] + qi_in[n]
+                        c_out[n]=c_out[n-1] + qi_out[n]
+                    if i==NQ:
+                        #pl.figure()
+                        pl.plot(range(0,N),c_in)
+                        pl.plot(range(0,N),c_out)
+                    delay = ( np.sum((c_in - c_out) * DT) - (np.sum(qi_in) * Q_DELAY) ) / np.sum(qi_in)
+                    q['cmap'] = [delay / max_delay]
+                    #print 'q_%d' % i,'\tdelay: %f' % delay,'\tcars: %d' % np.sum(qi_in),'\tQ_DELAY: %d' %Q_DELAY
+            else:
+                N_dt = args.n
+
+                dt = DT/N_dt
+                print 'DT=',results['DT'][0]
+                print 'dt=',dt
+                t=dt
+                nq = len(data['Queues'])
+                qdat = []
+                cdat = []
+                #max_delay = 0
+                for i,q in enumerate(data['Queues']):
+                    qi = results['q_%d' %i]
+                    qi_in = np.array(results['q_{%d,in}' %i]) * (dt/DT)
+                    qi_out = np.array(results['q_{%d,out}' %i])* (dt/DT)
+                    qi_in_total = np.sum(qi_in)*(DT/dt)
+                    #print 'sum(q_in)=',np.sum(qi_in)
+                    #print 'sum(q_out)=',np.sum(qi_out)
+                    Q_DELAY = q['Q_DELAY']
+                    Nt = int(len(qi_in)*N_dt)
+                    N = int(math.ceil(Q_DELAY / dt))
+                    #print 'N=',N
+                    q_delay = float(Q_DELAY)/N
+                    Q = q['Q_MAX']/N
+                    #print i,N,Q
+                    qs = np.zeros((N,Nt))
+                    ys = np.zeros((N,Nt))
+                    cy = np.zeros((N+1,Nt))
+                    #ys[0,0] = qi_in[0]*q_delay
+                    #ys[N-1,0] = qi_out[0]*dt_q
+                    y0  = np.interp(np.linspace(0,len(qi),Nt,endpoint=False),np.linspace(0,len(qi),len(qi),endpoint=False),qi_in)
+                    ys[N-1,:] = np.interp(np.linspace(0,len(qi),Nt,endpoint=False),np.linspace(0,len(qi),len(qi),endpoint=False),qi_out)
+                    #print sum(qi_in)
+                    for k in range(1,Nt):
+                        #ys[0,k] = qi_in[int(k/N)]*dt
+                        #ys[N-1,k] = qi_out[int(k/N)]
+
+                        qs[0,k] = qs[0,k-1] + y0[k-1] - ys[0,k-1]
+                        #qs[0,k] = qs[0,k-1] + qi_in[int(k/N)]*dt_q - ys[0,k-1]
+                        for n in range(1,N):
+                            qs[n,k] = qs[n,k-1] + ys[n-1,k-1] - ys[n,k-1]
+                            qs[n,k] = max(qs[n,k],0)
+                        ##qs[1:,k] = qs[1:,k-1] + ys[:-1,k-1] - ys[1:,k-1]
+                        ##qs[1:,k] = np.fmax(qs[1:,k],0)
+                        for n in range(0,N-1):
+                            ys[n,k] = min(qs[n,k], Q-qs[n+1,k])
+                            ys[n,k] = max(ys[n,k],0)
+                        ##ys[:-1,k] = np.fmin(qs[:-1,k], Q-qs[1:,k])
+                        ##ys[:-1,k] = np.fmax(ys[:-1,k],0)
+                        #ys[N-1,k] = qi_out[int(k/N)]*dt_q
+
+                    cy[0] = np.cumsum(y0)
+                        #cy[1:,k] = cy[1:,k-1]+ys[0:,k]
+                    cy[1:] = np.cumsum(ys,axis=1)
+                    #print len(np.linspace(0,len(qi),len(qi)*N))
+                    #y0  = np.interp(np.linspace(0,len(qi),len(qi)*N,endpoint=False),np.linspace(0,len(qi),len(qi),endpoint=False),qi_in*dt_q)
+                    #print y0
+                    #for k in range(1,ys.shape[1]):
+                    #    cy[0,k] = cy[0,k-1]+y0[k]
+                    #    cy[1:,k] = cy[1:,k-1]+ys[0:,k]
+                    delay = (np.sum((cy[:-1,:] - cy[1:,:]) *dt ,axis=1 ) - qi_in_total*q_delay)# / qi_in_total
+                    #print 'delay %d' %i, np.sum(delay)
+                    #print 'q_%d' % i,'\tdelay: %f' % (np.sum(delay) ),'\tcars: %d' % (qi_in_total),'\tQ_DELAY: %d' % Q_DELAY
+                    #pl.figure()
+                    #pl.plot(range(0,len(delay)),delay)
+                    #pl.title(r'$q_%d$' % i)
+                    #pl.ylim(0,200)
+                    #pl.figure()
+                    q['cmap'] = delay / max_delay#qs[:,qs.shape[1]*0.25]/np.max(qs)#[j/float(N) for j in range(0,N)]
+                    #max_delay = max(max_delay,np.max(delay))
+                    #max_delay = 3.0
+                    #print np.max(qs)
+                    qdat.append(qs)
+                    cdat.append(cy)
+
+                    #if i == 0:
+                    #    print len(qi)*N
+                    #    print len(np.linspace(0,len(qi),len(qi)*N))
+                    #    print cdat[0].shape[1]
+                        #pl.plot(range(0,len(qi_in)),qi_in)
+                        #pl.plot(range(0,len(qi_in)),qi_out)
+                        #pl.plot(range(0,len(qi_in)),qi)
+
+
+            #pl.figure()
+            #pl.plot(range(0,qdat[0].shape[1]),qdat[0][0,:])
+            #pl.plot(range(0,qdat[0].shape[1]),qdat[0][-1,:])
+                #pl.figure()
+
+                #pl.plot(np.linspace(0,len(qi),cdat[NQ].shape[1],endpoint=False),cdat[NQ][0,:])
+                #pl.plot(np.linspace(0,len(qi),cdat[NQ].shape[1],endpoint=False),cdat[NQ][1,:])
+                #pl.plot(np.linspace(0,len(qi),cdat[NQ].shape[1],endpoint=False),cdat[NQ][-2,:] - cdat[NQ][-1,:])
+                print 'max_delay',max_delay
+                #max_delay = 2
+                #q['cmap'] = q['cmap'] / max_delay
+            for i,q in enumerate(data['Queues']):
+
+                qi = results['q_%d' %i]
+                qi_in = np.array(results['q_{%d,in}' %i])
+                qi_out = results['q_{%d,out}' %i]
+                Q_DELAY = q['Q_DELAY']
+                N = len(qi)
+                c_in  = np.zeros(N)
+                c_out = np.zeros(N)
+                c_in[0] = qi_in[0]
+                c_out[0] = qi_out[0]
+                for n in range(1,N):
+                    c_in[n]=c_in[n-1] + qi_in[n]
+                    c_out[n]=c_out[n-1] + qi_out[n]
+                if i==NQ:
+                    #pl.figure()
+                    pl.plot(range(0,N),c_in)
+                    pl.plot(range(0,N),c_out)
+                delay = np.sum((c_in - c_out) * DT) - (np.sum(qi_in) * Q_DELAY)
+                #print 'q_%d' % i,'\tdelay: %f' % delay,'\tcars: %d' % np.sum(qi_in),'\tQ_DELAY: %d' %Q_DELAY
+            #pl.xlim(0,600)
+            #pl.ylim(75,100)
+            plot_network_figure(data,args.figsize,type=type)
 
 
 def plot_delay(data, step, queues=[],line_style=['--'],args=None):
@@ -377,7 +799,10 @@ def plot_box_plot(args):
             results = d['Out']
 
             #label =  file['Out']['label']
-            runs=range(1)
+            if args.run != None:
+                runs=args.run
+            else:
+                runs=[0]
             solve_time=[]
             #if 'Run' in results:
             #    runs = range(len(results['Run']))
@@ -447,7 +872,7 @@ def plot_box_plot(args):
         props3 = dict(markeredgecolor=args.color[c_i],
                       markerfacecolor=args.color[c_i])
         #print boxprops,c_i,len(args.color)
-        ax[0].boxplot(Y, vert=True, showmeans=True, widths=0.5) #, boxprops=props, whiskerprops=props3, capprops=props,
+        ax[0].boxplot(Y, vert=True, showmeans=True, widths=0.5, whis=1e99) #, boxprops=props, whiskerprops=props3, capprops=props,
                       #medianprops=props, meanprops=props3)#,flierprops=props3,positions=X)
         #Y = [plot_data[x][1] for x in X]
         #ax.plot(X,Y,c=args.color[c_i], label=plot_label,marker='x')
@@ -496,6 +921,8 @@ def open_data_file(file):
             data  = json.load(f)
             debug('Done.')
             f.close()
+    else:
+        data = None
     return data
 
 def read_files(plot_files):
@@ -505,16 +932,20 @@ def read_files(plot_files):
         files = []
 
         path,name = os.path.split(plot_file)
-        if len(path) > 0: path += '/'
-        debug('Opening plot file: '+name)
-        f = open(str(plot_file),'r')
-        for line in f:
-            fields = line.split(' ')
-            if len(fields) > 0 and len(fields[0].strip()) > 0:
-                files.append(path+fields[0].strip())
-                if len(fields)>1:
-                    labels.append(fields[1])
-        f.close()
+        type = name.split('.')[-1]
+        if type == 'json' or type == 'zip':
+            files.append(plot_file)
+        else:
+            if len(path) > 0: path += '/'
+            debug('Opening plot file: '+name)
+            f = open(str(plot_file),'r')
+            for line in f:
+                fields = line.split(' ')
+                if len(fields) > 0 and len(fields[0].strip()) > 0:
+                    files.append(path+fields[0].strip())
+                    if len(fields)>1:
+                        labels.append(fields[1])
+            f.close()
         data = []
         debug('  Opening files in plot file: '+str(files))
         for file in files:
@@ -1114,7 +1545,10 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
         k_step=0
         c_i=0
         l_i=0
+        xl_i=0
+        yl_i=0
         ls_i=0
+        m_i=0
         for j,data in enumerate(data_sets):
             results = data['Out']
 
@@ -1128,6 +1562,14 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                     results = results['Step'][args.steps[j]]
             ls=args.linestyle[ls_i]
             col=args.color[c_i]
+            marker = args.marker[m_i]
+            label = args.labels[l_i]
+            xlabel=''
+            ylabel=''
+            if args.x_label is not None:
+                xlabel = args.x_label[xl_i]
+            if args.y_label is not None:
+                ylabel = args.y_label[yl_i]
             t=results['t']
 
             if var[0:2]=='l_':
@@ -1155,17 +1597,17 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                     if k>2:
                         pl_p[0] = [-c[n]/2 for n in range(N)]
 
-                        ax[i].plot(t,[x+j*P_MAX*num_p+P_MAX for x in pl_p[0]], linestyle = ls, color=col)
+                        ax[i].plot(t,[x+j*P_MAX*num_p+P_MAX for x in pl_p[0]],  marker=marker, linestyle = ls, color=col)
                         for k in range(1,num_p+1):
                             pl_p[k] = [pl_p[k-1][n]+p[k-1][n] for n in range(N)]
-                            ax[i].plot(t,[x+j*P_MAX*num_p+P_MAX for x in pl_p[k]], linestyle = ls, color=col)
+                            ax[i].plot(t,[x+j*P_MAX*num_p+P_MAX for x in pl_p[k]], marker=marker, linestyle = ls, color=col)
                     else:
-                        ax[i].plot(t,[-x+j*P_MAX*2+P_MAX for x in p[0]], linestyle = ls, color=col)
-                        ax[i].plot(t,[x+j*P_MAX*2+P_MAX for x in p[1]], linestyle = ls, color=col)
-                        ax[i].plot(t,[j*P_MAX*2+P_MAX for x in p[1]], linestyle = ls, color=col)
+                        ax[i].plot(t,[-x+j*P_MAX*2+P_MAX for x in p[0]],  marker=marker,  linestyle = ls, color=col)
+                        ax[i].plot(t,[x+j*P_MAX*2+P_MAX for x in p[1]],  marker=marker, linestyle = ls, color=col)
+                        ax[i].plot(t,[j*P_MAX*2+P_MAX for x in p[1]],  marker=marker, linestyle = ls, color=col)
 
 
-            elif var[0:2]=='p_':
+            elif var[0:2]=='p_' and 1==2:
 
                 l = int(((var[3:-1].split('_'))[0]).split(',')[0])
                 k = int(((var[3:-1].split('_'))[0]).split(',')[1])
@@ -1183,22 +1625,32 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                         else:
                             if n>0: p[n]=p[n-1]
 
-                ax[i].plot(t,p, label=results['label'],linestyle = ls, color=col)
+                ax[i].plot(t,p, label=results['label'], marker=marker, linestyle = ls, color=col)
                 ax[i].set_ylim(-1,data['Lights'][l]['P_MAX'][k]+1 )
             elif var in results.keys():
                 #if var[0] == 'l':
                 if var[0:3]=='q_{':
                     DT = results['DT']
-                    ax[i].plot(t,[results[var][x_i]/DT[x_i] for x_i,x in enumerate(t)],label=results['label'], linestyle = ls, color=col)
+                    ax[i].plot(t,[results[var][0]]+[results[var][x]/DT[x-1] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col) #/DT[x_i]
                 else:
-                    ax[i].plot(t,[results[var][x] for x in range(len(t))],label=results['label'], linestyle = ls, color=col)
+                    ax[i].plot(t,[results[var][x] for x in range(len(t))],marker=marker, label=label, linestyle = ls, color=col)
                 #else:
                 #    ax[i].plot(t,results[var], color=colors[j])
 
-            ax[i].set_ylabel(r'$%s_{%s}$' % tuple(var.split('_')),fontsize=16)
+            if ylabel == ' ':
+                ax[i].set_ylabel(r'$%s_{%s}$' % tuple(var.split('_')),fontsize=16)
+            else:
+                ax[i].set_ylabel(ylabel)
+            if xlabel == ' ':
+                ax[i].set_xlabel('time')
+            else:
+                ax[i].set_xlabel(xlabel)
             if ls_i+1 < len(args.linestyle): ls_i += 1
             if c_i+1 < len(args.color): c_i += 1
             if l_i+1 < len(labels): l_i += 1
+            if xl_i+1 < len(args.x_label): xl_i += 1
+            if yl_i+1 < len(args.y_label): yl_i += 1
+            if m_i+1 < len(args.marker): m_i += 1
             if var in results.keys():
                 if var[0] == 'q' or var[0] == 'f':
                     if var[2] != '{':
@@ -1221,38 +1673,42 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                 else:
                     ax[i].set_ylim(0,1)
             ax[i].legend(loc='best')
-            ax[i].grid()
+            if args.x_limit != None:
+                ax[i].set_xlim(args.x_limit[0],args.x_limit[1])
+            ax[i].grid(True)
     if args.title:
         pl.title(args.title)
 
 
 def dump_stats(args):
 
-    files = []
+    data_files = read_files(args.files)
     data = []
+    for i,file in enumerate(data_files):
+        data.append(file)
 
-    for file in args.files:
-        if file.endswith('.json'):
-            files.append(file)
-        else:
-            path,name = os.path.split(file)
-            if len(path) > 0: path += '/'
-            f = open(str(file),'r')
-            for line in f:
-                fields = line.split(' ')
-                if len(fields) > 0:
-
-                    files.append(path+fields[0].strip())
-
-            f.close()
-        data = []
-        loaded_files=[]
-        for file in files:
-            if os.path.isfile(file):
-                loaded_files.append(os.path.split(file)[1])
-                f = open(str(file),'r')
-                data.append(json.load(f))
-                f.close()
+    # for file in args.files:
+    #     if file.endswith('.json'):
+    #         files.append(file)
+    #     else:
+    #         path,name = os.path.split(file)
+    #         if len(path) > 0: path += '/'
+    #         f = open(str(file),'r')
+    #         for line in f:
+    #             fields = line.split(' ')
+    #             if len(fields) > 0:
+    #
+    #                 files.append(path+fields[0].strip())
+    #
+    #         f.close()
+    #     data = []
+    #     loaded_files=[]
+    #     for file in files:
+    #         if os.path.isfile(file):
+    #             loaded_files.append(os.path.split(file)[1])
+    #             f = open(str(file),'r')
+    #             data.append(json.load(f))
+    #             f.close()
 
     # for file in args.files:
     #     if file.endswith('.json'):
@@ -1273,6 +1729,7 @@ def dump_stats(args):
     #         f = open(str(file),'r')
     #         data.append(json.load(f))
     #         f.close()
+
 
 
     for d in data:
@@ -1399,12 +1856,14 @@ if __name__ == '__main__':
     parser.add_argument("--linestyle", help="list of strings of matplotlib line styles for each plot",nargs='*', default=['_','_','_','_'])
     parser.add_argument("-c", "--color", help="list of matplotlib colors for each plot", default='rbgky')
     parser.add_argument("-o", "--out", help="save the plot as OUT")
+    parser.add_argument("-n", help="number of points to plot", type=int, default=0)
     parser.add_argument("--histogram", help="plot a histogram of delay with HISTOGRAM wide bins", type=float)
     parser.add_argument("--step", help="Use output step STEP",type=int)
     parser.add_argument("--run", help="Use output run RUN",nargs='*', type=int)
     parser.add_argument("--steps", help="List of steps to use for each plot", nargs='*', type=int)
     parser.add_argument("--dump_stats", help="Dump stats from results files",action="store_true", default=False)
     parser.add_argument("--dump_convergence_stats", help="Dump stats from a set results files starting with FILE pattern",action="store_true", default=False)
+    parser.add_argument("--delay_lt", help="plot delay less than DELAY_LT", type=float)
     parser.add_argument("--delay_gt", help="plot delay greater than DELAY_GT", type=float)
     parser.add_argument("--delay_gt_plots", help="list of number of results to group in each of plots delay_gt plots",  nargs='+', type=int)
     parser.add_argument("--plot_travel_time", help="Plots travel time for each file",action="store_true", default=False)
@@ -1417,11 +1876,17 @@ if __name__ == '__main__':
     parser.add_argument("--plot_phase_offset", help="Plots phase offset vs travel time for each file",action="store_true", default=False)
     parser.add_argument("--plot_box_plot", help="Plots a box plot for each file",action="store_true", default=False)
     parser.add_argument("--plot_vars", help="Plots each var in list",nargs='*')
+    parser.add_argument("--plot_network", help="Plots a network as a link and node graph",action="store_true", default=False)
+    parser.add_argument("--plot_network_delay", help="Plots a network as a coloured link and node graph", default='')
+    parser.add_argument("--colormap", help="the color map name to use", default='green_red')
+    parser.add_argument("--gamma", type=float, help="the gamma of the color map", default=1.0)
     parser.add_argument("--x_limit", help="set the x limit of the plot",nargs='+', type=float)
     parser.add_argument("--y_limit", help="set the y limit of the plot",nargs='+', type=float)
     parser.add_argument("--y_limit2", help="set the y limit of the plot 2nd axis",nargs='+', type=float)
     parser.add_argument("--title", help="set the title of the plot")
     parser.add_argument("--labels", help="list of labels to use for each plot", nargs='+')
+    parser.add_argument("--x_label", help="set the x axis label of the plot",nargs='+', default=' ')
+    parser.add_argument("--y_label", help="set the y axis label of the plot",nargs='+', default=' ')
     parser.add_argument("--figsize", help="width and height of the plot", nargs='+',type=float)
     parser.add_argument("--marker", help="line maker for the plot",default=' ')
     parser.add_argument("--debug", help="output debug messages", action="store_true", default=False)
@@ -1454,6 +1919,10 @@ if __name__ == '__main__':
     elif args.plot_cpu_time:
         plot_cpu_time(args)
 
+    elif args.plot_network:
+        plot_network(args)
+    elif args.plot_network_delay != '':
+        plot_network_delay(args)
     elif args.dump_stats:
             dump_stats(args)
     elif args.dump_vars != None:

@@ -1,51 +1,169 @@
 \section{Introduction}
 
+%{\bf Previous content:}
+%
+%This report describes a new model for optimised traffic signal
+%planning using a MILP formulation. Previously,
+%\trbcite{lin2004enhanced} describe a MILP formulation for optimised
+%traffic signal planning based on the Cell Transmission Model of
+%\trbcite{daganzo1995cell}. However a CTM based model is limited in
+%scalability by the requirement that each road way in the network must
+%be partitioned up into segments that take exactly $\DT[]=1$ to
+%traverse at the free flow speed. We get around this limitation by
+%using a queue based model that supports non-homogeneous time steps,
+%and we will show how we can exploit this property to scale a network
+%without significant increase in the number of variables or loss of
+%quality.
+%
+%{\bf Scott's suggested argument structure:}
+%
+%\remark{I say we drop the issue of many segments and simply criticize
+%  the CTM by saying that it is not easy to make non-homogenous and
+%  that is what we need?  In general, the Intro probably has to push on
+%  the non-homogenous motivation a little earlier and forcefully since
+%  we're claiming *this* is the reason for the paper, the QTM and
+%  ultimately our evaluation comparing homogenous vs. non-homogenous.
+%  We may have broader (not fully validated) motivations but we need a
+%  watertight argument and paper.}
+
+As cities rapidly grow in population while urban traffic
+infrastructure often adapts at a slower pace, it is critical to
+maximize capacity and throughput of existing road infrastructure
+through optimized traffic signal control.  Unfortunately, many large
+cities still use some degree of \emph{fixed-time} control (e.g.,
+Toronto~\trbcitenum{el2013multiagent}) even if they also use
+\emph{actuated} or \emph{adaptive} control methods such as SCATS~\trbcitenum{scats80}
+or SCOOT~\trbcitenum{scoot81}.  However there is
+further opportunity to improve traffic signal control even beyond
+adaptive methods through the use of \emph{optimized} controllers as
+evidenced in a variety of approaches ranging from mixed integer
+(linear)
+programming~\trbcitenum{gartner1974optimization,gartner2002arterial,lo1998novel,he2011pamscod,lin2004enhanced,han2012link}
+to heuristic search~\trbcitenum{lo1999dynamic,he2010heuristic} to
+scheduling~\trbcitenum{smith2013surtrac} to reinforcement
+learning~\trbcitenum{el2013multiagent}.  While such optimized controllers
+hold the promise of maximizing existing infrastructure capacity by
+finding more complex (and potentially more optimal) jointly
+coordinated intersection policies than arterially-focused master-slave
+approaches such as SCATS and SCOOT, such optimized methods are
+computationally demanding
+%compared to adpative control methods such as SCOOT and SCATS
+%(which can run on 1970's error hardware)
+and either (a) do not guarantee jointly optimal solutions over a large
+intersection network (often because they only consider coordination of
+neighboring intersections or arterial routes) or (b) fail to scale to
+large intersection networks simply for computational reasons (which is
+the case for many mixed integer programming approaches).
+
+In this work, we build on the body of work in mixed integer linear
+programming (MILP) approaches that attempt to jointly optimize traffic
+signal control over an \emph{entire traffic network} (rather than
+focus on arterial routes) and specifically on improving the
+scalability of these methods for large urban traffic networks.  In our
+investigation of existing approaches in this vein, namely exemplar
+methods in the spirit of~\trbcitenum{lo1998novel,lin2004enhanced,han2012link} that
+use a (modified) cell transmission model
+(CTM)~\trbcitenum{daganzo1994cell,daganzo1995cell} for their underlying
+prediction of traffic flows, we remark that a major drawback is the
+CTM-imposed requirement to choose a predetermined homogenous (and
+often necessarily small) time step for reasonable modeling fidelity.
+The need to model large number of CTM cells with a small time step
+however leads to MILPs that are exceedingly large and intractable to
+solve for large traffic networks.
+
+Our primary insight in this work stems from the fact that MILP-based
+approaches to traffic control used in a receding horizon control
+manner (that replan at fixed time intervals) need only plan with high
+fidelity control policies in the early stages of the signal plan and
+can use a coarser time step to ``see'' over a long horizon to
+preemptively adapt to distant platoons and other predicted long-term
+changes in traffic flows.  This need for non-homogenous control in
+turn spawns the need for an additional innovation: we require a
+traffic flow simulation model that permits non-homogenous time steps
+and properly models the travel time delay between lights.  To this
+end, we might consider CTM extensions such as the variable cell length
+CTM~\trbcitenum{xiaojian2010urban}, stochastic CTM
+extensions~\trbcitenum{sumalee2011stochastic,jabari2012stochastic},
+extensions for better modeling freeway-urban
+interactions~\trbcitenum{huang2011traffic} including CTM hybrids with
+link-based models~\trbcitenum{muralidharan2009freeway}, assymmetric CTMs
+for better handling flow imbalances in merging
+roads~\trbcitenum{gomes2006optimal}, the situational CTM for better
+modeling of boundary conditions~\trbcitenum{kim2002online}, and the
+lagged CTM for improved modeling of the flow density
+relation~\trbcitenum{lu2011discrete}.  However despite the widespread
+varieties of the CTM and the usage of the
+CTM~\trbcitenum{alecsandru2011assessment} for a range of applications,
+there seems to be no extension that permits non-homogeneous time steps
+as required in our novel MILP-based control approach.
+
+For this reason, as a major contribution of this work to enable our
+non-homogenous time MILP-based model of joint intersection control, we
+contribute the queue transmission model (QTM) which blends elements of
+cell-based and link-based modeling approaches with the following key
+benefits: (a) unlike previous joint intersection control work~\trbcitenum{lo1998novel,lin2004enhanced,han2012link},
+it is inherently intended for \emph{non-homogenous} time steps that can be used for control over large horizons,
+(b) any length of roadway with no merges or diverges can be modeled as
+a single queue leading to compact models of large traffic networks thus maintaining relatively
+compact MILPS for large traffic networks (i.e., larges numbers of cells are not required between intersections),
+(c) it accurately models fixed travel time delays critical to green
+wave coordination as
+in~\trbcitenum{gartner1974optimization,gartner2002arterial,he2011pamscod}
+through the use of a non-first order Markovian update model and
+combines this with the more global intersection signal optimization
+approach of~\trbcitenum{lo1998novel,lin2004enhanced,han2012link}.
+
+In the remainder of this paper, we show first how to formulate our
+novel QTM model of traffic flow with non-homogenous time steps as a
+linear program.  We then proceed to allow the traffic signals to
+become discrete variables subject to a delay minimizing optimization
+objective and standard cycle and phase time constraints leading to our
+final MILP formulation of traffic signal control.  We then experiment
+with this novel QTM-based MILP control in a range of networks
+demonstrating the improved scalability possible with non-homogeneous
+time steps in comparison to the best homogenous time step and also the
+scalability of the model --- we demonstrate near-optimal traffic
+control models over longer horizons and larger networks than shown in
+previous implementations of MILP-based traffic signal control.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\remark{Paper should follow the basic progression outlined in last paragraph above.
+  Need to be careful to maintain the thread of the story throughout the paper and
+  the summarize it in the conclusion with the major take-home results --- longer
+  horizons and larger networks for MILP-based control!}
+
+\remark{ We could really use some pictures in the Intro to refer to
+  here and subsequently -- both a traffic network divided into queues,
+  and the concept of the piecewise linear evolution of traffic flow
+  with {\bf non-homogenous} (dilated) time steps, something like I had
+  provided in my early writeup.  I think these help visually explain
+  much of the context for the paper and its approach and are critical
+  for reviewer understanding on a time budget for reading this They
+  may only read the first 2-3 pages and then skim!}
+
+\remark{A picture is worth
+  a 1000 words but we only pay 250, hence a 4X ROI on pictures!}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \comment{
-{\bf Previous content:}
-
-This report describes a new model for optimised traffic signal
-planning using a MILP formulation. Previously,
-\trbcite{lin2004enhanced} describe a MILP formulation for optimised
-traffic signal planning based on the Cell Transmission Model of
-\trbcite{daganzo1995cell}. However a CTM based model is limited in
-scalability by the requirement that each road way in the network must
-be partitioned up into segments that take exactly $\DT[]=1$ to
-traverse at the free flow speed. We get around this limitation by
-using a queue based model that supports non-homogeneous time steps,
-and we will show how we can exploit this property to scale a network
-without significant increase in the number of variables or loss of
-quality.
-
-{\bf Scott's suggested argument structure:}
-
-\remark{I say we drop the issue of many segments and simply criticize
-  the CTM by saying that it is not easy to make non-homogenous and
-  that is what we need?  In general, the Intro probably has to push on
-  the non-homogenous motivation a little earlier and forcefully since
-  we're claiming *this* is the reason for the paper, the QTM and
-  ultimately our evaluation comparing homogenous vs. non-homogenous.
-  We may have broader (not fully validated) motivations but we need a
-  watertight argument and paper.}
-}
-
-In practice, control of congested urban traffic networks ranges from
-fixed time to actuated to adaptive (SCATS, SCOOT).  However there is
-further opportunity to improve traffic scheduling through the use of
-optimization techniques as proposed in various works
-(Gartner, Lin and Wang, MARLIN -- Toronto, SURTRAC -- Smith).  In this
-work, we specifically build on the MILP approach to traffic
-optimization that extends previous work by Lin and Wang who
-optimize traffic signals (discrete choices at each time step) in a 
-Cell Transmission Model (CTM)~\trbcite{daganzo1995cell} of traffic flow.
-Unfortunately a CTM based model is limited in
-scalability by the requirement that each road way in the network must
-be partitioned up into segments that take exactly $\DT[]=1$ to
-traverse at the free flow speed.
-This leads to a large number of cells
-(and hence variables in the MILP) and it makes it difficult to
-allow for variable length (non-homogenous) time steps in the model
-updates that we demonstrate in this work
-to be useful for optimized traffic signal planning over long horizons.
+optimization techniques as
+proposed in various works~\cite (Gartner, Lin and Wang, MARLIN --
+Toronto, SURTRAC -- Smith).  In this work, we specifically build on
+the MILP approach to traffic optimization that extends previous work
+by Lin and Wang who optimize traffic signals (discrete choices at each
+time step) in a Cell Transmission Model
+(CTM)~\trbcite{daganzo1995cell} of traffic flow.  Unfortunately a CTM
+based model is limited in scalability by the requirement that each
+road way in the network must be partitioned up into segments that take
+exactly $\DT[]=1$ to traverse at the free flow speed.  This leads to a
+large number of cells (and hence variables in the MILP) and it makes
+it difficult to allow for variable length (non-homogenous) time steps
+in the model updates that we demonstrate in this work to be useful for
+optimized traffic signal planning over long horizons.
 
 To allow for more parsimonious models of traffic flow and non-homogenous
 time steps for updates, we introduce the queue transmission model (QTM) [succinct description needed], which offers the following
@@ -60,23 +178,214 @@ fundamental diagram.  \remark{Argue why this is OK for saturated
   urban networks at peak times.  Green waves in SCATS/SCOOT operate on
   principle of a fixed propagation time, so does Gartner's MILP model.
 Captures the right level of detail without blowing up size of model.}
+}
 
-In the remainder of this paper, we show first how to formulate traffic flow
-with fixed signals as an LP in the QTM; we then proceed to allow the
-traffic signals to become discrete variables subject to optimization leading
-to our final MILP formulation of traffic signal control.  We then experiment
-with QTM-based control in a range of networks demonstrating the improved
-scalability possible with non-homogeneous time steps in comparison to
-the best homogenous time step and also the scalability of the model ---
-we demonstrate near-optimal traffic control models over longer horizons and
-larger networks than shown in previous implementations of MILP-based
-traffic signal control.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\remark{Paper should follow the basic progression outlined above.  We
-  could really use some pictures in the Intro to refer to here and
-  subsequently -- both a traffic network divided into queues, and the
-  concept of the piecewise linear evolution of traffic flow with
-  non-homogenous time steps that I had provided in my early writeup.
-  I think these help visually explain much of the context for the
-  paper and its approach.}
+\comment{
+Lin and Wang aim for network-wide control with a MILP but use
+a CTM that requires the time-step to be fixed (otherwise changing
+time steps would lead to changing cell sizes and require
+dynamic traffic realllocation).
 
+Other GA and reinforcement learning methods, but hard to provide
+optimality guarantees.
+
+Much work on optimized traffic control focusing on green-wave
+signal coordination given predicted demands and are 
+non-homogenous, but these are largely focused on arterial
+control.
+
+Need a deep lookahead possible with non-homogenous time steps,
+but a globally optimized model.  Need to move beyond CTM of
+Lin and Wang since this requires fixed time steps, but
+still need to model coordination and delays.
+
+
+Many extensions of CTM for various settings.
+...
+However, none of these allow non-homogenous modeling.
+
+
+To this end we introduce the QTM.  Shares aspects of link-based 
+and cell-based models while getting delays right (as in existing
+MILP control methosd), but allowing for non-homogenous time
+steps, unlike existing CTMs or extensions.  Ultimately we
+will show that a non-homogenous time step leads to smaller MILPs
+and hence improved scalability over a fixed homogenous time
+variant.
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\comment{
+
+daganzo1994cell - original CTM development
+
+daganzo1995cell - original CTM development
+
+alecsandru2011assessment - general CTM survey noting wide use in many areas
+
+xiaojian2010urban - variable CTM, adjustable cell length
+
+jabari2012stochastic - alternative to CTM for modeling random headways
+
+sumalee2011stochastic - stochastic CTM for modeling mean and standard deviation of traffic flow accurately
+
+muralidharan2009freeway - link-node-CTM, better for arteries+freeway
+
+lu2011discrete - lagged CTM, some sort of improvement
+
+kim2002online - situational CTM, defines more cell types to better model boundary conditions of CTM simulation
+
+huang2011traffic - CTM-Urban, claims CTM was for freeways, and defines extensions to better model urban traffic
+
+gomes2006optimal - assymetric CTM (merge imbalance), freeway ramp metering
+
+MISSING: Knoop et al, Network Transmission Model, more macroscopic variation on CTM, reduces under certain conditions
+
+
+gartner1974optimization, gartner2002arterial, 
+
+el2013multiagent
+
+Control
+===
+
+canepa2012exact - not control, but traffic density estimation
+
+gartner1974optimization - green wave coordination MILP?
+
+gartner2002arterial - green wave coordination MILP?  (OPAC?)
+
+han2012link - link-based MILP (road not divided into cells, criticizes CTM as having too many cells, still approximates shockwaves somehow)
+
+el2013multiagent - MARLIN, pairwise Qlearning
+
+lo1998novel - CTM, MILP introduction
+
+lo1999dynamic - CTM, genetic algorithm solution to MILP
+
+lin2004enhanced - CTM-based MILP
+
+he2011pamscod - optimized solutions to MILP signal coordination (travel-time oriented)
+
+he2014multi - multimodal extensions to MILP signal coordination
+
+he2010heuristic - heuristic solutions to MILP signal coordination
+
+smith2013surtrac - SURTRAC, scheduling for green waves
+
+MISSING other optimized control: Also, PRODYN, RHODES... should ideally include these.
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\comment{
+
+UNUSED TEXT from shelved grant application draft
+
+Congestion is increasing.
+
+Traffic accounts for X hours of people's time and an improvement
+of Y\% would lead to Z amount of dollars saved.
+
+Unfortunately, the majority of urban traffic signal coordination is handled by 
+1970's and 1980's era systems that neither make effective use of all
+data they collect nor rely on modern optimization techniques to attempt
+to find an optimal control policy w.r.t.\ some criteria.
+
+(1) while they collect real-time data, they do not make
+use of it in a learning manner to build models of traffic flow, which
+can later be optimized, and (2) their techniques for
+multi-intersection traffic signal coordination are heuristic and
+manually tuned.  In this proposal, we leverage the intersection of two
+key technologies that will enable a new generation of traffic
+controllers: (a) we now have the algorithms and architectures to
+crunch large real-time traffic data for online learning of traffic
+models and (b) we now have optimization tools like CPLEX and Gurobi
+for mixed integer linear programs (MILPs) that can efficiently solve
+large-scale optimization problems that would have been intractable
+only a decade ago.  Using these technologies, we aim to use the
+real-time (Big) data collected from modern traffic control systems to
+build a joint hybrid (switching nonlinear) automata model of traffic
+signal control and traffic flow and then to used mixed integer linear
+programming techniques to iteratively solve for a provably optimal
+control strategy for this automaton.
+
+% Continuous time switching automata contributions... bilinear but
+% solve with a splitting approach.
+
+%Questions can be (a) improved traffic light control based on
+%real-time predictive models of traffic flow, (b) detection of
+%anomalies that should be investigated -- lower than normal flow
+%%indicating a potential accident / blocked lane, (c) traffic network
+%design for improved flow, (d) incentivizing traffic users by selecting
+%transit and parking fares to obtain behavior that improves traffic
+%flow.
+
+\blankline
+
+{\bf Intellectual Merit:} %\remark{(verbose for now, compress later)}
+
+\begin{itemize}
+\item {\it Modeling traffic control as a (nonlinear switching) hybrid automata}
+\item {\it Data-driven hybrid automata learning} 
+\item {\it Iterative solving of nonlinear switching hybrid automata with mixed integer linear programming}
+\end{itemize}
+
+\blankline
+
+{\bf Broader Impact:}
+
+\begin{itemize}
+\item {\it Community:} Publications, but also domains in future IPPCs
+  to drive future research and comparison of techniques.
+\item {\it Engagement/Impact:} Does Australian engagement count,
+  e.g. VicRoads?).
+\item {\it Education:} MS and PhD training, competitions, courses,
+  workshops and tutorials on traffic and data-driven hybrid automata
+  model learning.
+\end{itemize}
+
+\blankline
+
+{\bf Key Words:} traffic signal control, hybrid automata, smart cities,
+Big Data, machine learning
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Content from a different proposal on smart cities (power, HVAC, etc)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%We are at the cusp of a new era creating smarter, cleaner, more
+%efficient cities that leverage real-time data and online optimization
+%to intelligently control everything from traffic signals to heating
+%and air conditioning in office buildings to the scheduling of
+%industrial and consumer demand to coincide with transient peaks in
+%production from green energy sources (solar, wind, etc.).
+
+%The key to achieving these tasks lies in the ability to transform
+%complex models containing high degrees of concurrency, hybrid (mixed
+%discrete and continuous) state, exogenous events
+
+%learned from large quantities of data into actionable decisions in
+%real-time --- a task which requires online optimization at a scale
+%and speed unprecented in existing online planning work.
+
+%the bottleneck in using it in real-time stems more from the lack of
+%scalable optimization.
+
+%Need to be online.
+
+%Problems are large (concurrent, hybrid) structured, require
+%exploitation of that structure beyond naive sampling approaches.
+
+%Existing city infrastructure (coordinating traffic lights, optimal
+%heating and air conditioning in buildings, ) often operate in a
+%manually controlled or otherwise heuristic settings that do not make
+%complete use of real-time data that can be made ava
+
+%Data is now available, optimization techniques can now scale to
+%thousand and even millions of variables (with decompositions).
+
+}

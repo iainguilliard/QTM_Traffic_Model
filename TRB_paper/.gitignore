@@ -2,8 +2,12 @@
 .*.swp
 # vim latexsuite main file
 *.tex.latexmain
+# vim local
+.local_vimrc
 # converted figures
 *-eps-converted-to.pdf
+# file with the word count. To generate it, run "texcount -inc -sum -1 TRB_qtm_paper.tex > count.txt"
+count.txt
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

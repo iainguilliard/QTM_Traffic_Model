@@ -9,19 +9,23 @@ arterial routes) and specifically on improving the scalability of
 these methods for large urban traffic networks.  Our primary insight
 in this work stems from the fact that MILP-based approaches to traffic
 control used in a receding horizon control manner (that replan at
-fixed time intervals) need only plan with high fidelity control
-policies in the early stages of the signal plan and can use a coarser
-time step to ``see'' over a long horizon to preemptively adapt to
+fixed time intervals) need to compute high fidelity control policies
+only for the early stages of the signal plan; therefore, coarser
+time steps can be employed to ``see'' over a long horizon to preemptively adapt to
 distant platoons and other predicted long-term changes in traffic
 flows.  To this end, we contribute the queue transmission model (QTM)
 which blends elements of cell-based and link-based modeling approaches
-to to enable a non-homogeneous MILP formulation of traffic signal
-control.  We then experiment with this novel QTM-based MILP control in
+to enable a non-homogeneous MILP formulation of traffic signal
+control.
+%
+We then experiment with this novel QTM-based MILP control in
 a range of networks demonstrating the improved scalability possible
 with non-homogeneous time steps in comparison to the best homogeneous
-time step and also the scalability of the model --- we demonstrate
-near-optimal traffic control models over longer horizons and larger
-networks than shown in previous implementations of MILP-based traffic
-signal control.
+time step.
+%
+Our experiments also provide near-optimal traffic control policies
+for larger horizons and larger networks than shown in previous
+implementations of MILP-based traffic signal control.
+
 
 \input{tex/Abstract-debug.tex}

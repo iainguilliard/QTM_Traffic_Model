@@ -96,7 +96,7 @@
 
 % NOTE: for my system 'count.txt' literally makes the file ``'count.txt'''.  -Scott
 \newcommand\wordcount{
-    \immediate\write18{texcount -sum -1 \jobname.tex > 'count.txt'}
+    \immediate\write18{texcount -inc -sum -1 \jobname.tex > 'count.txt'}
     \IfFileExists{./count.txt}{\input{count.txt}}{?? }}
 
 % FONTS

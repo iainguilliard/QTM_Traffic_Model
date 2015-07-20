@@ -1,8 +1,9 @@
 # vim swp files
 .*.swp
+# vim latexsuite main file
+*.tex.latexmain
 # converted figures
 *-eps-converted-to.pdf
-
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

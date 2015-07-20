@@ -22,9 +22,9 @@ $\DT$ & time duration of interval $n$\\ [1mm]
 $\tn$ & elapsed time at interval $n$\\ [1mm]
 $\TMAX$ & maximum elapsed time over all intervals ($t^N$)\\ [1mm]
 $\QMAX{i}$ & maximum capacity of queue $i$\\ [1mm]
+$\QDELAY{i}$ & propagation delay along queue $i$\\[1mm]
 $\QIN{i}$ & maximum inflow to queue $i$ from outside the network\\ [1mm]
 $\QOUT{i}$ & maximum outflow from queue $i$ to outside the network\\[1mm]
-$\QDELAY{i}$ & propagation delay along queue $i$\\[1mm]
 $\FMAX{i}{j}$ & maximum flow from queue $i$ into queue $j$\\[1mm] 
 $\FTURN{i}{j}$ & proportion of total flow out from queue $i$ into queue $j$ (turn probability)\\ [1mm]
 $\PTMAX{\ell}{k}$ & maximum allowed duration of phase $k$ of light $\ell$\\ [1mm]
@@ -80,8 +80,8 @@ where we find the proportion of flow out of queue $i$ turning into queue $j$ by 
 \end{align}
 Where $\p{\ell}{k}$ is 1 if the phase is active during interval n, and 0 otherwise. We can then sum the total flows in and out of each queue,
 \begin{align}
-\qin{i} &= \inq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{i}{j} \DT   \tag{C5}\label{eq:C5} \\
-\qout{i} &= \outq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{j}{i} \DT \tag{C6}\label{eq:C6}\\
+\qin{i} &= \inq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{j}{i} \DT   \tag{C5}\label{eq:C5} \\
+\qout{i} &= \outq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{i}{j} \DT \tag{C6}\label{eq:C6}\\
 \qout{i} &\le \q{i} \tag{C7}\label{eq:C7}
 \end{align}
 with the constraint \ref{eq:C7} that the total flow out of queue $i$ during interval $n$ cannot exceed the volume of the queue at the start of that interval.
@@ -99,7 +99,7 @@ Since the model is piecewise linear, we linearly interpolate $\qin{i}$ across th
 \begin{align}
 \aph{i} &= \frac{\tn - \QDELAY{i} - \tn[m]}{\DT[m]}
 \end{align}
-Note that if $\QDELAY{i}$ is a homogeneous number of time intervals, $n-m$, then $\tn - \QDELAY{i} - \tn{m}=0$ and constraint \ref{eq:C8} reduces to
+Note that if $\QDELAY{i}$ is a homogeneous number of time intervals, $n-m$, then $\tn - \QDELAY{i} - \tn[m]=0$ and constraint \ref{eq:C8} reduces to
 \begin{equation}
 \q{i} = \q[n-1]{i} - \qout[n-1]{i} + \qin[m]{i}
 \end{equation}
@@ -107,6 +107,33 @@ Note that if $\QDELAY{i}$ is a homogeneous number of time intervals, $n-m$, then
 \remark{Show diagrams with traffic predictions converging as time increment gets smaller.
   Validates that large time-steps are rough approximations while model behavior converges
 for small time steps.}
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:converg_a}
+\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence.pdf}
+}
+\subfigure[]{
+\label{subfig:converg_b}
+\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_vari.pdf}
+}
+\caption{An example showing the evolution of traffic volume in a queue over time. (a) Convergce with increasing refinement of $\Delta t$ from $5.0$ down to $1.0$. (b) Dilation of $\Delta t$ from $1.0$ to $2.5$ compared to a fixed $\Delta t$ of $1.0$.}
+
+\label{fig:phase_plots}
+\end{figure*}
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+
+\label{subfig:converg_c}
+\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_NH.pdf}
+\caption{An example showing the convergence between a homogeneous solution with $\Delta t=1.0$ and a non-homogeneous solution over 30 seconds for the same network. By using non-homogeneous time steps the same solution is found with only 14 sample points compared to 30 for homogeneous solution.}
+
+\label{fig:phase_plots}
+\end{figure*}
 
 \subsection{MILP Formulation}
 If we take $p_i^n \in \Pi(0,\TMAX)$, where $\Pi$ is a fixed signal plan over all the intervals from 0 to $T^{MAX}$, then the constraints \ref{eq:C1} to \ref{eq:C10} form a dynamic, piecewise linear model of flow in the network over time as a function of $\Pi$. Alternatively we can define $p_j^n$ as a binary variable and solve to find both a network flow and an optimal signal plan for a given objective function.

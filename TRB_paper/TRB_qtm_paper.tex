@@ -73,6 +73,7 @@
 % sort&compress option?
 \usepackage[sort,numbers]{natbib}
 	\newcommand{\trbcite}[1]{\citeauthor{#1} ({\it \citenum{#1}})}
+	\newcommand{\trbcitenum}[1]{({\it \citenum{#1}})}
 \setcitestyle{round}
 
 
@@ -135,6 +136,7 @@
 %% Toggle comments on next two lines to turn on/off editorial remarks
 %\newcommand{\remark}[1]{}
 \newcommand{\remark}[1]{\color{red} #1 \color{black}}
+\newcommand{\comment}[1]{}
 
 % All math definitions before start document
 \input{./tex/MathDef.tex}

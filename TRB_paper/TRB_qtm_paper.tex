@@ -27,7 +27,7 @@
 \oddsidemargin 0.0in
 \usepackage[tiny,rm]{titlesec}
 \newpagestyle{trbstyle}{
-	\sethead{Guilliard}{}{\thepage}
+	\sethead{Guilliard, Sanner, Trevizan, and Williams}{}{\thepage}
 }
 \pagestyle{trbstyle}
 
@@ -98,6 +98,10 @@
 \newcommand\wordcount{
     \immediate\write18{texcount -inc -sum -1 \jobname.tex > 'count.txt'}
     \IfFileExists{./count.txt}{\input{count.txt}}{?? }}
+\newcommand\weightedTotal{
+    \immediate\write18{texcount -inc -sum=1,1,1,250,0,1,1 -1 \jobname.tex > 'weightedCount.txt'}
+    \IfFileExists{./weightedCount.txt}{\input{weightedCount.txt}}{?? }}
+
 
 % FONTS
 %------------------------------------------
@@ -173,8 +177,29 @@
 % Title
 {\LARGE \bfseries A Non-homogeneous Time Mixed Integer LP Formulation for Traffic Signal Control}\\[1cm]
 
-Iain Guilliard \\
+Iain Guilliard\\
+National ICT Australia\\
+7 London Circuit\\
+Canberra, ACT, Australia\\
 iguilliard@nicta.com.au\\[0.5cm]
+
+Scott Sanner\\
+Oregon State University\\
+1148 Kelley Engineering Center\\
+Corvallis, OR 97331\\
+scott.sanner@oregonstate.edu\\[5mm]
+
+Felipe W. Trevizan\\
+National ICT Australia\\
+7 London Circuit\\
+Canberra, ACT, Australia\\
+felipe.trevizan@nicta.com.au\\[5mm]
+
+Brian C. Williams\\
+Massachusetts Institute of Technology\\
+77 Massachusetts Avenue\\
+Cambridge, MA 02139\\
+williams@csail.mit.edu\\[5mm]
 
 %Gregory S. Macfarlane\\
 %Georgia Institute of Technology \\
@@ -183,6 +208,8 @@ iguilliard@nicta.com.au\\[0.5cm]
 %gregmacfarlane@gatech.edu\\[1cm]
 
 \wordcount words + \total{figure} figures + \total{table} tables
+\remark{(Weighted total words: \weightedTotal{} out of 7500)}
+
 
 \today
 \end{flushleft}

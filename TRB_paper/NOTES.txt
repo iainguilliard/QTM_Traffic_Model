@@ -1,7 +1,7 @@
 Notes for writing introduction
 ==============================
 
-- Strongly push on non-homogenous motivation
+- Strongly push on non-homogenoeus motivation
 - Defend omission of nonlinear control
 - Precedent for propagation time without nonlinear flow
 - QTM: Hybrid of Gartner of Lin and Wang
@@ -10,8 +10,8 @@ Notes for writing introduction
 
 - Related work (purpose is to say why our work is novel)
   (Combine with Intro?  See Steve's article.)
-... MILP-based control: no one is non-homogenous
-... CTM / Link: no one is non-homogenous, can change time but need to reallocate traffic for new cell lengths and next to impossible -- don't claim has not been done, but difficult to combine with MILP control
+... MILP-based control: no one is non-homogenoeus
+... CTM / Link: no one is non-homogenoeus, can change time but need to reallocate traffic for new cell lengths and next to impossible -- don't claim has not been done, but difficult to combine with MILP control
 
 
 Notes for background work discussion

@@ -1,39 +1,87 @@
 \section{The Queue Transmission Model}
-The Queue Transmission Model (QTM) consists of a network $\Net = (\Qset,\Lset)$, where $\Qset$ is a set of queues and $\Lset$ is a set of lights. A queue is defined by the tuple $(\QMAX{},\QIN{},\QOUT{},\QDELAY{},\Fvec{},\Prvec{},\QPset{})$, where $\Fvec{}$ and $\Prvec{}$ are vectors of maximum flow rates and turn probabilities into connected queues, $\QPset{}$ is the set of phases controlling the queue, and $\QMAX{}$,$\QIN{}$,$\QOUT{}$, and $\QDELAY{}$ are defined in \ref{tab:constants}. Vehicles travel down the length of the queue at the free flow speed and enter into a vertically stacked queue. A light is defined by the tuple $(\CTMIN{}{},\CTMAX{}{},\Pset)$, where $\Pset$ is the set of phases of the light and each phase is defined by the pair $(\PTMIN[]{}{},\PTMAX[]{}{})$, and where $\CTMIN{}{}$,$\CTMAX{}{}$,$\PTMIN[]{}{}$, and $\PTMAX[]{}{}$ are defined in \cref{tab:constants}. Examples of QTM networks are shown in \cref{fig:network3,fig:network6,fig:network9}.
-
-
-
-\subsection{LP Formulation}
-We have defined a LP formulation for the QTM supporting non-homogeneous $\DT[]$ and a single binary variable per signal phase. The implementation also supports configurable phase and cycle constraints. The model constants are listed in table \ref{tab:constants} and the variables in table \ref{tab:variables}
 
 \begin{table}[t]
-\caption{Constants}
+\caption{QTM Parameters}
 \label{tab:constants}
 \centering
 \begin{tabular}{ll}
 \toprule
-Constant & Desciption\\ 
+Parameter & Description\\ 
 \midrule
-$\Qn$ & number of queues  \\ [1mm]
-$\Ln$ & number of lights\\ [1mm]
-$\Pn$ & number of phases of light $\ell$\\[1mm]
-$\Nn$ & number of intervals \\ [1mm]
-$\DT$ & time duration of interval $n$\\ [1mm]
-$\tn$ & elapsed time at interval $n$\\ [1mm]
-$\TMAX$ & maximum elapsed time over all intervals ($t^N$)\\ [1mm]
-$\QMAX{i}$ & maximum capacity of queue $i$\\ [1mm]
-$\QDELAY{i}$ & propagation delay along queue $i$\\[1mm]
-$\QIN{i}$ & maximum inflow to queue $i$ from outside the network\\ [1mm]
-$\QOUT{i}$ & maximum outflow from queue $i$ to outside the network\\[1mm]
-$\FMAX{i}{j}$ & maximum flow from queue $i$ into queue $j$\\[1mm] 
-$\FTURN{i}{j}$ & proportion of total flow out from queue $i$ into queue $j$ (turn probability)\\ [1mm]
-$\PTMAX{\ell}{k}$ & maximum allowed duration of phase $k$ of light $\ell$\\ [1mm]
-$\PTMIN{\ell}{k}$ & minimum allowed duration of phase $k$ of light $\ell$\\ [1mm]
-$\CTMAX{\ell}$ & maximum allowed cycle time of light $\ell$\\ [1mm]
-$\CTMIN{\ell}$ & minimum allowed cycle time of light $\ell$\\ [1mm]
+%$\Qn$ & number of queues  \\ [1mm]
+%$\Ln$ & number of lights\\ [1mm]
+%$\Pn$ & number of phases of light $\ell$\\[1mm]
+%
+%% Two main parameters
+\Qset & set of queues\\ [1mm]
+\Lset & set of lights\\ [1mm]
+%
+%% Traffic Light Parameters
+$\Pset_\tl$                     & set of phases of light \tl\\[1mm]
+\CTMIN{\tl}, \CTMAX{\tl}        & minimum and maximum allowed cycle time of light \tl\\[1mm]
+\PTMIN{\tl}{k}, \PTMAX{\tl}{k}  & minimum and maximum allowed duration of phase $k$ of light \tl\\[1mm]
+%
+%% Queue parameters
+\QMAX{i}      & maximum capacity of queue $i$\\[1mm]
+\QDELAY{i}    & propagation delay along queue $i$\\[1mm]
+\QIN{i}       & maximum inflow to queue $i$ from outside the network\\[1mm]
+\QOUT{i}      & maximum outflow from queue $i$ to outside the network\\[1mm]
+\FMAX{i}{j}   & maximum flow from queue $i$ into queue $j$\\[1mm] 
+\FTURN{i}{j}  & proportion of total flow out from queue $i$ into queue $j$ (turn probability)\\[1mm]
+\QPset{i}     & set of traffic light phases controlling queue $i$\\[1mm]
+%
+%% Interval Parameters
+$\Nn$   & number of time intervals \\[1mm]
+$\DT$   & time duration of interval $n$\\[1mm]
+$\tn$   & total elapsed time at the end of interval $n$, i.e., $\sum_{x=0}^{n}\DT[x]$.\\[1mm]
+$\TMAX$ & total elapsed time considered (\tn[N])\\[1mm]
 \bottomrule\\
 \end{tabular}
 \end{table}
+
+
+The Queue Transmission Model (QTM) consists of a network $\Net = (\Qset,\Lset)$,
+where \Qset and \Lset are, respectively, the set of queues and set of lights.
+%
+A light $\tl \in \Lset$ is defined as the tuple~$(\CTMIN{\tl}, \CTMAX{\tl},
+\Pset_\tl)$, where $\Pset_\tl$ is the set of phases of $\tl$, and the minimum
+(maximum) allowed cycle time for \tl is represented by \CTMIN{\tl} (\CTMAX{\tl}).
+%
+For each phase $k \in \Pset_\tl$, \PTMIN{\tl}{k} and \PTMAX{\tl}{k} define the
+minimum and maximum allowed time for phase $k$ of
+\tl.\remark{\footnote{FWT: \PTMIN{\tl}{k} and \PTMAX{\tl}{k} currently not part
+of the tuple}}
+%
+A queue $i \in \Qset$ represents a segment of road that requires \QDELAY{i}
+units of time for vehicles to traverse at free flow speed; once traversed, the
+vehicles are vertically stacked in a stop line queue of maximum capacity
+\QMAX{i}.
+%
+Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QIN{i},
+\QOUT{i}, \Fvec_i, \Prvec_i, \QPset{i})$ where:
+%
+\QIN{i} (\QOUT{i}) represents the traffic flow from (to) the outside of the
+modeled network;
+%
+$\Fvec_i$ and $\Prvec_i$ are vectors of size \Qn and their $j$-th entry
+(i.e., \FMAX{i}{j} and \FTURN{i}{j}) represent the maximum flow from queue $i$
+to $j$ and the turn probability from $i$ to $j$, respectively;
+%
+and \QPset{i} denotes the set of traffic light phases controlling queue $i$.
+%
+All QTM parameters are summarized in \cref{tab:constants}.
+
+\remark{FWT: either bring forward a small network and explain it here or don't
+mention ``\cref{fig:network3,fig:network6,fig:network9}''}
+
+
+
+\subsection{Traffic Flow Simulation with QTM}
+
+We have defined a LP formulation for the QTM supporting non-homogeneous $\DT[]$
+and a single binary variable per signal phase. The implementation also supports
+configurable phase and cycle constraints. The model constants are listed in
+table \ref{tab:constants} and the variables in table \ref{tab:variables}
 
 \begin{table}[h]
 \caption{Variables}

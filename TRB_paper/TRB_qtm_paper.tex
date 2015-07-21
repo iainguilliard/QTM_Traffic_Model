@@ -93,6 +93,9 @@
 \usepackage{totcount}
 	\regtotcounter{table} 	%count tables
 	\regtotcounter{figure} 	%count figures
+\newtotcounter{citnum} %From the package documentation
+\def\oldbibitem{} \let\oldbibitem=\bibitem
+\def\bibitem{\stepcounter{citnum}\oldbibitem}
 
 % NOTE: for my system 'count.txt' literally makes the file ``'count.txt'''.  -Scott
 \newcommand\wordcount{
@@ -207,8 +210,14 @@ williams@csail.mit.edu\\[5mm]
 %Atlanta, GA 30332-0335 \\
 %gregmacfarlane@gatech.edu\\[1cm]
 
-\wordcount words + \total{figure} figures + \total{table} tables
-\remark{(Weighted total words: \weightedTotal{} out of 7500)}
+\wordcount words + \total{figure} figures + \total{table} tables +
+\total{citnum} citations
+%% FWT: weightedTotal does not take into account the words in the references
+%% and according to http://onlinepubs.trb.org/onlinepubs/AM/InfoForAuthors.pdf
+%% the limits are 7500 words including references OR 7000 words + 35 references.
+%% The latter seems to be the best deal for us since ours 23 references already
+%% take a bit more than 500 words.
+\remark{(Weighted total words: \weightedTotal{} out of 7000 + 35 references)}
 
 
 \today

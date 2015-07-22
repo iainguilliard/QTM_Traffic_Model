@@ -82,27 +82,15 @@ Where $\p{\ell}{k}$ is 1 if the phase is active during interval n, and 0 otherwi
 \begin{align}
 \qin{i} &= \inq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{j}{i} \DT   \tag{C5}\label{eq:C5} \\
 \qout{i} &= \outq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{i}{j} \DT \tag{C6}\label{eq:C6}\\
-\qout{i} &\le \q{i} \tag{C7}\label{eq:C7}
+\qout{i} &\le \q{i} + \frac{\DT[n]}{\DT[m]}\qin[m]{i}\tag{C7}\label{eq:C7}
 \end{align}
-with the constraint \ref{eq:C7} that the total flow out of queue $i$ during interval $n$ cannot exceed the volume of the queue at the start of that interval.
+with the constraint \ref{eq:C7} that the total flow out of queue $i$ during interval $n$ cannot exceed the sum of the volume of the queue at the start of that interval and the volume of traffic arriving at the stop line during the interval. We find the volume of traffic arriving at the stop line by integrating over the interval with the rate at which traffic was arriving during the interval $m$ containing the time $\tn - \QDELAY{i}$ such that $\tn[m] \le \tn-\QDELAY{i} < \tn[m+1]$. The input rate of queue $i$ during interval $m$ is found by dividing $\qin[m]{i}$ with $\DT[m]$, and then the total traffic arriving during the interval $n$ is found by multiplying this rate by $\DT$.
 Now we can perform the update step for queue $i$ over interval $n$,
 \begin{align}
-\q{i} &= \q[n-1]{i} - \qout[n-1]{i} + (1-\aph{i})\qin[m]{i} + \aph{i} \qin[m+1]{i} \tag{C8}\label{eq:C8}\\
+\q{i} &= \q[n-1]{i} - \qout[n-1]{i} + \frac{\DT[n]}{\DT[m]}\qin[m]{i} \tag{C8}\label{eq:C8}\\
 \q{i} &\le \QMAX{i} \tag{C9}\label{eq:C9}\\
-(1-\aph{i})\qin[m]{i} + \aph{i} \qin[m+1]{i} + \sum \limits_{k=m+2}^n \qin[k]{i} &\le \QMAX{i} - \q[n-1]{i}\tag{C10}\label{eq:C10}
+ \frac{\DT[n]}{\DT[m]}\qin[m]{i}  + \sum \limits_{k=m+1}^n \qin[k]{i} &\le \QMAX{i} - \q[n-1]{i}\tag{C10}\label{eq:C10}
 \end{align}
-where $m$ is the interval containing $\tn - \QDELAY{i}$ such that, 
-\begin{equation}
-\tn[m] \le \tn-\QDELAY{i} < \tn[m+1]
-\end{equation}
-Since the model is piecewise linear, we linearly interpolate $\qin{i}$ across the interval $m$ to find the inflow to queue $i$ at $\tn - \QDELAY{i}$, and $\aph{i}$ is calculated in a pre-computation step for all $i$ and all $n$,
-\begin{align}
-\aph{i} &= \frac{\tn - \QDELAY{i} - \tn[m]}{\DT[m]}
-\end{align}
-Note that if $\QDELAY{i}$ is a homogeneous number of time intervals, $n-m$, then $\tn - \QDELAY{i} - \tn[m]=0$ and constraint \ref{eq:C8} reduces to
-\begin{equation}
-\q{i} = \q[n-1]{i} - \qout[n-1]{i} + \qin[m]{i}
-\end{equation}
 
 \remark{Show diagrams with traffic predictions converging as time increment gets smaller.
   Validates that large time-steps are rough approximations while model behavior converges

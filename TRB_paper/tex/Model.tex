@@ -1,39 +1,110 @@
 \section{The Queue Transmission Model}
-The Queue Transmission Model (QTM) consists of a network $\Net = (\Qset,\Lset)$, where $\Qset$ is a set of queues and $\Lset$ is a set of lights. A queue is defined by the tuple $(\QMAX{},\QIN{},\QOUT{},\QDELAY{},\Fvec{},\Prvec{},\QPset{})$, where $\Fvec{}$ and $\Prvec{}$ are vectors of maximum flow rates and turn probabilities into connected queues, $\QPset{}$ is the set of phases controlling the queue, and $\QMAX{}$,$\QIN{}$,$\QOUT{}$, and $\QDELAY{}$ are defined in \ref{tab:constants}. Vehicles travel down the length of the queue at the free flow speed and enter into a vertically stacked queue. A light is defined by the tuple $(\CTMIN{}{},\CTMAX{}{},\Pset)$, where $\Pset$ is the set of phases of the light and each phase is defined by the pair $(\PTMIN[]{}{},\PTMAX[]{}{})$, and where $\CTMIN{}{}$,$\CTMAX{}{}$,$\PTMIN[]{}{}$, and $\PTMAX[]{}{}$ are defined in \cref{tab:constants}. Examples of QTM networks are shown in \cref{fig:network3,fig:network6,fig:network9}.
-
-
-
-\subsection{LP Formulation}
-We have defined a LP formulation for the QTM supporting non-homogenous $\DT[]$ and a single binary variable per signal phase. The implementation also supports configurable phase and cycle constraints. The model constants are listed in table \ref{tab:constants} and the variables in table \ref{tab:variables}
 
 \begin{table}[t]
-\caption{Constants}
+\caption{QTM Parameters}
 \label{tab:constants}
 \centering
 \begin{tabular}{ll}
 \toprule
-Constant & Desciption\\ 
+Parameter & Description\\ 
 \midrule
-$\Qn$ & number of queues  \\ [1mm]
-$\Ln$ & number of lights\\ [1mm]
-$\Pn$ & number of phases of light $\ell$\\[1mm]
-$\Nn$ & number of intervals \\ [1mm]
-$\DT$ & time duration of interval $n$\\ [1mm]
-$\tn$ & elapsed time at interval $n$\\ [1mm]
-$\TMAX$ & maximum elapsed time over all intervals ($t^N$)\\ [1mm]
-$\QMAX{i}$ & maximum capacity of queue $i$\\ [1mm]
-$\QDELAY{i}$ & propagation delay along queue $i$\\[1mm]
-$\QIN{i}$ & maximum inflow to queue $i$ from outside the network\\ [1mm]
-$\QOUT{i}$ & maximum outflow from queue $i$ to outside the network\\[1mm]
-$\FMAX{i}{j}$ & maximum flow from queue $i$ into queue $j$\\[1mm] 
-$\FTURN{i}{j}$ & proportion of total flow out from queue $i$ into queue $j$ (turn probability)\\ [1mm]
-$\PTMAX{\ell}{k}$ & maximum allowed duration of phase $k$ of light $\ell$\\ [1mm]
-$\PTMIN{\ell}{k}$ & minimum allowed duration of phase $k$ of light $\ell$\\ [1mm]
-$\CTMAX{\ell}$ & maximum allowed cycle time of light $\ell$\\ [1mm]
-$\CTMIN{\ell}$ & minimum allowed cycle time of light $\ell$\\ [1mm]
+%$\Qn$ & number of queues  \\ [1mm]
+%$\Ln$ & number of lights\\ [1mm]
+%$\Pn$ & number of phases of light $\ell$\\[1mm]
+%
+%% Two main parameters
+\Qset & set of queues\\ [1mm]
+\Lset & set of lights\\ [1mm]
+%
+%% Traffic Light Parameters
+$\Pset_\tl$                     & set of phases of light \tl\\[1mm]
+\CTMIN{\tl}, \CTMAX{\tl}        & minimum and maximum allowed cycle time of light \tl\\[1mm]
+\PTMIN{\tl}{k}, \PTMAX{\tl}{k}  & minimum and maximum allowed duration of phase $k$ of light \tl\\[1mm]
+%
+%% Queue parameters
+\QMAX{i}      & maximum capacity of queue $i$\\[1mm]
+\QDELAY{i}    & propagation delay along queue $i$\\[1mm]
+\QIN{i}       & maximum inflow to queue $i$ from outside the network\\[1mm]
+\QOUT{i}      & maximum outflow from queue $i$ to outside the network\\[1mm]
+\FMAX{i}{j}   & maximum flow from queue $i$ into queue $j$\\[1mm] 
+\FTURN{i}{j}  & proportion of total flow out from queue $i$ into queue $j$ (turn probability)\\[1mm]
+\QPset{i}     & set of traffic light phases controlling queue $i$\\[1mm]
+%
+%% Interval Parameters
+\Nn   & number of time intervals \\[1mm]
+\DT[] & time duration of interval $n$\\[1mm]
+\tn   & total elapsed time at the end of interval $n$, i.e., $\sum_{x=0}^{n}\DT[x]$.\\[1mm]
+\TMAX & total elapsed time considered, i.e., \tn[N]\\[1mm]
 \bottomrule\\
 \end{tabular}
 \end{table}
+
+
+The Queue Transmission Model (QTM) consists of a network $\Net = (\Qset, \Lset,
+\vecDT)$, where \Qset and \Lset are, respectively, the set of queues and set of
+lights, and \vecDT is a vector of size \Nn representing the different time
+intervals in which time is discretized;
+%
+the duration in \remark{seconds} of the $n$-th time interval is denoted as
+\DT[n].
+%
+Notice that, differently than CTM \cite{daganzo1994cell,lin2004enhanced}, we do
+not assume that \DT[n] equals \DT[m] for all $n$ and $m \in \{1,\dots,N\}$.
+
+
+A light $\tl \in \Lset$ is defined as the tuple~$(\CTMIN{\tl}, \CTMAX{\tl},
+\Pset_\tl)$, where $\Pset_\tl$ is the set of phases of $\tl$, and the minimum
+(maximum) allowed cycle time for \tl is represented by \CTMIN{\tl}
+(\CTMAX{\tl}).
+%
+For each phase $k \in \Pset_\tl$, \PTMIN{\tl}{k} and \PTMAX{\tl}{k} define the
+minimum and maximum allowed time for phase $k$ of \tl.\remark{\footnote{FWT:
+\PTMIN{\tl}{k} and \PTMAX{\tl}{k} currently not part of the tuple}}
+%
+A queue~$i \in \Qset$ represents a segment of road that requires \QDELAY{i}
+\remark{seconds} for vehicles to traverse at free flow speed; once traversed, the
+vehicles are vertically stacked in a stop line queue of maximum capacity
+\QMAX{i}.
+%
+Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QIN{i},
+\QOUT{i}, \Fvec_i, \Prvec_i, \QPset{i})$ where:
+%
+\QIN{i} (\QOUT{i}) represents the traffic flow from (to) the outside of the
+modeled network;
+%
+$\Fvec_i$ and $\Prvec_i$ are vectors of size \Qn and their $j$-th entry (i.e.,
+\FMAX{i}{j} and \FTURN{i}{j}) represent the maximum flow from queue $i$ to $j$
+and the turn probability from $i$ to $j$, respectively;
+%
+and \QPset{i} denotes the set of traffic light phases controlling queue $i$.
+%
+All QTM parameters are summarized in \cref{tab:constants}.
+
+\remark{FWT: either bring forward a small network and explain it here or don't
+mention ``\cref{fig:network3,fig:network6,fig:network9}''}
+
+
+
+\subsection{Traffic Flow Simulation with QTM}
+
+In this section, we present how to simulate traffic flow in a network using QTM
+and non-homogeneous time intervals \DT[].
+%
+We assume for the remainder of this section that a \emph{valid} control plan for
+all traffic lights is fixed and given as parameter;
+%
+formally, for all $\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
+\{0,\dots,N\}$, the binary variable $\p{\tl}{k}$ indicates if the signal phase
+$k$ of light \tl is active~(i.e., $\p{\tl}{k} = 1$) or not on interval $n$ and
+it is known a priori.
+
+%% TODO(fwt): say that flow to the network from outside is also given
+
+
+We have defined a LP formulation for the QTM supporting non-homogeneous $\DT[]$
+and a single binary variable per signal phase. The implementation also supports
+configurable phase and cycle constraints. The model constants are listed in
+table \ref{tab:constants} and the variables in table \ref{tab:variables}
 
 \begin{table}[h]
 \caption{Variables}
@@ -50,47 +121,68 @@ $\qin{i}$ & continuous & $[0,\infty)$ & inflow to queue $i$ during interval $n$\
 $\inq{i}$ & continuous & $[0,\QIN{i}]$ & inflow to the network via queue $i$ during interval $n$\\[1mm]
 $\outq{i}$ & continuous & $[0,\QOUT{i}]$ & outflow from the network via queue $i$ during interval $n$\\[1mm]
 $\f{i}{j}$ & continuous & $[0,\FMAX{i}{j}]$ & flow from queue $i$ into queue $j$ during interval $n$\\[1mm]
-$\p{\ell}{k}$ & binary & $\{0,1\}$ & signal phase $k$ of light $\ell$ during interval $n$(1=green)\\[1mm]
+$\p{\ell}{k}$ & binary & $\{0,1\}$ & signal phase $k$ of light $\ell$ during interval $n$ (1=green)\\[1mm]
 $\pd{\ell}{k}$ & continuous & $[0,\PTMAX{\ell}{k}]$ & duration of phase $k$ of light $\ell$ during interval $n$\\[1mm]
 \bottomrule\\
 \end{tabular}
 }
 \end{table}
 
-\subsubsection{Network Constraints}
-For a set of time intervals over the period $[0,\TMAX]$, where the duration of each interval $n$ is $\DT$, we define a set of variables for each interval and each queue in the network in table \ref{tab:variables} and the associated constants in table \ref{tab:constants}.
+For a set of time intervals over the period $[0,\TMAX]$, where the duration of
+each interval $n$ is $\DT$, we define a set of variables for each interval and
+each queue in the network in table \ref{tab:variables} and the associated
+constants in table \ref{tab:constants}.
 
-First, all the variables in table \ref{tab:variables} are constrained to be $\ge 0$.
-Next we constrain the external flows into and out of $q_j$ during interval $n$,
-%\begin{linenomath*}
+First, all the variables in table \ref{tab:variables} are constrained to be $\ge
+0$. Next we constrain the external flows into and out of $q_j$ during interval
+$n$,
+%
 \begin{align}
 \inq{i} &\le \QIN{i} \tag{C1}\label{eq:C1}\\        
 \outq{i} &\le \QOUT{i} \tag{C2}\label{eq:C2}
 \end{align}
-%\end{linenomath*}
+%
 and the internal flow from $q_j$ to $q_i$,
-%\begin{linenomath*}
+%
 \begin{align}
 \f{i}{j} &\le \FTURN{i}{j} \sum \limits_{k=1}^{\Qn}  \f{i}{k} \tag{C3}\label{eq:C3}
 \end{align}
-%\end{linenomath*}
-where we find the proportion of flow out of queue $i$ turning into queue $j$ by weighting the total flow by the turn probability $\FTURN{i}{j}$, noting that $\sum_k \FTURN{i}{k}=1$. The flow out from queue $i$ is controlled by the set of phases $\QPset{i}$, so we modulate $\f{i}{j}$ by applying the constraint,
+%
+where we find the proportion of flow out of queue $i$ turning into queue $j$ by
+weighting the total flow by the turn probability $\FTURN{i}{j}$, noting that
+$\sum_k \FTURN{i}{k}=1$. The flow out from queue $i$ is controlled by the set of
+phases $\QPset{i}$, so we modulate $\f{i}{j}$ by applying the constraint,
+%
 \begin{align}
 \f{i}{j} \le \FMAX{i}{j} \sum \limits_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}} \tag{C4}\label{eq:C4}
 \end{align}
-Where $\p{\ell}{k}$ is 1 if the phase is active during interval n, and 0 otherwise. We can then sum the total flows in and out of each queue,
+%
+where $\p{\ell}{k}$ is 1 if the phase is active during interval n, and 0
+otherwise. We can then sum the total flows in and out of each queue,
+%
 \begin{align}
 \qin{i} &= \inq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{j}{i} \DT   \tag{C5}\label{eq:C5} \\
 \qout{i} &= \outq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{i}{j} \DT \tag{C6}\label{eq:C6}\\
 \qout{i} &\le \q{i} + \frac{\DT[n]}{\DT[m]}\qin[m]{i}\tag{C7}\label{eq:C7}
 \end{align}
-with the constraint \ref{eq:C7} that the total flow out of queue $i$ during interval $n$ cannot exceed the sum of the volume of the queue at the start of that interval and the volume of traffic arriving at the stop line during the interval. We find the volume of traffic arriving at the stop line by integrating over the interval with the rate at which traffic was arriving during the interval $m$ containing the time $\tn - \QDELAY{i}$ such that $\tn[m] \le \tn-\QDELAY{i} < \tn[m+1]$. The input rate of queue $i$ during interval $m$ is found by dividing $\qin[m]{i}$ with $\DT[m]$, and then the total traffic arriving during the interval $n$ is found by multiplying this rate by $\DT$.
+%
+with the constraint \ref{eq:C7} that the total flow out of queue $i$ during
+interval $n$ cannot exceed the sum of the volume of the queue at the start of
+that interval and the volume of traffic arriving at the stop line during the
+interval. We find the volume of traffic arriving at the stop line by integrating
+over the interval with the rate at which traffic was arriving during the
+interval $m$ containing the time $\tn - \QDELAY{i}$ such that $\tn[m] \le
+\tn-\QDELAY{i} < \tn[m+1]$. The input rate of queue $i$ during interval $m$ is
+found by dividing $\qin[m]{i}$ with $\DT[m]$, and then the total traffic
+arriving during the interval $n$ is found by multiplying this rate by $\DT$.
 Now we can perform the update step for queue $i$ over interval $n$,
+%
 \begin{align}
 \q{i} &= \q[n-1]{i} - \qout[n-1]{i} + \frac{\DT[n]}{\DT[m]}\qin[m]{i} \tag{C8}\label{eq:C8}\\
 \q{i} &\le \QMAX{i} \tag{C9}\label{eq:C9}\\
  \frac{\DT[n]}{\DT[m]}\qin[m]{i}  + \sum \limits_{k=m+1}^n \qin[k]{i} &\le \QMAX{i} - \q[n-1]{i}\tag{C10}\label{eq:C10}
 \end{align}
+
 
 \remark{Show diagrams with traffic predictions converging as time increment gets smaller.
   Validates that large time-steps are rough approximations while model behavior converges

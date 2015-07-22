@@ -1,6 +1,5 @@
 \section{The Queue Transmission Model}
-The Queue Transmission Model (QTM) consists of a network $\Net = (\Qset,\Lset)$, where $\Qset$
- is a set of queues and $\Lset$ is a set of lights. A queue is defined by the tuple $(\QMAX{},\QIN{},\QOUT{},\QDELAY{},\Fvec{},\Prvec{},\QPset{})$, where $\Fvec{}$ and $\Prvec{}$ are vectors of maximum flow rates and turn probabilities into connected queues, $\QPset{}$ is the set of phases controlling the queue, and $\QMAX{}$,$\QIN{}$,$\QOUT{}$, and $\QDELAY{}$ are defined in \ref{tab:constants}. Vehicles travel down the length of the queue at the free flow speed and enter into a vertically stacked queue. A light is defined by the tuple $(\CTMIN{}{},\CTMAX{}{},\Pset)$, where $\Pset$ is the set of phases of the light and each phase is defined by the pair $(\PTMIN[]{}{},\PTMAX[]{}{})$, and where $\CTMIN{}{}$,$\CTMAX{}{}$,$\PTMIN[]{}{}$, and $\PTMAX[]{}{}$ are defined in \cref{tab:constants}. Examples of QTM networks are shown in \cref{fig:network3,fig:network6,fig:network9}.
+The Queue Transmission Model (QTM) consists of a network $\Net = (\Qset,\Lset)$, where $\Qset$ is a set of queues and $\Lset$ is a set of lights. A queue is defined by the tuple $(\QMAX{},\QIN{},\QOUT{},\QDELAY{},\Fvec{},\Prvec{},\QPset{})$, where $\Fvec{}$ and $\Prvec{}$ are vectors of maximum flow rates and turn probabilities into connected queues, $\QPset{}$ is the set of phases controlling the queue, and $\QMAX{}$,$\QIN{}$,$\QOUT{}$, and $\QDELAY{}$ are defined in \ref{tab:constants}. Vehicles travel down the length of the queue at the free flow speed and enter into a vertically stacked queue. A light is defined by the tuple $(\CTMIN{}{},\CTMAX{}{},\Pset)$, where $\Pset$ is the set of phases of the light and each phase is defined by the pair $(\PTMIN[]{}{},\PTMAX[]{}{})$, and where $\CTMIN{}{}$,$\CTMAX{}{}$,$\PTMIN[]{}{}$, and $\PTMAX[]{}{}$ are defined in \cref{tab:constants}. Examples of QTM networks are shown in \cref{fig:network3,fig:network6,fig:network9}.
 
 
 
@@ -131,7 +130,7 @@ for small time steps.}
 
 \label{subfig:converg_c}
 \includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_NH.pdf}
-\caption{An example showing the convergence between a homogeneous solution with $\Delta t=1.0$ and a non-homogeneous solution over 30 seconds for the same network. By using non-homogeneous time steps the same solution is found with only 14 sample points compared to 30 for the homogeneous solution.}
+\caption{An example showing the convergence between a homogeneous solution with $\Delta t=1.0$ and a non-homogeneous solution over 30 seconds for the same network. By using non-homogeneous time steps the same solution is found with only 14 sample points compared to 30 for homogeneous solution.}
 
 \label{fig:phase_plots}
 \end{figure*}

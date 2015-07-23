@@ -88,8 +88,23 @@ comparison.
 \end{figure*}
 
 \begin{table}[h]
-\caption{Network 1 traffic parameters}
+\caption{Network 1 Demand Profile (vehicles per second)}
 \label{tab:net1wave}
+\centering
+\begin{tabular}{cccccc}
+\toprule
+Inflow Queues & 0 - 55 s & 55 - 70 s & 70 - 85 s & > 85 s\\ 
+\midrule
+$q_0$ (side street)& 1 & 1 & 1 & 0 \\
+$q_4, q_7$ (side streets)& 4 & 4 & 4 & 0 \\
+$q_1,q_{10}$ (arterial)& 2 & 4 & 2 & 0 \\
+\bottomrule\\
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Network 1 traffic parameters}
+\label{tab:net1wave_old}
 \centering
 \begin{tabular}{cccccc}
 \toprule

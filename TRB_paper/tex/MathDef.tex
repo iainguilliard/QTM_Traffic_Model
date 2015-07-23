@@ -64,13 +64,13 @@
 % New style equations subscript
 %
 \newcommand{\q}[2][n]{\ensuremath{q_{#2,#1}}}
-\newcommand{\qin}[2][n]{\ensuremath{q_{#2,#1}^{\mathrm{in}}}}
-\newcommand{\qout}[2][n]{\ensuremath{q_{#2,#1}^{\mathrm{out}}}}
-\newcommand{\f}[3][n]{\ensuremath{f_{#2\shortrightarrow#3,#1}}}
+\newcommand{\qin}[2][n]{\ensuremath{\textcolor{red}{q_{#2,#1}^{\mathrm{in}}}}}
+\newcommand{\qout}[2][n]{\ensuremath{\textcolor{red}{q_{#2,#1}^{\mathrm{out}}}}}
+\newcommand{\f}[3][n]{\ensuremath{f_{#2,#3,#1}}}
 
 \ifdefined\newinoutflow
-\newcommand{\inq}[2][n]{\ensuremath{f_{in\shortrightarrow#2,#1}}}
-\newcommand{\outq}[2][n]{\ensuremath{f_{#2\shortrightarrow out,#1}}}
+\newcommand{\inq}[2][n]{\ensuremath{f^\mathrm{in}_{#2,#1}}}
+\newcommand{\outq}[2][n]{\ensuremath{f^\mathrm{out}_{#2,#1}}}
 \else
 \newcommand{\inq}[2][n]{\ensuremath{in_{#2,#1}}}
 \newcommand{\outq}[2][n]{\ensuremath{out_{#2,#1}}}
@@ -79,7 +79,7 @@
 \newcommand{\p}[3][n]{\ensuremath{p_{#2,#3,#1}}}
 \newcommand{\pd}[3][n]{\ensuremath{d_{#2,#3,#1}}}
 \newcommand{\aph}[2][n]{\ensuremath{\alpha_{#2,#1}}}
-\newcommand{\tn}[1][n]{\ensuremath{t_{#1}}}
+\newcommand{\tn}[1][n]{\ensuremath{\textcolor{blue}{t_{#1}}}}
 \newcommand{\DT}[1][n]{\ensuremath{\Delta t_{#1}}}
 \newcommand{\vecDT}{\ensuremath{\Vector{\Delta t}}\xspace}
 
@@ -87,7 +87,7 @@
 \newcommand{\Qn}{\ensuremath{|\mathcal{\Qset}|}\xspace}
 \newcommand{\Ln}{\ensuremath{|\mathcal{\Lset}|}\xspace}
 \newcommand{\Pn}[1][\ell]{\ensuremath{|\mathcal{\Pset}_{#1}|}}
-\newcommand{\TMAX}{\ensuremath{\mathrm{T}}\xspace}
+\newcommand{\TMAX}{\ensuremath{\textcolor{green}{\mathrm{T}}}\xspace}
 \newcommand{\QMAX}[1]{\ensuremath{\mathrm{Q}_{#1}}}
 
 \ifdefined\newinoutflow
@@ -95,7 +95,7 @@
 %\newcommand{\QOUT}[1]{\ensuremath{\mathrm{F}_{#1\shortrightarrow out}}}
 %\newcommand{\QIN}[1]{\ensuremath{\mathrm{F}_{#1}^{\mathrm{in}}}}
 \newcommand{\MatQIN}{\ensuremath{\Matrix{I}}\xspace}
-\newcommand{\QIN}[1]{\ensuremath{I_{#1}}}
+\newcommand{\QIN}[2]{\ensuremath{I_{#1,#2}}}
 \newcommand{\QOUT}[1]{\ensuremath{\mathrm{F}_{#1}^{\mathrm{out}}}}
 \else
 \newcommand{\QIN}[1]{\ensuremath{\mathrm{Q}_{#1}^{\mathrm{in}}}}

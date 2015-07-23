@@ -2,13 +2,18 @@
 %% whenever to add a space after the command
 \usepackage{xspace}
 
+
+\newcommand{\Matrix}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\Vector}[1]{\ensuremath{\vec{#1}}}
+
+
 \newcommand{\Net}{\ensuremath{\mathcal{N}}\xspace}
 \newcommand{\Qset}{\ensuremath{\mathcal{Q}}\xspace}
 \newcommand{\QPset}[1]{\ensuremath{\mathcal{Q}_{#1}^{\mathcal{P}}}}
 \newcommand{\Lset}{\ensuremath{\mathcal{L}}\xspace}
 \newcommand{\Pset}{\ensuremath{\mathcal{P}}\xspace}
-\newcommand{\Fvec}{\ensuremath{\vec{F}}}
-\newcommand{\Prvec}{\ensuremath{\vec{Pr}}}
+\newcommand{\Fvec}{\ensuremath{\Vector{F}}}
+\newcommand{\Prvec}{\ensuremath{\Vector{Pr}}}
 \newcommand{\fvec}[1]{\ensuremath{\mathbf{f}_{#1}}}
 \newcommand{\tl}{\ensuremath{\ell}\xspace}
 
@@ -76,7 +81,7 @@
 \newcommand{\aph}[2][n]{\ensuremath{\alpha_{#2,#1}}}
 \newcommand{\tn}[1][n]{\ensuremath{t_{#1}}}
 \newcommand{\DT}[1][n]{\ensuremath{\Delta t_{#1}}}
-\newcommand{\vecDT}{\ensuremath{\vec{\Delta t}}\xspace}
+\newcommand{\vecDT}{\ensuremath{\Vector{\Delta t}}\xspace}
 
 \newcommand{\Nn}{\ensuremath{\mathrm{N}}\xspace}
 \newcommand{\Qn}{\ensuremath{|\mathcal{\Qset}|}\xspace}
@@ -88,7 +93,9 @@
 \ifdefined\newinoutflow
 %\newcommand{\QIN}[1]{\ensuremath{\mathrm{F}_{in\shortrightarrow#1}}}
 %\newcommand{\QOUT}[1]{\ensuremath{\mathrm{F}_{#1\shortrightarrow out}}}
-\newcommand{\QIN}[1]{\ensuremath{\mathrm{F}_{#1}^{\mathrm{in}}}}
+%\newcommand{\QIN}[1]{\ensuremath{\mathrm{F}_{#1}^{\mathrm{in}}}}
+\newcommand{\MatQIN}{\ensuremath{\Matrix{I}}\xspace}
+\newcommand{\QIN}[1]{\ensuremath{I_{#1}}}
 \newcommand{\QOUT}[1]{\ensuremath{\mathrm{F}_{#1}^{\mathrm{out}}}}
 \else
 \newcommand{\QIN}[1]{\ensuremath{\mathrm{Q}_{#1}^{\mathrm{in}}}}
@@ -100,6 +107,8 @@
 \newcommand{\FTURN}[2]{\ensuremath{\mathrm{Pr}_{#1,#2}}}
 \newcommand{\PTMAX}[3][,]{\ensuremath{\mathrm{\Phi}_{#2#1#3}^{\mathrm{max}}}}
 \newcommand{\PTMIN}[3][,]{\ensuremath{\mathrm{\Phi}_{#2#1#3}^{\mathrm{min}}}}
+\newcommand{\VecPTMAX}[1]{\ensuremath{\Vector{\mathrm{\Phi}}_{#1}^{\mathrm{max}}}}
+\newcommand{\VecPTMIN}[1]{\ensuremath{\Vector{\mathrm{\Phi}}_{#1}^{\mathrm{min}}}}
 \newcommand{\CTMAX}[1]{\ensuremath{\mathrm{\Psi}_{#1}^{\mathrm{max}}}}
 \newcommand{\CTMIN}[1]{\ensuremath{\mathrm{\Psi}_{#1}^{\mathrm{min}}}}
 

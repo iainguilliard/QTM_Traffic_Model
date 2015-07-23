@@ -57,9 +57,10 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 \item \QOUT{i} represents the maximum traffic flow from $i$ to the outside of the
 modeled network;
 %
-\item $\Fvec_i$ and $\Prvec_i$ are vectors of size \Qn and their $j$-th entry (i.e.,
-\FMAX{i}{j} and \FTURN{i}{j}) represent the maximum flow from queue $i$ to $j$
-and the turn probability from $i$ to $j$, respectively; and
+\item $\Fvec_i$ and $\Prvec_i$ are vectors of size \Qn and their $j$-th entry
+  (i.e., \FMAX{i}{j} and \FTURN{i}{j}) represent the maximum flow from queue $i$
+  to $j$ and the turn probability from $i$ to $j$ ($\sum_{j \in
+  \Qset}\FTURN{i}{j} = 1$), respectively; and
 %
 \item \QPset{i} denotes the set of traffic light phases controlling queue $i$.
 %
@@ -81,6 +82,7 @@ mention ``\cref{fig:network3,fig:network6,fig:network9}''}
 
 
 
+
 \subsection{Traffic Flow Simulation with QTM}
 
 In this section, we present how to simulate traffic flow in a network using QTM
@@ -90,93 +92,120 @@ We assume for the remainder of this section that a \emph{valid} control plan for
 all traffic lights is fixed and given as parameter;
 %
 formally, for all $\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
-\{0,\dots,N\}$, the binary variable $\p{\tl}{k}$ is known a priori and it
-indicates if phase $k$ of light \tl is active~(i.e., $\p{\tl}{k} = 1$) or not on
-interval $n$.
+\{0,\dots,N\}$, the binary variable $\p{\tl}{k}$ is known a priori and indicates
+if phase $k$ of light \tl is active~(i.e., $\p{\tl}{k} = 1$) or not on interval
+$n$.
 
 
+We represent the problem of finding the flow between queues as a linear program
+(LP) over the following variables defined for all interval $n \in
+\{1,\dots,\Nn\}$ and queues $i$ and $j$:
 
-%We have defined a LP formulation for the QTM supporting non-homogeneous $\DT[]$
-%and a single binary variable per signal phase. The implementation also supports
-%configurable phase and cycle constraints. The model constants are listed in
-%table \ref{tab:constants} and the variables in table \ref{tab:variables}
+\begin{itemize}
+%
+\item $\q{i} \in [0,\QMAX{i}]$: traffic volume of queue $i$ during interval $n$
+%
+\item $\inq{i} \in [0,\QIN{i}{n}]$: inflow to the network via queue $i$
+during interval $n$
+%
+\item $\outq{i} \in [0,\QOUT{i}]$: outflow from the network via queue $i$ during
+interval $n$
+%
+\item $\f{i}{j} \in [0,\FMAX{i}{j}]$: flow from queue $i$ into queue $j$ during
+interval $n$
+%
+\end{itemize}
 
-%% FWT: This table ha less than 250 words, thus we can save ``weighted words''
-%% by making it a list of bullet points
-\begin{table}[h]
-\caption{Variables}
-\label{tab:variables}
-\centering
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{llll}
-\toprule
-Variable & Type & Range & Description\\ 
-\midrule
-$\q{i}$ & continuous & $[0,\QMAX{i}]$ & traffic volume of queue $i$ during interval $n$\\[1mm]
-$\qout{i}$ & continuous & $[0,\infty)$ & outflow from queue $i$ during interval $n$\\[1mm]
-$\qin{i}$ & continuous & $[0,\infty)$ & inflow to queue $i$ during interval $n$\\[1mm]
-$\inq{i}$ & continuous & $[0,\QIN{i}]$ & inflow to the network via queue $i$ during interval $n$\\[1mm]
-$\outq{i}$ & continuous & $[0,\QOUT{i}]$ & outflow from the network via queue $i$ during interval $n$\\[1mm]
-$\f{i}{j}$ & continuous & $[0,\FMAX{i}{j}]$ & flow from queue $i$ into queue $j$ during interval $n$\\[1mm]
-\bottomrule\\
-\end{tabular}
-}
-\end{table}
+%% FWT: These constraints are not necessary because we defined the domain of the
+%% variables in the paragraph above
+%\inq{i} &\le \QIN{i}{n} \tag{C1}\label{eq:C1}\\ 
+%\outq{i} &\le \QOUT{i} \tag{C2}\label{eq:C2}\\
+% \q{i} &\le \QMAX{i} \tag{C9}\label{eq:C9}\\
 
-For a set of time intervals over the period $[0,\TMAX]$, where the duration of
-each interval $n$ is $\DT$, we define a set of variables for each interval and
-each queue in the network in table \ref{tab:variables} and the associated
-constants in table ?? %\ref{tab:constants}.
 
-First, all the variables in table \ref{tab:variables} are constrained to be $\ge
-0$. Next we constrain the external flows into and out of $q_j$ during interval
-$n$,
+%% TODO(fwt): add glue here
+
+The maximum traffic flow from queue $i$ to queue $j$ is enforced by
+\cref{c:turnProb,c:maxFlow}.
 %
-\begin{align}
-\inq{i} &\le \QIN{i} \tag{C1}\label{eq:C1}\\        
-\outq{i} &\le \QOUT{i} \tag{C2}\label{eq:C2}
-\end{align}
+\eqref{c:turnProb} ensures that only the fraction $\FTURN{i}{j}$ of the total
+internal outflow of $i$ goes to $j$, and \eqref{c:maxFlow} forces the flow from
+$i$ to $j$ to be zero if all phases controlling $i$ are inactive (i.e.,
+$\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 %
-and the internal flow from $q_i$ to $q_j$,
+If more than one phase $\p{\ell}{k}$ is active, then \eqref{c:maxFlow} is
+subsumed by the domain upper bound of $\f{i}{j}$.
 %
-\begin{align}
-\f{i}{j} &\le \FTURN{i}{j} \sum \limits_{k=1}^{\Qn}  \f{i}{k} \tag{C3}\label{eq:C3}
-\end{align}
+\begin{cAlign}
+\f{i}{j} &\le \FTURN{i}{j} \sum_{k=1}^{\Qn}  \f{i}{k} \tagconstrain{c:turnProb}\\
+\f{i}{j} &\le \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}}
+\tagconstrain{c:maxFlow}
+\end{cAlign}
+
+
+%% TODO(fwt): improve the beginning of this paragraph
+
+To simplify the presentation of remainder of the LP, we define the helper
+variables $\qin{i}$ \eqref{def:qin} and $\qout{i}$ \eqref{def:qout} to represent
+the volume of traffic to enter and leave queue $i$ during interval $n$.
 %
-where we find the proportion of flow out of queue $i$ turning into queue $j$ by
-weighting the total flow by the turn probability $\FTURN{i}{j}$, noting that
-$\sum_k \FTURN{i}{k}=1$. The flow out from queue $i$ is controlled by the set of
-phases $\QPset{i}$, so we modulate $\f{i}{j}$ by applying the constraint,
+Using these helper variables, the preservation of flow principle for queue $i$
+and \textit{homogeneous} \DT[] is simply $\q{i} = \q[n-1]{i} - \qout[n-1]{i} +
+\qin[n-1]{i}$; however, a more sophisticated principle is need for
+non-homogeneous time intervals \remark{because \DT[n] and \DT[n-1] might not be
+aligned}.
 %
-\begin{align}
-\f{i}{j} \le \FMAX{i}{j} \sum \limits_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}} \tag{C4}\label{eq:C4}
-\end{align}
+\remark{\footnote{FWT: I removed the constraint $\q{i} \le
+\frac{\DT[n]}{\DT[m]}\qin[m]{i} - \qout{i}$ because it seems to be subsumed by
+\eqref{c:qUpdate}}}
 %
-where $\p{\ell}{k}$ is 1 if the phase is active during interval n, and 0
-otherwise. We can then sum the total flows in and out of each queue,
+%% FWT: Text related to the removed constraint:
+%with the constraint \ref{eq:C7} that the total flow out of queue $i$ during
+%interval $n$ cannot exceed the sum of the volume of the queue at the start of
+%that interval and the volume of traffic arriving at the stop line during the
+%interval.
 %
-\begin{align}
-\qin{i} &= \inq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{j}{i} \DT   \tag{C5}\label{eq:C5} \\
-\qout{i} &= \outq{i} \DT + \sum \limits_{j=1}^{\Qn}  \f{i}{j} \DT \tag{C6}\label{eq:C6}\\
-\qout{i} &\le \q{i} + \frac{\DT[n]}{\DT[m]}\qin[m]{i}\tag{C7}\label{eq:C7}
-\end{align}
+\begin{cAlign}
 %
-with the constraint \ref{eq:C7} that the total flow out of queue $i$ during
-interval $n$ cannot exceed the sum of the volume of the queue at the start of
-that interval and the volume of traffic arriving at the stop line during the
-interval. We find the volume of traffic arriving at the stop line by integrating
-over the interval with the rate at which traffic was arriving during the
-interval $m$ containing the time $\tn - \QDELAY{i}$ such that $\tn[m] \le
-\tn-\QDELAY{i} < \tn[m+1]$. The input rate of queue $i$ during interval $m$ is
-found by dividing $\qin[m]{i}$ with $\DT[m]$, and then the total traffic
-arriving during the interval $n$ is found by multiplying this rate by $\DT$.
-Now we can perform the update step for queue $i$ over interval $n$,
+\qin{i} &= \DT (\inq{i} + \sum_{j=1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
 %
-\begin{align}
-\q{i} &= \q[n-1]{i} - \qout[n-1]{i} + \frac{\DT[n]}{\DT[m]}\qin[m]{i} \tag{C8}\label{eq:C8}\\
-\q{i} &\le \QMAX{i} \tag{C9}\label{eq:C9}\\
- \frac{\DT[n]}{\DT[m]}\qin[m]{i}  + \sum \limits_{k=m+1}^n \qin[k]{i} &\le \QMAX{i} - \q[n-1]{i}\tag{C10}\label{eq:C10}
-\end{align}
+\qout{i} &= \DT (\outq{i} +  \sum_{j=1}^{\Qn} \f{i}{j})
+\tagconstrain{def:qout}
+%
+\end{cAlign}
+
+
+In order to account for the \remark{misalignment} of the different \DT[], we
+need to find the volume of traffic that was able to arrive at queue $i$,
+traverse it (i.e., wait \QDELAY{i} seconds), and reach the stop line before
+\DT[n] is over.
+%
+%% TODO(fwt): improve this explanation
+%
+This volume of traffic is obtained by integrating over the interval with the
+rate at which traffic was arriving during the interval $m$ containing the time
+$\tn - \QDELAY{i}$ such that $\tn[m] \le \tn-\QDELAY{i} <
+\tn[m+1]$.\remark{\footnote{FWT: find a good place to define $t_n$ as
+$\sum_{i=1}^{n}\DT[i]$}}
+%
+The input rate of queue $i$ during interval $m$ is found by dividing
+$\qin[m]{i}$ with $\DT[m]$, and then the total traffic arriving during the
+interval $n$ is found by multiplying this rate by $\DT$.
+%
+The preservation of flow principle for non-homogeneous time steps is presented
+in \eqref{c:qUpdate}.
+%
+\remark{Explain \cref{eq:C10}.}
+%
+\begin{cAlign}
+%
+\q{i} &= \q[n-1]{i} - \qout[n-1]{i} + \frac{\DT[n]}{\DT[m]}\qin[m]{i}
+\tagconstrain{c:qUpdate}\\
+%
+\frac{\DT[n]}{\DT[m]}\qin[m]{i}  + \sum \limits_{k=m+1}^n \qin[k]{i} &\le
+\QMAX{i} - \q[n-1]{i} \tagconstrain{eq:C10}
+%
+\end{cAlign}
 
 
 \remark{Show diagrams with traffic predictions converging as time increment gets smaller.
@@ -232,7 +261,7 @@ every queue in the network at $\qout{i}$,
 \end{equation}
 
 And with the addition of the second $\inq[]{i}$ term, \ref{eq:O1} also ensures
-that \ref{eq:C1}, \ref{eq:C2}, and \ref{eq:C4} are also at their maximum upper
+that \remark{old-C1}, \remark{old-C2}, and \ref{c:maxFlow} are also at their maximum upper
 bound.
 
 \remark{It is explanatory here to show the inflow/outflow and delay curves and
@@ -240,7 +269,7 @@ explain graphically what is going on and how this objective relates.}
 
 \remark{Finish section conclusion}
 
-Constraints \ref{eq:C1} to \ref{eq:C10} form a dynamic, piecewise linear model
+Constraints \ref{c:turnProb} to \ref{eq:C10} form a dynamic, piecewise linear model
 of flow in the network over time as a \remark{function of $\Pi$}.
 
 

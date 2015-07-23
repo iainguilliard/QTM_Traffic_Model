@@ -88,36 +88,44 @@ comparison.
 \end{figure*}
 
 \begin{table}[h]
-\caption{Network 1 Demand Profile (vehicles per second)}
+\caption{Network Demand Profiles (vehicles per second)}
 \label{tab:net1wave}
 \centering
 \begin{tabular}{cccccc}
 \toprule
-Inflow Queues & 0 - 55 s & 55 - 70 s & 70 - 85 s & > 85 s\\ 
+& Inflow Queues & 0 - 55 s & 55 - 70 s & 70 - 85 s & > 85 s\\
 \midrule
-$q_0$ (side street)& 1 & 1 & 1 & 0 \\
-$q_4, q_7$ (side streets)& 4 & 4 & 4 & 0 \\
-$q_1,q_{10}$ (arterial)& 2 & 4 & 2 & 0 \\
+\multirow{2}{*}{Network 1}&$q_0$ & 1 & 1 & 1 & 0 \\
+&$q_4, q_7$ & 4 & 4 & 4 & 0 \\
+&$q_1,q_{10}$& 2 & 4 & 2 & 0 \\
+\midrule
+\multirow{2}{*}{Network 2}&$q_0$ & 1 & 1 & 1 & 0 \\
+&$q_4,q_7,q_{14}$& 4 & 4 & 4 & 0 \\
+&$q_1, q_{10},q_{18}$ & 2 & 4 & 2 & 0 \\
+\midrule
+\multirow{2}{*}{Network 3}&$q_0$ & 1 & 1 & 1 & 0 \\
+&$q_4,q_7,q_{14},q_{25},$& 4 & 4 & 4 & 0 \\
+&$q_1, q_{10},q_{18},q_{29},q_{36},q_{40},q_{44}$ & 2 & 4 & 2 & 0 \\
 \bottomrule\\
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
-\caption{Network 1 traffic parameters}
-\label{tab:net1wave_old}
-\centering
-\begin{tabular}{cccccc}
-\toprule
-Queue & Background & End & Wave & Start &End\\ 
-\midrule
-$q_0$ & 1 & 85 & 1 & 55 & 70\\
-$q_1$ & 2 & 85 & 4 & 55 & 70\\
-$q_4$ & 4 & 85 & 4 & 55 & 70\\
-$q_7$ & 4 & 85 & 4 & 55 & 70\\
-$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
-\bottomrule\\
-\end{tabular}
-\end{table}
+%\begin{table}[h]
+%\caption{Network 1 traffic parameters}
+%\label{tab:net1wave_old}
+%\centering
+%\begin{tabular}{cccccc}
+%\toprule
+%Queue & Background & End & Wave & Start &End\\ 
+%\midrule
+%$q_0$ & 1 & 85 & 1 & 55 & 70\\
+%$q_1$ & 2 & 85 & 4 & 55 & 70\\
+%$q_4$ & 4 & 85 & 4 & 55 & 70\\
+%$q_7$ & 4 & 85 & 4 & 55 & 70\\
+%$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
+%\bottomrule\\
+%\end{tabular}
+%\end{table}
 
 
 \begin{figure*}[t!]
@@ -128,24 +136,24 @@ $q_{10}$ & 2 & 85 & 4 & 55 & 70\\
 \label{fig:network6}
 \end{figure*}
 
-\begin{table}[h]
-\caption{Network 2 traffic parameters}
-\label{tab:net2wave}
-\centering
-\begin{tabular}{cccccc}
-\toprule
-Queue & Background & End & Wave & Start &End\\ 
-\midrule
-$q_0$ & 1 & 85 & 1 & 55 & 70\\
-$q_1$ & 2 & 85 & 4 & 55 & 70\\
-$q_4$ & 4 & 85 & 4 & 55 & 70\\
-$q_7$ & 4 & 85 & 4 & 55 & 70\\
-$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
-$q_{14}$ & 4 & 85 & 4 & 55 & 70\\
-$q_{18}$ & 2 & 85 & 4 & 55 & 70\\
-\bottomrule\\
-\end{tabular}
-\end{table}
+%\begin{table}[h]
+%\caption{Network 2 traffic parameters}
+%\label{tab:net2wave}
+%\centering
+%\begin{tabular}{cccccc}
+%\toprule
+%Queue & Background & End & Wave & Start &End\\ 
+%\midrule
+%$q_0$ & 1 & 85 & 1 & 55 & 70\\
+%$q_1$ & 2 & 85 & 4 & 55 & 70\\
+%$q_4$ & 4 & 85 & 4 & 55 & 70\\
+%$q_7$ & 4 & 85 & 4 & 55 & 70\\
+%$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{14}$ & 4 & 85 & 4 & 55 & 70\\
+%$q_{18}$ & 2 & 85 & 4 & 55 & 70\\
+%\bottomrule\\
+%\end{tabular}
+%\end{table}
 
 
 \begin{figure*}[t!]
@@ -157,29 +165,29 @@ $q_{18}$ & 2 & 85 & 4 & 55 & 70\\
 \end{figure*}
 
 
-\begin{table}[h]
-\caption{Network 3 traffic parameters}
-\label{tab:net3wave}
-\centering
-\begin{tabular}{cccccc}
-\toprule
-Queue & Background & End & Wave & Start &End\\ 
-\midrule
-$q_0$ & 1 & 85 & 1 & 55 & 70\\
-$q_1$ & 2 & 85 & 4 & 55 & 70\\
-$q_4$ & 4 & 85 & 4 & 55 & 70\\
-$q_7$ & 4 & 85 & 4 & 55 & 70\\
-$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
-$q_{14}$ & 4 & 85 & 4 & 55 & 70\\
-$q_{18}$ & 2 & 85 & 4 & 55 & 70\\
-$q_{25}$ & 4 & 85 & 4 & 55 & 70\\
-$q_{29}$ & 2 & 85 & 4 & 55 & 70\\
-$q_{36}$ & 2 & 85 & 4 & 55 & 70\\
-$q_{40}$ & 2 & 85 & 4 & 55 & 70\\
-$q_{44}$ & 2 & 85 & 4 & 55 & 70\\
-\bottomrule\\
-\end{tabular}
-\end{table}
+%\begin{table}[h]
+%\caption{Network 3 traffic parameters}
+%\label{tab:net3wave}
+%\centering
+%\begin{tabular}{cccccc}
+%\toprule
+%Queue & Background & End & Wave & Start &End\\ 
+%\midrule
+%$q_0$ & 1 & 85 & 1 & 55 & 70\\
+%$q_1$ & 2 & 85 & 4 & 55 & 70\\
+%$q_4$ & 4 & 85 & 4 & 55 & 70\\
+%$q_7$ & 4 & 85 & 4 & 55 & 70\\
+%$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{14}$ & 4 & 85 & 4 & 55 & 70\\
+%$q_{18}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{25}$ & 4 & 85 & 4 & 55 & 70\\
+%$q_{29}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{36}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{40}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{44}$ & 2 & 85 & 4 & 55 & 70\\
+%\bottomrule\\
+%\end{tabular}
+%\end{table}
 
 \subsection{Results}
 

@@ -151,6 +151,20 @@
 % All math definitions before start document
 \input{./tex/MathDef.tex}
 
+
+%% Macros for constraints
+\newcounter{constraintcounter}
+% Use \tagconstrain{labelName} to tag the constraint as C.X and label
+% it as labelName
+\newcommand{\tagconstrain}[1]{\refstepcounter{constraintcounter}\tag{C\theconstraintcounter}\label{#1}}
+% Use the cAlign as the align environment for constraint
+\newenvironment{cAlign}{\align}{\endalign}
+% defining the name for the labels of the type cAlign
+\crefname{equation}{constraint}{constraints}
+
+
+
+
 \newcommand*\patchAmsMathEnvironmentForLineno[1]{%
   \expandafter\let\csname old#1\expandafter\endcsname\csname #1\endcsname
   \expandafter\let\csname oldend#1\expandafter\endcsname\csname end#1\endcsname
@@ -168,6 +182,7 @@
 \patchBothAmsMathEnvironmentsForLineno{gather}%
 \patchBothAmsMathEnvironmentsForLineno{multline}%
 }
+
 
 % TITLEPAGE
 %-----------------------------------------

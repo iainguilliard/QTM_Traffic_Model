@@ -102,7 +102,7 @@
     \immediate\write18{texcount -inc -sum -1 \jobname.tex > 'count.txt'}
     \IfFileExists{./count.txt}{\input{count.txt}}{?? }}
 \newcommand\weightedTotal{
-    \immediate\write18{texcount -inc -sum=1,1,1,250,0,1,1 -1 \jobname.tex > 'weightedCount.txt'}
+    \immediate\write18{texcount -inc -sum=1,1,1,0,250,1,1 -1 \jobname.tex > 'weightedCount.txt'}
     \IfFileExists{./weightedCount.txt}{\input{weightedCount.txt}}{?? }}
 
 

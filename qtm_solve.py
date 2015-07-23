@@ -30,7 +30,7 @@ def get_processor_name():
                 return re.sub( ".*model name.*:", "", line,1)
     return ""
 
-def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,major_frame=0,blend_frame=None,nthreads=0,fixed_plan=None,
+def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=None,minor_frame=0,major_frame=0,blend_frame=None,nthreads=0,fixed_plan=None,
            timelimit=0,accuracy=0,verbose=False,label=None,step=None,run=None,obj='NEW',alpha=1.0,beta=0.001,
            DT_offset=0,seed=0,tune=False,tune_file='',param=None):
     start_time = clock_time.time()
@@ -84,7 +84,7 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
             n_samples = N-2
             print DT
 
-        elif "DT" in data:
+        elif "DT" in data and DT_file == True:
             DT = data["DT"]
             N = len(DT)
             n_samples = len(DT)
@@ -168,6 +168,7 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
         L = len(data['Lights'])
 
         Q_IN  = [ q['Q_IN']   for q in data['Queues'] ]
+        Q_in  = [ [0]   for q in data['Queues'] ]
         Q_OUT = [ q['Q_OUT']  for q in data['Queues'] ]
         if flow_weights != None:
             Q_IN_weight = [ [0]*N for q in data['Queues'] ]
@@ -245,6 +246,7 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
         d = [[[m.addVar(name="d%d_%d_%d" % (i,j,n))  for n in range(N)] for j in range(len(l[i]))] for i in range(L)]
         q = [[m.addVar(lb=0, name="q%d_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_in = [[m.addVar(lb=0, name="q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
+        q_sin = [[m.addVar(lb=0, name="q%d_sin_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_out = [[m.addVar(lb=0, name="q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         d_q_out = [[m.addVar(lb=0, name="d_q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         d_q_in = [[m.addVar(lb=0, name="d_q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
@@ -318,7 +320,7 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
             m.setObjective(alpha * flow  -  (1-alpha)*stops + beta*in_flow, GRB.MAXIMIZE)
             #m.setObjective(flow + beta*in_flow, GRB.MAXIMIZE)
         elif obj == 'MAX_ALL_QOUT':
-            m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + ((T_MAX-time[n]) * in_q[i][n]) * DT[n-1] for i in range(Q) for n in range(1,N)]), GRB.MAXIMIZE)
+            m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + beta * ((T_MAX-time[n]) * in_q[i][n])  for i in range(Q) for n in range(1,N)]), GRB.MAXIMIZE)
             # m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + 1*((T_MAX-time[n]) * in_q[i][n]) for i in range(Q) for n in range(N)]), GRB.MAXIMIZE)
         else:
             print 'No objective: %s' % obj
@@ -332,6 +334,7 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
         for i in range(Q):
             m.addConstr(q[i][0] == q0[i])
             m.addConstr(q_in[i][0] == q0_in[i])
+            m.addConstr(q_sin[i][0] == 0)
             m.addConstr(q_out[i][0] == q0_out[i])
             for j in range(Q):
                 f_ij = '%d_%d' % (i,j)
@@ -357,18 +360,22 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
                 if 'In_Flow_limit' in data and flow_weights == None:
                     if time[n-1] < data['In_Flow_limit'] and data['In_Flow_limit'] <= time[n]:
                         flow_alpha = (data['In_Flow_limit'] - time[n-1]) / (time[n]-time[n-1])
+                        if i==1: print time[n],'flow_alpha=',flow_alpha
                         m.addConstr(in_q[i][n] <= flow_alpha*Q_IN[i])
                         cars_in+=flow_alpha*Q_IN[i]*DT[n-1]
+                        Q_in[i].append(flow_alpha*Q_IN[i])
                         if i==1:
                             cars_in_1+=flow_alpha*Q_IN[i]*DT[n-1]
                             #print "cars_in_1 =",cars_in_1, ' @',time[n], ' alpha =',flow_alpha ,' limit =',data['In_Flow_limit'],time[n] < data['In_Flow_limit'] and data['In_Flow_limit'] < time[n+1]
                     elif time[n-1] < data['In_Flow_limit']:
                         m.addConstr(in_q[i][n] <= Q_IN[i])
                         cars_in+=Q_IN[i]*DT[n-1]
+                        Q_in[i].append(Q_IN[i])
                         if i==1:
                             cars_in_1+=Q_IN[i]*DT[n-1]
                             #print "cars_in_1 =",cars_in_1, ' @',time[n]
                     else:
+                        Q_in[i].append(0)
                         m.addConstr(in_q[i][n] <= 0)
 
                 elif flow_weights != None:
@@ -381,10 +388,10 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
 
                 m.addConstr(out_q[i][n] <= Q_OUT[i])
 
-                m.addConstr(q_out[i][n] == out_q[i][n] * DT[n-1] + quicksum([f[i][j][n]*DT[n-1] if '%d_%d' % (i,j) in data['Flows'] and i != j else 0 for j in range(Q)]))
+                m.addConstr(q_out[i][n] == out_q[i][n] * DT[n] + quicksum([f[i][j][n]*DT[n] if '%d_%d' % (i,j) in data['Flows'] and i != j else 0 for j in range(Q)]))
 
+                m.addConstr( q_out[i][n] <= q[i][n] + q_sin[i][n])
 
-                m.addConstr(q_out[i][n] <= q[i][n])
 
                 m.addConstr(q[i][n] <= Q_MAX[i] ) #+ q_sl[i][n])
 
@@ -393,15 +400,19 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
                 if t_q_in >= time[0]:
                     n1=1
                     t_n1=time[1]
-                    while t_n1 < t_q_in:
+                    while t_n1 <= t_q_in:
                         n1+=1
                         t_n1=time[n1]
                     n0=n1-1
                     alpha = (t_q_in-time[n0])/(time[n1]-time[n0])
-                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1])
+                    #if i==1: print '@',time[n],'alpha=',alpha,'t_q_in=',t_q_in,'t_n0=',time[n0],'t_n1=',time[n1],'1/DT_n0-1=',(1.0/DT[n0-1]),'t_n-Q_DELAY-t_n0=',(time[n] - Q_DELAY[i] - time[n0])
+                    #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1])
+                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1]  + q_in[i][n0] * (DT[n-1]/DT[n0-1])  )
+                    m.addConstr(q_sin[i][n] == q_in[i][n0] * (DT[n-1]/DT[n0-1])  )
 
-                    m.addConstr((1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1] + quicksum([q_in[i][k] for k in range(n1+1,n)]) <= Q_MAX[i] - q[i][n-1])
-
+                    #m.addConstr((1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1] + quicksum([q_in[i][k] for k in range(n1+1,n)]) <= Q_MAX[i] - q[i][n-1])
+                    m.addConstr(  q_in[i][n0] * (DT[n-1]/DT[n0-1]) + quicksum([q_in[i][k] for k in range(n0+1,n)]) <= Q_MAX[i] - q[i][n-1])
+                    #m.addConstr( q_out[i][n-1] <= q[i][n-1] + q_in[i][n0] * (DT[n-1]/DT[n0-1]) )
 
                 elif fixed_plan == None and step != None and step > 0 and 'Out' in data:
                     n1=1
@@ -411,8 +422,9 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
                         t_n1=t_prev[n1]
                     n0=n1-1
                     alpha = (t_q_in-t_prev[n0])/(t_prev[n1]-t_prev[n0])
-                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in_prev[i][n0] + alpha * q_in_prev[i][n1])
-
+                    #if i==1: print  '_',time[n],'alpha=',alpha,t_q_in,t_prev[n0],t_prev[n1]
+                    #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in_prev[i][n0] + alpha * q_in_prev[i][n1])
+                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n] + (0) * q_in_prev[i][n0] + alpha * q_in_prev[i][n1])
                     n2 = n1
                     #print 'n2=',n2,'len(t_prev)=',len(t_prev),'len(time)',len(time)
                     #print 'time=',t_prev
@@ -423,6 +435,8 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
 
                 else:
                     m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1])
+                    m.addConstr(q_sin[i][n] == 0)
+                    #m.addConstr( q_out[i][n] <= q[i][n] )
 
                 m.addConstr( q[i][n] - q[i][n-1] == d_q_out[i][n] - d_q_in[i][n]  )
 
@@ -535,6 +549,8 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
         ]
 
         if m.status == GRB.INFEASIBLE or m.status == GRB.INF_OR_UNBD:
+            #m.computeIIS()
+            #m.write('model_iis.ilp')
             m.feasRelax(1,True,None,None,None,relax_constr,rhspen)
             #m.feasRelax(1,True,relax_vars,lbpen,ubpen,relax_constr,rhspen)
             m.optimize()
@@ -611,6 +627,7 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
                 # q_i['q0_out'] = q_out[i][n].x
                 data_out[r'q_%d' % i]  =  [q[i][n].x for n in range(N-1)]
                 data_out[r'q_{%d,in}' % i] = [q_in[i][n].x for n in range(N-1)]
+                data_out[r'q_{%d,sin}' % i] = [q_sin[i][n].x for n in range(N-1)]
                 data_out[r'total_q_{%d,in}' % i] = sum(data_out[r'q_{%d,in}' % i])
                 if major_frame==0: print 'total q_in,%d=' % i, sum(data_out[r'q_{%d,in}' % i])
                 data_out[r'q_{%d,out}' % i] = [q_out[i][n].x for n in range(N-1)]
@@ -619,6 +636,8 @@ def solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_vari=None,minor_frame=0,maj
                 data_out[r'dq_{%d,out}' % i] = [d_q_out[i][n].x for n in range(N-1)]
                 data_out[r'dq_{%d,in}' % i] = [d_q_in[i][n].x for n in range(N-1)]
                 data_out[r'dq_%d' % i] = [d_q_in[i][n].x + d_q_out[i][n].x for n in range(N-1)]
+                data_out[r'in_%d' % i] = [in_q[i][n].x for n in range(N-1)]
+                data_out[r'out_%d' % i] = [out_q[i][n].x for n in range(N-1)]
 
                 data_out[r'q_{%d,abs}' % i] = [ abs( q[i][n+1].x - q[i][n].x ) for n in range(N-1)]
             data_out[r'total_q_in'] = sum([sum(data_out[r'q_{%d,in}' % i]) for i,q_i in enumerate(data['Queues'])])
@@ -756,7 +775,7 @@ def plan_solver(data,args):
                     run_index=None
                 else:
                     run_index=run
-                if solver(data,t0=t0,t1=t1,n_samples=n_samples, DT_vari=DT_vari,minor_frame=minor_frame,major_frame=major_frame,blend_frame=blend_frame,fixed_plan=None,nthreads=args.threads,timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
+                if milp_solver(data,t0=t0,t1=t1,n_samples=n_samples, DT_vari=DT_vari,minor_frame=minor_frame,major_frame=major_frame,blend_frame=blend_frame,fixed_plan=None,nthreads=args.threads,timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
                        label=label+' step %d' % k,
                        step=k,run=run_index,obj=args.obj,alpha=args.alpha,beta=args.beta,DT_offset=args.DT_offset,seed=random.randint(0,1e9),tune=tune,tune_file=tune_file,param=args.param) is None:
                     return None
@@ -824,7 +843,7 @@ def plan_solver(data,args):
                 DT_final = args.DT_final
             else:
                 DT_final = fixed_plan['DT'][0]
-            if solver(data,t0=0,t1=K_horizon,n_samples=int(K_horizon/DT_final), fixed_plan=fixed_plan,nthreads=args.threads,
+            if milp_solver(data,t0=0,t1=K_horizon,n_samples=int(K_horizon/DT_final), fixed_plan=fixed_plan,nthreads=args.threads,
                    timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
                    label=label,step=None,run=run_index,obj=args.obj,alpha=args.alpha,beta=args.beta,param=args.param) is None:
                 return None
@@ -882,7 +901,7 @@ def plan_solver(data,args):
 
 def DT_final_solver(data,args):
     start_time = clock_time.time()
-    data=solver(data,t0=args.t0,t1=args.t1,n_samples=args.nsamples, fixed_plan=fixed,nthreads=args.threads,timelimit=args.timelimit,accuracy=args.accuracy,
+    data=milp_solver(data,t0=args.t0,t1=args.t1,n_samples=args.nsamples, fixed_plan=fixed,nthreads=args.threads,timelimit=args.timelimit,accuracy=args.accuracy,
                     verbose=args.verbose,
                     step=0,
                     obj=args.obj,alpha=args.alpha,beta=args.beta,DT_offset=args.DT_offset,seed=args.seed)
@@ -923,7 +942,7 @@ def DT_final_solver(data,args):
                 fixed_plan['t'].append(step_time[0])
         n+=1
 
-    if solver(data,t0=t0,t1=t1,n_samples=int((t1-t0)/DT), fixed_plan=data['Out']['Fixed_Plan'],nthreads=args.threads,
+    if milp_solver(data,t0=t0,t1=t1,n_samples=int((t1-t0)/DT), fixed_plan=data['Out']['Fixed_Plan'],nthreads=args.threads,
            timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
            step=None,obj=args.obj,alpha=args.alpha,beta=args.beta) is None:
         return None
@@ -956,6 +975,7 @@ if __name__ == '__main__':
     parser.add_argument("--DT_factor", help="multiplier to modify the DT used in the plan",type=float,default=1.0)
     parser.add_argument("--DT_offset", help="initial offset for DT",type=float,default=0.0)
     parser.add_argument("--DT_final", help=" DT to use in the final step of plan",type=float)
+    parser.add_argument("--DT_file", help="Use DT values defined in file", action="store_true", default=False)
     parser.add_argument("--alpha", help="Obj function alpha weight 1.0 = min delay, 0 = min stops ",type=float,default=1.0)
     parser.add_argument("--beta", help="Obj function beta weight for traffic holding term",type=float,default=0.001)
     parser.add_argument("--obj", help="Obj function to use: OLD, NEW",default='MAX_OUT')
@@ -999,7 +1019,7 @@ if __name__ == '__main__':
         else:
             tune=False
             tune_file = ''
-        data=solver(data,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=args.nsamples, fixed_plan=fixed,nthreads=args.threads,
+        data=milp_solver(data,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=args.nsamples,DT_file=args.DT_file, fixed_plan=fixed,nthreads=args.threads,
                     timelimit=args.timelimit,accuracy=args.accuracy,
                     verbose=args.verbose,obj=args.obj,alpha=args.alpha,
                     beta=args.beta,DT_offset=args.DT_offset,seed = args.seed,

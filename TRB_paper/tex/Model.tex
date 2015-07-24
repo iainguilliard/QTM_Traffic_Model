@@ -54,8 +54,8 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 %
 \item \QDELAY{i} is the time required to traverse $i$ and reach the stop line;
 %
-\item \QOUT{i} represents the maximum traffic flow from $i$ to the outside of
-  the modeled network;
+\item \QOUT{i} represents the maximum traffic flow from $i$ to the outside of the
+modeled network;
 %
 \item $\Fvec_i$ and $\Prvec_i$ are vectors of size \Qn and their $j$-th entry
   (i.e., \FMAX{i}{j} and \FTURN{i}{j}) represent the maximum flow from queue $i$
@@ -217,11 +217,11 @@ for small time steps.}
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
 \label{subfig:converg_a}
-\includegraphics[width=.01\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence.pdf}
+\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence.pdf}
 }
 \subfigure[]{
 \label{subfig:converg_b}
-\includegraphics[width=.01\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_vari.pdf}
+\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_vari.pdf}
 }
 \caption{An example showing the evolution of traffic volume in a queue over
 time. (a) Convergce with increasing refinement of $\Delta t$ from $5.0$ down to
@@ -235,7 +235,7 @@ $\Delta t$ of $1.0$.}
 %  trim={<left> <lower> <right> <upper>}
 
 \label{subfig:converg_c}
-\includegraphics[width=.01\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_NH.pdf}
+\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_NH.pdf}
 \caption{An example showing the convergence between a homogeneous solution with
 $\Delta t=1.0$ and a non-homogeneous solution over 30 seconds for the same
 network. By using non-homogeneous time steps the same solution is found with
@@ -364,16 +364,16 @@ $\p{k}{1} - \p[n-1]{k}{1}$. This is illustrated in figure
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
 \label{subfig:test1}
-\includegraphics[width=0.045\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_1.pdf}}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_1.pdf}}
 \subfigure[]{
 \label{subfig:test2}
-\includegraphics[width=0.045\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_2.pdf}}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_2.pdf}}
 \subfigure[]{
 \label{subfig:test3}
-\includegraphics[width=0.045\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_3.pdf}}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_3.pdf}}
 \subfigure[]{
 \label{subfig:test4}
-\includegraphics[width=0.045\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_4.pdf}}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_4.pdf}}
 \caption{An example showing the phase and cycle time constraint envelopes. In
 (a), (b) and (c), $\PTMIN{\ell}{k}=1$ and $\PTMAX{\ell}{k}=3$, the duration of
 the previous activation was 2 and the duration of the current activation is 3.

@@ -14,6 +14,8 @@ import numpy as np
 import math as math
 import zipfile
 import zlib
+import pandas as pd
+from IPython.display import display
 
 def calc_total_stops(data,results):
     Queues = data['Queues']
@@ -1631,7 +1633,8 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                 #if var[0] == 'l':
                 if var[0:3]=='q_{':
                     DT = results['DT']
-                    ax[i].plot(t,[results[var][0]]+[results[var][x]/DT[x-1] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col) #/DT[x_i]
+                    #ax[i].plot(t,[results[var][0]]+[results[var][x]/DT[x-1] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col) #/DT[x_i]
+                    ax[i].plot(t,[results[var][0]]+[results[var][x] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col)
                 else:
                     ax[i].plot(t,[results[var][x] for x in range(len(t))],marker=marker, label=label, linestyle = ls, color=col)
                 #else:
@@ -1670,8 +1673,8 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                     ax[i].set_ylim(-1,len(data['Lights'][l]['P_MAX']) )
                 elif var[0] == 'p':
                     None
-                else:
-                    ax[i].set_ylim(0,1)
+                #else:
+                #    ax[i].set_ylim(0,1)
             ax[i].legend(loc='best')
             if args.x_limit != None:
                 ax[i].set_xlim(args.x_limit[0],args.x_limit[1])
@@ -1805,7 +1808,7 @@ def dump_vars(args): #data_sets,params,colors,line_styles,steps):
             f.close()
 
 
-
+    pd.options.display.float_format = '{:20,.2f}'.format
     for j,data in enumerate(data_sets):
 
         results = data['Out']
@@ -1813,13 +1816,19 @@ def dump_vars(args): #data_sets,params,colors,line_styles,steps):
             if 'Step' in results:
                 results = data['Out']['Step'][args.step]
         t=results['t']
+        #for i,var in enumerate(args.dump_vars):
+        #        if var in results.keys(): print var,'=',results[var]
+        #for k in range(len(t)):
+        #    for i,var in enumerate(args.dump_vars):
+        #        if var in results.keys(): print '%5.2f' % results[var][k],
+        #    print
+        table = np.zeros((len(args.dump_vars),len(t)))
         for i,var in enumerate(args.dump_vars):
-                if var in results.keys(): print var,'=',results[var]
-        for k in range(len(t)):
-            for i,var in enumerate(args.dump_vars):
-                if var in results.keys(): print '%5.2f' % results[var][k],
-            print
-
+            if var in results.keys():
+                var_data = results[var]
+                if var == 'DT':  var_data = var_data[:-1]
+                table[i:] = var_data
+        display(pd.DataFrame(table,index=args.dump_vars))
 
 def dump_convergence_stats( args):
     files = [filename for filename in os.listdir('.') if filename.startswith(args.files[0])]

@@ -1,6 +1,9 @@
 \section{The Queue Transmission Model}
 
 
+%% TODO(fwt): We need to say that we handle expected number of cars instead of
+%% physical cars, so its fine to have fractions of cars.
+
 A Queue Transmission Model (QTM) is the tuple $(\Qset, \Lset, \vecDT, \MatQIN)$,
 where \Qset and \Lset are, respectively, the set of queues and set of lights;
 %
@@ -62,14 +65,15 @@ modeled network;
   to $j$ and the turn probability from $i$ to $j$ ($\sum_{j \in
   \Qset}\FTURN{i}{j} = 1$), respectively; and
 %
-\item \QPset{i} denotes the set of traffic light phases controlling queue $i$.
+\item \QPset{i} denotes the set of traffic light phases controlling
+\remark{the outflow of} queue $i$.
 %
 \end{itemize}
 
 
 Differently than CTM \cite{daganzo1994cell,lin2004enhanced}, QTM does not assume
-that \DT[n] equals \DT[m] for all $n$ and $m \in \{1,\dots,\Nn\}$, that is, the
-QTM can model non-homogeneous time intervals.
+that \remark{$\DT[n] = \QDELAY{i}$} for all $n \in \{1,\dots,\Nn\}$, that is,
+the QTM can represent non-homogeneous time intervals.
 %
 The only requirement over \DT[n] is that no traffic light maximum phase time is
 smaller than any \DT[n] since we are only allowed to change phases between time
@@ -146,18 +150,23 @@ subsumed by the domain upper bound of $\f{i}{j}$.
 %% TODO(fwt): improve the beginning of this paragraph
 
 To simplify the presentation of remainder of the LP, we define the helper
-variables $\qin{i}$ \eqref{def:qin} and $\qout{i}$ \eqref{def:qout} to represent
-the volume of traffic to enter and leave queue $i$ during interval $n$.
+variables \qin{i}~\eqref{def:qin}, \qout{i}~\eqref{def:qout}, and
+\tn[n]~\eqref{def:tn} to represent the volume of traffic to enter and leave
+queue $i$ during interval $n$, and the time elapsed since the beginning of the
+simulation until the end of interval \DT[n].
 %
 Using these helper variables, the preservation of flow principle for queue $i$
 and \textit{homogeneous} \DT[] is simply $\q{i} = \q[n-1]{i} - \qout[n-1]{i} +
 \qin[n-1]{i}$; however, a more sophisticated principle is need for
-non-homogeneous time intervals \remark{because \DT[n] and \DT[n-1] might not be
-aligned}.
+non-homogeneous time intervals \remark{because \DT[n-1] might be smaller than
+\QDELAY{i}, therefore, there are cars at the stop line of $i$ in the beginning
+of \DT[n] that started traversing $i$ before \DT[n-1].}
 %
-\remark{\footnote{FWT: I removed the constraint $\q{i} \le
-\frac{\DT[n]}{\DT[m]}\qin[m]{i} - \qout{i}$ because it seems to be subsumed by
-\eqref{c:qUpdate}}}
+\toIain{Triple check my explanation.}
+%
+\toIain{I removed the constraint $\q{i} \le \frac{\DT[n]}{\DT[m]}\qin[m]{i} -
+\qout{i}$ because it seems to be subsumed by \eqref{c:qUpdate}. If they are
+needed, add it back with an explanation}
 %
 %% FWT: Text related to the removed constraint:
 %with the constraint \ref{eq:C7} that the total flow out of queue $i$ during
@@ -170,23 +179,24 @@ aligned}.
 \qin{i} &= \DT (\inq{i} + \sum_{j=1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
 %
 \qout{i} &= \DT (\outq{i} +  \sum_{j=1}^{\Qn} \f{i}{j})
-\tagconstrain{def:qout}
+\tagconstrain{def:qout}\\
+%
+\tn[n] &= \sum_{x=1}^{n} \DT[x] \tagconstrain{def:tn}
 %
 \end{cAlign}
 
 
-In order to account for the \remark{misalignment} of the different \DT[], we
-need to find the volume of traffic that was able to arrive at queue $i$,
-traverse it (i.e., wait \QDELAY{i} seconds), and reach the stop line before
-\DT[n] is over.
+In order to account for the \remark{misalignment} of the different \DT[] and
+\QDELAY{i}, we need to find the volume of traffic that was able to arrive at
+queue $i$, traverse it (i.e., wait \QDELAY{i} seconds), and reach the stop line
+before \DT[n] is over.
 %
 %% TODO(fwt): improve this explanation
 %
-This volume of traffic is obtained by integrating over the interval with the
-rate at which traffic was arriving during the interval $m$ containing the time
-$\tn - \QDELAY{i}$ such that $\tn[m] \le \tn-\QDELAY{i} <
-\tn[m+1]$.\remark{\footnote{FWT: find a good place to define $t_n$ as
-$\sum_{i=1}^{n}\DT[i]$}}
+This volume of traffic is obtained by integrating over the interval\toIain{What
+interval?} with the rate at which traffic was arriving during the interval $m$
+containing the time $\tn - \QDELAY{i}$ such that $\tn[m] \le \tn-\QDELAY{i} <
+\tn[m+1]$.
 %
 The input rate of queue $i$ during interval $m$ is found by dividing
 $\qin[m]{i}$ with $\DT[m]$, and then the total traffic arriving during the
@@ -195,7 +205,7 @@ interval $n$ is found by multiplying this rate by $\DT$.
 The preservation of flow principle for non-homogeneous time steps is presented
 in \eqref{c:qUpdate}.
 %
-\remark{Explain \cref{eq:C10}.}
+\toIain{Explain \cref{eq:C10}}
 %
 \begin{cAlign}
 %

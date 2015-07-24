@@ -205,7 +205,7 @@ interval $n$ is found by multiplying this rate by $\DT$.
 The preservation of flow principle for non-homogeneous time steps is presented
 in \eqref{c:qUpdate}.
 %
-\toIain{Explain \cref{eq:C10}}
+\toIain{Explain \cref{c:10}}
 %
 \begin{cAlign}
 %
@@ -213,14 +213,14 @@ in \eqref{c:qUpdate}.
 \tagconstrain{c:qUpdate}\\
 %
 \frac{\DT[n]}{\DT[m]}\qin[m]{i}  + \sum \limits_{k=m+1}^n \qin[k]{i} &\le
-\QMAX{i} - \q[n-1]{i} \tagconstrain{eq:C10}
+\QMAX{i} - \q[n-1]{i} \tagconstrain{c:10}
 %
 \end{cAlign}
 
 
-\remark{Show diagrams with traffic predictions converging as time increment gets smaller.
-  Validates that large time-steps are rough approximations while model behavior converges
-for small time steps.}
+\remark{Show diagrams with traffic predictions converging as time increment gets
+smaller.  Validates that large time-steps are rough approximations while model
+behavior converges for small time steps.}
 
 \begin{figure*}[t!]
 \centering
@@ -257,30 +257,45 @@ only 14 sample points compared to 30 for homogeneous solution.}
 \remark{FWT: introduce the objective function, explain its parts and relate to
 Lin and Wang}
 
-\trbcite{lin2004enhanced} derive an objective function for the minimisation of
-total delay based on the difference between the cumulative departure and arrival
-curves at the origin and destination. However, such an approach requires the
-network to be cleared at the end of the optimisation period. We derive an
-objective function for the maximisation of flow in the network, and apply it to
-every queue in the network at $\qout{i}$,
+As CTM, QTM is also susceptible to \emph{withholding traffic}, i.e., the
+optimizer might prevent cars from moving from $i$ to $j$ even though the
+associate traffic phase is active and $j$ is not full.
+%
+We address this issue through our objective function~\eqref{eq:objFunc} by
+maximizing the total outflow~\qout{i}~(i.e., both internal and external outflow)
+of~$i$ plus the inflow~\inq{i} from the outside of the network to~$i$.
+%
+This quantity is weighted by the remaining time until the end of the simulation
+horizon \TMAX to force the optimizer to allow as much traffic volume as possible
+into the network and move traffic to the outside the network as soon as
+possible.
+%
+\remark{It is easy to show} that~\eqref{eq:objFunc} is \remark{analogous} to
+minimizing delay in CTM models, e.g., \eqref{eq:objFunc} is equivalent to the
+objective function (O3) in \trbcite{lin2004enhanced} for their parameters
+$\alpha = \beta = 1$.
+
+%% FWT: not sure if we need to give this extra details
+%\trbcite{lin2004enhanced} derive an objective function for the minimisation of
+%total delay based on the difference between the cumulative departure and arrival
+%curves at the origin and destination. However, such an approach requires the
+%network to be cleared at the end of the optimisation period.
 
 
 \begin{equation}
-\textrm{maximise} \left( \sum\limits_{n=1}^{\Nn} \sum\limits_{i=1}^{\Qn} (\TMAX - \tn + 1) \qout{i} + \sum\limits_{n=1}^{\Nn} \sum\limits_{i=1}^{\Qn} (\TMAX - \tn + 1) \inq{i} \right) 
-\tag{O1}\label{eq:O1}
+\max 
+ \sum_{n=1}^{\Nn} \sum_{i=1}^{\Qn} (\TMAX - \tn + 1) (\qout{i} + \inq{i})
+\tag{O1}\label{eq:objFunc}
 \end{equation}
-
-And with the addition of the second $\inq[]{i}$ term, \ref{eq:O1} also ensures
-that \remark{old-C1}, \remark{old-C2}, and \ref{c:maxFlow} are also at their maximum upper
-bound.
 
 \remark{It is explanatory here to show the inflow/outflow and delay curves and
 explain graphically what is going on and how this objective relates.}
 
-\remark{Finish section conclusion}
 
-Constraints \ref{c:turnProb} to \ref{eq:C10} form a dynamic, piecewise linear model
-of flow in the network over time as a \remark{function of $\Pi$}.
+The objective function~\eqref{eq:objFunc} and constraints~\eqref{c:turnProb}
+to~\eqref{c:10} form the LP representing the dynamic, piecewise linear model of
+flow in a QTM network over time when a control plan \p{\tl}{k} is given as an
+input parameter.
 
 
 

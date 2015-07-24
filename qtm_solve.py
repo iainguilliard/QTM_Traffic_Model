@@ -246,7 +246,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         d = [[[m.addVar(name="d%d_%d_%d" % (i,j,n))  for n in range(N)] for j in range(len(l[i]))] for i in range(L)]
         q = [[m.addVar(lb=0, name="q%d_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_in = [[m.addVar(lb=0, name="q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        q_sin = [[m.addVar(lb=0, name="q%d_sin_%d" % (i,n)) for n in range(N)] for i in range(Q)]
+        q_stop = [[m.addVar(lb=0, name="q%d_stop_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_out = [[m.addVar(lb=0, name="q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         d_q_out = [[m.addVar(lb=0, name="d_q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         d_q_in = [[m.addVar(lb=0, name="d_q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
@@ -334,7 +334,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         for i in range(Q):
             m.addConstr(q[i][0] == q0[i])
             m.addConstr(q_in[i][0] == q0_in[i])
-            m.addConstr(q_sin[i][0] == 0)
+            m.addConstr(q_stop[i][0] == 0)
             m.addConstr(q_out[i][0] == q0_out[i])
             for j in range(Q):
                 f_ij = '%d_%d' % (i,j)
@@ -390,7 +390,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
                 m.addConstr(q_out[i][n] == out_q[i][n] * DT[n] + quicksum([f[i][j][n]*DT[n] if '%d_%d' % (i,j) in data['Flows'] and i != j else 0 for j in range(Q)]))
 
-                m.addConstr( q_out[i][n] <= q[i][n] + q_sin[i][n])
+                m.addConstr( q_out[i][n] <= q[i][n] + q_stop[i][n])
 
 
                 m.addConstr(q[i][n] <= Q_MAX[i] ) #+ q_sl[i][n])
@@ -408,7 +408,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                     #if i==1: print '@',time[n],'alpha=',alpha,'t_q_in=',t_q_in,'t_n0=',time[n0],'t_n1=',time[n1],'1/DT_n0-1=',(1.0/DT[n0-1]),'t_n-Q_DELAY-t_n0=',(time[n] - Q_DELAY[i] - time[n0])
                     #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1])
                     m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1]  + q_in[i][n0] * (DT[n-1]/DT[n0-1])  )
-                    m.addConstr(q_sin[i][n] == q_in[i][n0] * (DT[n-1]/DT[n0-1])  )
+                    m.addConstr(q_stop[i][n] == q_in[i][n0] * (DT[n-1]/DT[n0-1])  )
 
                     #m.addConstr((1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1] + quicksum([q_in[i][k] for k in range(n1+1,n)]) <= Q_MAX[i] - q[i][n-1])
                     m.addConstr(  q_in[i][n0] * (DT[n-1]/DT[n0-1]) + quicksum([q_in[i][k] for k in range(n0+1,n)]) <= Q_MAX[i] - q[i][n-1])
@@ -435,7 +435,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
                 else:
                     m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1])
-                    m.addConstr(q_sin[i][n] == 0)
+                    m.addConstr(q_stop[i][n] == 0)
                     #m.addConstr( q_out[i][n] <= q[i][n] )
 
                 m.addConstr( q[i][n] - q[i][n-1] == d_q_out[i][n] - d_q_in[i][n]  )
@@ -627,7 +627,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 # q_i['q0_out'] = q_out[i][n].x
                 data_out[r'q_%d' % i]  =  [q[i][n].x for n in range(N-1)]
                 data_out[r'q_{%d,in}' % i] = [q_in[i][n].x for n in range(N-1)]
-                data_out[r'q_{%d,sin}' % i] = [q_sin[i][n].x for n in range(N-1)]
+                data_out[r'q_{%d,stop}' % i] = [q_stop[i][n].x for n in range(N-1)]
                 data_out[r'total_q_{%d,in}' % i] = sum(data_out[r'q_{%d,in}' % i])
                 if major_frame==0: print 'total q_in,%d=' % i, sum(data_out[r'q_{%d,in}' % i])
                 data_out[r'q_{%d,out}' % i] = [q_out[i][n].x for n in range(N-1)]

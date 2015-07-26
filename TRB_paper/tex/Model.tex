@@ -152,12 +152,12 @@ variables \qin{i}~\eqref{def:qin}, \qout{i}~\eqref{def:qout}, and
 queue $i$ during interval~$n$, and the time elapsed since the beginning of the
 simulation until the end of interval \DT[n].
 %
-Using these helper variables, the flow conservation principle for queue $i$ and
-\textit{homogeneous} \DT[] is simply $\q{i} = \q[n-1]{i} - \qout[n-1]{i} +
-\qin[n-1]{i}$; however, a more sophisticated principle is need for
-non-homogeneous time intervals because \DT[n-1] might be smaller than
-\QDELAY{i}, therefore, there are cars at the stop line of $i$ in the beginning
-of \DT[n] that started traversing $i$ before \DT[n-1].
+%Using these helper variables, the flow conservation principle for queue $i$ and
+%\textit{homogeneous} \DT[] is simply $\q{i} = \q[n-1]{i} - \qout[n-1]{i} +
+%\qin[n-1]{i}$; however, a more sophisticated principle is need for
+%non-homogeneous time intervals because \DT[n-1] might be smaller than
+%\QDELAY{i}, therefore, there are cars at the stop line of $i$ in the beginning
+%of \DT[n] that started traversing $i$ before \DT[n-1].
 %
 \toIain{Triple check my explanation.}
 %
@@ -202,7 +202,8 @@ $\qin[m]{i}$ with $\DT[m]$, and then the total traffic arriving during the
 interval $n$ is found by multiplying this rate by $\DT$.
 %
 The flow conservation principle for non-homogeneous time steps is presented in
-\eqref{c:qUpdate}.
+\eqref{c:qUpdate}. If \DT[] is homogeneous for all $n$ then \eqref{c:qUpdate} 
+reduces to $\q{i} = \q[n-1]{i} - \qout[n-1]{i} + \qin[m]{i}$.
 %
 To insure that the total volume of traffic travelling down the queue and waiting
 at the stop line does not exceed the capacity if the queue, we
@@ -240,19 +241,18 @@ $\Delta t$ of $1.0$.}
 \begin{figure*}[t!]
 \centering
 %  trim={<left> <lower> <right> <upper>}
-
-\label{subfig:converg_c}
 \includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_NH.pdf}
 \caption{An example showing the convergence between a homogeneous solution with
 $\Delta t=1.0$ and a non-homogeneous solution over 30 seconds for the same
 network. By using non-homogeneous time steps the same solution is found with
 only 14 sample points compared to 30 for homogeneous solution.}
-
+\label{fig:converg_c}
 \end{figure*}
 
 
 
-As CTM, QTM is also susceptible to \emph{withholding traffic}, i.e., the
+As with MILP formulations of CTM (e.g. \trbcite{lin2004enhanced}),
+QTM is also susceptible to \emph{withholding traffic}, i.e., the
 optimizer might prevent cars from moving from $i$ to $j$ even though the
 associated traffic phase is active and $j$ is not full.
 %
@@ -290,6 +290,8 @@ The objective function~\eqref{eq:objFunc} and
 constraints~(\ref{c:turnProb}--\ref{c:10}) form the LP representing the
 dynamic, piecewise linear model of flow in a QTM network over time when a
 control plan \p{\tl}{k} is given as an input parameter.
+
+\cref{subfig:converg_a,subfig:converg_a,fig:converg_c} show the results of applying the LP formulation to a simple model with a fixed signal plan, using both homogeneous \vecDT and non-homogeneous \vecDT.
 
 
 
@@ -338,14 +340,14 @@ To encode these constraints, we use the helper variable $\pd{\ell}{k} \in
 that:
 %
 (i) holds the elapsed time since the start of phase $k$ when $\p[n]{\ell}{k}$ is
-active~(\ref{c:pd:incUB},\ref{c:pd:incLB});
+active~(\ref{c:pd:incUB},\ref{c:pd:incLB}) (see \cref{subfig:test1});
 %
 (ii) is constant and holds the duration of the last phase until the next
 activation when $\p[n]{\ell}{k}$ is
-inactive~(\ref{c:pd:inactiveUB},\ref{c:pd:inactiveLB}); and
+inactive~(\ref{c:pd:inactiveUB},\ref{c:pd:inactiveLB}) (see \cref{subfig:test2}); and
 %
 (iii) is restarted when phase~$k$ changes from inactive to
-active~\eqref{c:pd:reset}.
+active~\eqref{c:pd:reset} (see \cref{subfig:test3}).
 %
 Notice that (\ref{c:pd:incUB}--\ref{c:pd:reset}) employs the \textit{big-M}
 method to turn the cases that should not be active into subsumed constraints
@@ -405,7 +407,7 @@ not enforced while $k$ is still active.
 
 Finally, we constrain the sum of all the phase durations for light \tl to be
 within the cycle time limits \CTMIN{\tl}~\eqref{c:cycleLB} and
-\CTMAX{\tl}~\eqref{c:cycleUB}.
+\CTMAX{\tl}~\eqref{c:cycleUB} (see \cref{subfig:test4}).
 %
 In both \eqref{c:cycleLB} and \eqref{c:cycleUB}, we use the duration of phase 1
 of \tl from the previous interval $n-1$ instead of the current interval $n$

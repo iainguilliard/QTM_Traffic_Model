@@ -72,7 +72,7 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 
 
 Differently than CTM \cite{daganzo1994cell,lin2004enhanced}, QTM does not assume
-that \remark{$\DT[n] = \QDELAY{i}$} for all \mbox{$n \in \{1,\dots,\Nn\}$}, that
+that $\DT[n] = \QDELAY{i}$\remark{\footnote{\remark{$\DT[n] = \QDELAY{i}$}}} for all \mbox{$n \in \{1,\dots,\Nn\}$}, that
 is, the QTM can represent non-homogeneous time intervals.
 %
 The only requirement over \DT[n] is that no traffic light maximum phase time is
@@ -155,7 +155,9 @@ simulation until the end of interval \DT[n].
 Using these helper variables, the flow conservation principle for queue $i$ and
 \textit{homogeneous} \DT[] is simply $\q{i} = \q[n-1]{i} - \qout[n-1]{i} +
 \qin[n-1]{i}$; however, a more sophisticated principle is need for
-non-homogeneous time intervals \remark{because \DT[n-1] might be smaller than
+non-homogeneous time intervals because \DT[n-1] might be smaller than
+\QDELAY{i}, therefore, there are cars at the stop line of $i$ in the beginning
+of \DT[n] that started traversing $i$ before \DT[n-1]. \fnremark{because \DT[n-1] might be smaller than
 \QDELAY{i}, therefore, there are cars at the stop line of $i$ in the beginning
 of \DT[n] that started traversing $i$ before \DT[n-1].}
 %
@@ -179,7 +181,7 @@ of \DT[n] that started traversing $i$ before \DT[n-1].}
 \end{cAlign}
 \toFelipe{Do we really need this as a constraint?}
 
-In order to account for the \remark{misalignment} of the different \DT[] and
+In order to account for the misalignment \fnremark{misalignment} of the different \DT[] and
 \QDELAY{i}, we need to find the volume of traffic that was able to arrive at
 queue $i$, traverse it (i.e., wait \QDELAY{i} seconds), and reach the stop line
 before \DT[n] is over.
@@ -212,10 +214,6 @@ at the stop line does not exceed the capacity if the queue, we apply
 %
 \end{cAlign}
 
-
-\remark{Show diagrams with traffic predictions converging as time increment gets
-smaller.  Validates that large time-steps are rough approximations while model
-behavior converges for small time steps.}
 
 \begin{figure*}[t!]
 \centering
@@ -263,11 +261,13 @@ horizon \TMAX to force the optimizer to allow as much traffic volume as possible
 into the network and move traffic to the outside the network as soon as
 possible.
 %
-\eqref{eq:objFunc} is \remark{analogous} to minimizing delay in CTM models,
+\eqref{eq:objFunc} is analogous \fnremark{analogous} to minimizing delay in CTM models,
 e.g., \eqref{eq:objFunc} is equivalent to the objective function (O3) in
 \trbcite{lin2004enhanced} for their parameters $\alpha = \beta = 1$. \toIain{Add
 a paragraph linking the plots with the objective function.}
-
+\fnremark{Show diagrams with traffic predictions converging as time increment gets
+smaller.  Validates that large time-steps are rough approximations while model
+behavior converges for small time steps.}
 %% FWT: not sure if we need to give this extra details
 %\trbcite{lin2004enhanced} derive an objective function for the minimisation of
 %total delay based on the difference between the cumulative departure and
@@ -425,14 +425,10 @@ cycle, i.e., when its first phase is changed from inactive to active.
 \tagconstrain{c:cycleUB}
 %
 \end{cAlign}
-
-
-\remark{Extend the conclusion of this section}
-
 The MILP that encodes the problem of finding the optimal traffic control plan in
 a QTM network is defined
 by~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cycleUB}).
-
+\fnremark{Extend the conclusion of this section}
 
 
 \begin{figure*}[t!]

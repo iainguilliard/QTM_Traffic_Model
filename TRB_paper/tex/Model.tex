@@ -72,7 +72,7 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 
 
 Differently than CTM \cite{daganzo1994cell,lin2004enhanced}, QTM does not assume
-that $\DT[n] = \QDELAY{i}$\remark{\footnote{\remark{$\DT[n] = \QDELAY{i}$}}} for all \mbox{$n \in \{1,\dots,\Nn\}$}, that
+that $\DT[n] = \QDELAY{i}$ for all \mbox{$n \in \{1,\dots,\Nn\}$}, that
 is, the QTM can represent non-homogeneous time intervals.
 %
 The only requirement over \DT[n] is that no traffic light maximum phase time is
@@ -157,9 +157,7 @@ Using these helper variables, the flow conservation principle for queue $i$ and
 \qin[n-1]{i}$; however, a more sophisticated principle is need for
 non-homogeneous time intervals because \DT[n-1] might be smaller than
 \QDELAY{i}, therefore, there are cars at the stop line of $i$ in the beginning
-of \DT[n] that started traversing $i$ before \DT[n-1]. \fnremark{because \DT[n-1] might be smaller than
-\QDELAY{i}, therefore, there are cars at the stop line of $i$ in the beginning
-of \DT[n] that started traversing $i$ before \DT[n-1].}
+of \DT[n] that started traversing $i$ before \DT[n-1].
 %
 \toIain{Triple check my explanation.}
 %
@@ -179,9 +177,15 @@ of \DT[n] that started traversing $i$ before \DT[n-1].}
 \tn[n] &= \sum_{x=1}^{n} \DT[x] \tagconstrain{def:tn}
 %
 \end{cAlign}
-\toFelipe{Do we really need this as a constraint?}
 
-In order to account for the misalignment \fnremark{misalignment} of the different \DT[] and
+%%\toFelipe{Do we really need this as a constraint?}
+%% FWT: Yes because t_n is used in the objective function and implicitly in
+%% c:qUpdate. Notice that it is not a constraint, just a helper variable (an
+%% alias) to make presentation simpler (instead of carrying this summation
+%% around).
+
+
+In order to account for the misalignment of the different \DT[] and
 \QDELAY{i}, we need to find the volume of traffic that was able to arrive at
 queue $i$, traverse it (i.e., wait \QDELAY{i} seconds), and reach the stop line
 before \DT[n] is over.
@@ -201,8 +205,8 @@ The flow conservation principle for non-homogeneous time steps is presented in
 \eqref{c:qUpdate}.
 %
 To insure that the total volume of traffic travelling down the queue and waiting
-at the stop line does not exceed the capacity if the queue, we apply
-\eqref{c:10}.
+at the stop line does not exceed the capacity if the queue, we
+apply~\eqref{c:10}.
 %
 \begin{cAlign}
 %
@@ -261,7 +265,7 @@ horizon \TMAX to force the optimizer to allow as much traffic volume as possible
 into the network and move traffic to the outside the network as soon as
 possible.
 %
-\eqref{eq:objFunc} is analogous \fnremark{analogous} to minimizing delay in CTM models,
+\eqref{eq:objFunc} is analogous to minimizing delay in CTM models,
 e.g., \eqref{eq:objFunc} is equivalent to the objective function (O3) in
 \trbcite{lin2004enhanced} for their parameters $\alpha = \beta = 1$. \toIain{Add
 a paragraph linking the plots with the objective function.}
@@ -428,7 +432,7 @@ cycle, i.e., when its first phase is changed from inactive to active.
 The MILP that encodes the problem of finding the optimal traffic control plan in
 a QTM network is defined
 by~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cycleUB}).
-\fnremark{Extend the conclusion of this section}
+%\fnremark{Extend the conclusion of this section}
 
 
 \begin{figure*}[t!]

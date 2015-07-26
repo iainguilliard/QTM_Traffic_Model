@@ -1,8 +1,9 @@
 \newcommand{\wordsInAbstract}{
     \immediate\write18{texcount -sum -1 tex/Abstract.tex > 'countInAbstract.txt'}
     \IfFileExists{./countInAbstract.txt}{\input{countInAbstract.txt}}{??}}
-\fnremark{Using \wordsInAbstract{} words up to here. Maximum is 250 words.
+\remark{Using \wordsInAbstract{} words up to here. Maximum is 250 words.}
 
+\fnremark{
 Make sure to follow instructions and author guide:
   \url{http://onlinepubs.trb.org/onlinepubs/AM/InfoForAuthors.pdf}
   \url{http://onlinepubs.trb.org/onlinepubs/am/2015/WritingForTheTRRecord.pdf}

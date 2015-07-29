@@ -7,9 +7,12 @@ In this section we compare the performance of non-homogeneous solutions
 with homogeneous solutions. Our hypothesis is that an aggregate plan formed 
 from a set of shorter planning steps, will 
 converge on the optimum plan as the amount of look ahead at each step is 
-increased. We then exploit the non-homogeneity of the QTM to vary \vecDT such that we sample with reducing 
+increased. We then exploit the non-homogeneity of the QTM to vary \vecDT 
+such that we sample with reducing 
 resolution as we approach the planning horizon. Compared with a homogenous 
- \vecDT of the same length, the non-homogenous solution will have a greater look ahead, but with decreasing resolution. Reducing the resolution with look ahead seems 
+ \vecDT of the same length, the non-homogenous solution will have a greater 
+look ahead, but with decreasing resolution. Reducing the resolution with look 
+ahead seems 
 reasonable as the accuracy of the plan will also reduce over time when 
 compared with the actual state of the network 
 that later eventuates. \fnremark{Add a planning horizon to the planning figure}
@@ -22,9 +25,11 @@ in the comparison. The first consists of an avenue crossed by three
 side streets at controlled intersections, as shown in \cref{subfig:network1}. The 
 second introduces a second
 parallel avenue to form a gridded network with a total of three controlled
-intersections, as shown in \cref{subfig:network2}. And the third is a more complex
+intersections, as shown in \cref{subfig:network2}. And the third is a more 
+complex
 grid network with 9 controlled intersections between six avenues, with a 
-seventh avenue running through at a diagonal as shown in \cref{subfig:network3}.
+seventh avenue running through at a diagonal as shown in 
+\cref{subfig:network3}.
 
 The traversal time of each queue, \QDELAY{} in all three networks is set at 9s 
 between intersections (a distance of about 100m with a free flow speed of
@@ -35,8 +40,10 @@ increased sufficiently
 to buffer any spill back from the stop line and prevent interruption of the input 
 demand profile.
 Flows are defined from the head of each queue into the
-tail of the next. There is no turning traffic ($\FTURN{i}{j}=1$), and in all cases the
-maximum flow rate between queues, \FMAX{i}{j},  is set at 5 cars per second. Each 
+tail of the next. There is no turning traffic ($\FTURN{i}{j}=1$), and in all cases 
+the
+maximum flow rate between queues, \FMAX{i}{j},  is set at 5 cars per second. 
+Each 
 intersection in networks 1 and 2 has
 two phases - North-South (NS) and East-West (EW). In network 3, lights 2, 4 
 and 6 have an
@@ -66,8 +73,8 @@ profile per queue are given in
 
 For both the homogeneous and non-homogeneous test points,
 we use the MILP QTM formulation described in the previous section to 
-generating an optimum signal plan for a longer horizon than needed (the look ahead). 
-We then keep the
+generating an optimum signal plan for a longer horizon than needed (the look 
+ahead). We then keep the
 first part of this plan where the accuracy is highest and discard the
 rest. We call the long horizon plan a major frame, and the first part of the major 
 frame that we retain, a minor frame. While the minor frame
@@ -80,15 +87,21 @@ both a homogeneous $\DT[]$ of 0.25s
 and a non-homogeneous $\DT[]$ ranging from fixed 0.25s increments
 during the minor frame and then increasing linearly until reaching 1s at
 the end of the major frame. Once we have generated a set of minor
-frames, we aggregated them into a single plan and simulate the flow through the network using the QTM LP formulation with a fixed $\DT[]$ of 
-0.25s. As a ground truth reference for each network, we also solve a single optimal signal plan spanning all the minor frames with a fixed $\DT[]$ of 0.25s, and then simulate the flow with the QTM LP formulation. \fnremark{Do we need to justify why we use the QTM as the simulator over say a micro simulator?}
-To solve each major frame and the reference, we use Gurobi\textsuperscript{TM} with 12 threads on an AMD Opteron\textsuperscript{TM} 
+frames, we aggregated them into a single plan and simulate the flow through 
+the network using the QTM LP formulation with a fixed $\DT[]$ of 
+0.25s. As a ground truth reference for each network, we also solve a single 
+optimal signal plan spanning all the minor frames with a fixed $\DT[]$ of 0.25s, 
+and then simulate the flow with the QTM LP formulation. \fnremark{Do we need 
+to justify why we use the QTM as the simulator over say a micro simulator?}
+To solve each major frame and the reference, we use Gurobi
+\textsuperscript{TM} with 12 threads on an AMD Opteron\textsuperscript{TM} 
 4334 Processor with 12 cores running at 3.1GHz. We limit MIP gap accuracy to 
 0.1\% and, while we can solve non-
 homogeneous major frames up to the convergence point in real time, we 
 extend the solve time limit to 3000s for all test points for a fair comparison with 
 the homogeneous test points. At each test 
-point we take the average of five runs of the solver. (The reference signal plans take considerably longer to solve and have no solve time limit set).
+point we take the average of five runs of the solver. (The reference signal plans 
+take considerably longer to solve and have no solve time limit set).
 
 \begin{figure*}[t!]
 \centering
@@ -138,33 +151,6 @@ point we take the average of five runs of the solver. (The reference signal plan
 \end{tabular}
 \end{table}
 
-
-
-
-%\begin{table}[h]
-%\caption{Network 3 traffic parameters}
-%\label{tab:net3wave}
-%\centering
-%\begin{tabular}{cccccc}
-%\toprule
-%Queue & Background & End & Wave & Start &End\\ 
-%\midrule
-%$q_0$ & 1 & 85 & 1 & 55 & 70\\
-%$q_1$ & 2 & 85 & 4 & 55 & 70\\
-%$q_4$ & 4 & 85 & 4 & 55 & 70\\
-%$q_7$ & 4 & 85 & 4 & 55 & 70\\
-%$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{14}$ & 4 & 85 & 4 & 55 & 70\\
-%$q_{18}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{25}$ & 4 & 85 & 4 & 55 & 70\\
-%$q_{29}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{36}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{40}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{44}$ & 2 & 85 & 4 & 55 & 70\\
-%\bottomrule\\
-%\end{tabular}
-%\end{table}
-
 \subsection{Results}
 
 We compare the performance of non-homogeneous and homogeneous 
@@ -173,24 +159,24 @@ increasing major frame time (greater look ahead), and analysing the
 distribution of delay in each queue of the network. 
 \cref{subfig:travel_time_3,subfig:travel_time_6,subfig:travel_time_9} show a 
 comparison between the number of time samples used in the major 
-frame vs the \% improvement in total travel time, where 0\% is the reference solution total travel time. It can be seen that for all three
+frame vs the \% improvement in total travel time, where 0\% is the reference 
+solution total travel time. It can be seen that for all three
 networks, using a non homogeneous $\DT[]$ converges towards the optimum 
 total travel time more quickly than the 
 homogeneous $\DT[]$. 
 
 \cref{subfig:delay_3,subfig:delay_6,subfig:delay_9} show a comparison of 
 distribution of delay across the network. This gives us an indication of the 
-quality of the solution in terms of the number of 
-vehicles that experience significant delay and if the solution may be starving some 
+quality of the solution in terms of the number of vehicles that experience significant delay and if the solution may be starving some 
 parts of the network.  The box plots show three comparisons: at the point where 
 the non-homogeneous $\DT[]$ first 
 converges on the optimum solution, where the homogeneous $\DT[]$ first 
-converges on the optimum solution, and the optimum solution itself. With all three 
-networks the quality of the solution is better 
+converges on the optimum solution, and the optimum solution itself. With all 
+three networks the quality of the solution is better 
 or  the same using a non-homogeneous $\DT[]$ compared to a 
 homogeneous $\DT[]$ with the same number of sample points.
 Finally, \cref{fig:cumu} shows the cumulative arrival and departure curves and 
-the how delay evolves over time for $q_1$ of network 2. \cref{subfig:cumu1} 
+how the delay evolves over time for $q_1$ of network 2. \cref{subfig:cumu1} 
 shows the comparison at the point where 
 the non-homogeneous $\DT[]$ first converges and shows that with the longer 
 major frame time of the non-homogeneous $\DT[]$, the solver is able to find a 

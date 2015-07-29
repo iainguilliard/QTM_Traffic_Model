@@ -195,7 +195,10 @@ before \DT[n] is over.
 This volume of traffic is obtained by integrating over the current interval
 with the rate at which traffic was arriving during the interval $m$ containing
 the time $\tn - \QDELAY{i}$, where $m$ is the interval such that $\tn[m] \le
-\tn-\QDELAY{i} < \tn[m+1]$.
+\tn-\QDELAY{i} < \tn[m+1]$. \toFelipe{Perhaps add this: Since the QTM is 
+piecewise linear over an interval, the rate at which traffic enters a queue 
+remains constant over the interval, and can be found by dividing $\qin[m]{i}$
+by the \DT[m]}
 %
 The input rate of queue $i$ during interval $m$ is found by dividing
 $\qin[m]{i}$ with $\DT[m]$, and then the total traffic arriving during the

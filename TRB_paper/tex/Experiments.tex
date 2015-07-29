@@ -81,12 +81,13 @@ discretization, we fix the size of all minor frames to 10s and force it to be
 discretized in homogeneous intervals of 0.25s.
 %
 For the homogeneous experiments, \DT[] is kept at 0.25s throughout the major
-frame while it linearly increases from the end of the minor frame until at the
+frame and for the non-homogeneous experiments  \DT[] linearly increases from
+0.25s at the end of the minor frame through to 1.0s at the
 end of the major frame.\toIain{Can you provide a more precise explanation? E.g.,
-what is the rate in which it increases?}
+what is the rate in which it increases? \emph{Done}.}
 %
-We analyze the effect of the major frame size by varying it from 20s and
-upwards.\toIain{What is the largest size of the major frame?}
+We analyze the effect of the major frame size by varying it from 20s through to 
+120s.\toIain{What is the largest size of the major frame?  \emph{Done}.}
 %
 % explain evaluation: concatenation + LP simulation Overall ``optimal'' for
 % comparison
@@ -112,7 +113,7 @@ to 3000s for the receding horizon approaches and unbounded for the optimal plan.
 \toIain{Can you explain the following better and provide evidence: \textit{while
 we can solve non-homogeneous major frames up to convergence in real time, we
 extend the solve time limit to 3000s for all test points for a fair comparison
-with the homogeneous test points.}}
+with the homogeneous test points.}. Deleted as it was not strictly true. Either we re-run scaled up on AWS with 10s solver time limit. Or we perhaps explain that 3000s shows that it could be scaled up to real time}
 %
 All our results are averaged over five runs \remark{to account for Gubori's
 stochastic strategies.}
@@ -200,11 +201,11 @@ ways: comparing the decrease in total travel time with increasing major frame
 time (greater look ahead), and analysing the distribution of delay in each queue
 of the network.
 \cref{subfig:travel_time_3,subfig:travel_time_6,subfig:travel_time_9} show a
-comparison between the number of time samples\fnremark{FWT: This is the first
+comparison between \Nn, the number of time intervals \fnremark{FWT: This is the first
 time we mention time samples, so we need to relate it with the \DT[]'s and
-major frame or use something defined previously.} used in the major frame vs the
-\% improvement in total travel time, where 0\% is the reference solution total
-travel time. It can be seen that for all three networks, using a non-homogeneous
+major frame or use something defined previously.} used in the major frame, vs the
+\% improvement in total travel time,  compared to the reference solution total
+travel time (0\%). It can be seen that for all three networks, using a non-homogeneous
 $\DT[]$ converges towards the optimum total travel time more quickly than the
 homogeneous $\DT[]$.\toIain{We need to explain that as $N$ increases, the size
 of the major frame increases but for a given $N$ the major frame size between

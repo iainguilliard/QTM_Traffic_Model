@@ -91,3 +91,6 @@ weightedCount.txt
 *.xdy
 *.pdf
 *.bak
+
+# fusermount temporary files
+.fuse_hidden*

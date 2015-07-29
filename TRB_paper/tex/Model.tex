@@ -340,14 +340,14 @@ To encode these constraints, we use the helper variable $\pd{\ell}{k} \in
 that:
 %
 (i) holds the elapsed time since the start of phase $k$ when $\p[n]{\ell}{k}$ is
-active~(\ref{c:pd:incUB},\ref{c:pd:incLB}) (see \cref{subfig:test1});
+active~(\ref{c:pd:incUB},\ref{c:pd:incLB}) (\cref{subfig:test1});
 %
 (ii) is constant and holds the duration of the last phase until the next
 activation when $\p[n]{\ell}{k}$ is
-inactive~(\ref{c:pd:inactiveUB},\ref{c:pd:inactiveLB}) (see \cref{subfig:test2}); and
+inactive~(\ref{c:pd:inactiveUB},\ref{c:pd:inactiveLB}) (\cref{subfig:test2}); and
 %
 (iii) is restarted when phase~$k$ changes from inactive to
-active~\eqref{c:pd:reset} (see \cref{subfig:test3}).
+active~\eqref{c:pd:reset} (\cref{subfig:test3}).
 %
 Notice that (\ref{c:pd:incUB}--\ref{c:pd:reset}) employs the \textit{big-M}
 method to turn the cases that should not be active into subsumed constraints
@@ -407,7 +407,7 @@ not enforced while $k$ is still active.
 
 Finally, we constrain the sum of all the phase durations for light \tl to be
 within the cycle time limits \CTMIN{\tl}~\eqref{c:cycleLB} and
-\CTMAX{\tl}~\eqref{c:cycleUB} (see \cref{subfig:test4}).
+\CTMAX{\tl}~\eqref{c:cycleUB} (\cref{subfig:test4}).
 %
 In both \eqref{c:cycleLB} and \eqref{c:cycleUB}, we use the duration of phase 1
 of \tl from the previous interval $n-1$ instead of the current interval $n$

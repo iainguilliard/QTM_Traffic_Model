@@ -1828,6 +1828,8 @@ def dump_vars(args): #data_sets,params,colors,line_styles,steps):
                 var_data = results[var]
                 if var == 'DT':  var_data = var_data[:-1]
                 table[i:] = var_data
+        #pd.set_option('display.width', 2000)
+        pd.set_option('display.max_columns', 500)
         display(pd.DataFrame(table,index=args.dump_vars))
 
 def dump_convergence_stats( args):

@@ -247,6 +247,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         q = [[m.addVar(lb=0, name="q%d_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_in = [[m.addVar(lb=0, name="q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_stop = [[m.addVar(lb=0, name="q%d_stop_%d" % (i,n)) for n in range(N)] for i in range(Q)]
+        qm_in = [[m.addVar( name="qm%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_out = [[m.addVar(lb=0, name="q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         d_q_out = [[m.addVar(lb=0, name="d_q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         d_q_in = [[m.addVar(lb=0, name="d_q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
@@ -310,17 +311,17 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
         if obj == 'MAX_OUT':
             out_flow = quicksum([ quicksum([ (T_MAX-time[n]) * out_q[i][n] * DT[n-1] for n in range(1,N)]) for i in range(Q) ])
-            in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n-1] for i in range(Q) ]) for n in range(1,N)])
+            in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n-1] for i in range(Q) ]) for n in range(0,N)])
 
             m.setObjective(alpha * out_flow  + beta*in_flow, GRB.MAXIMIZE)
         elif obj == 'MAX_QOUT':
             flow = quicksum([ quicksum([ (T_MAX-time[n]) * q_out[i][n] for n in range(N)]) if Q_OUT[i]>0 else 0 for i in range(Q) ])
-            in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n-1] for i in range(Q) ]) for n in range(1,N)])
-            stops = 0.5 * quicksum( [ quicksum([ d_q_in[i][n] + d_q_out[i][n] for i in range(Q) ]) for n in range(1,N)])
+            in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n-1] for i in range(Q) ]) for n in range(0,N)])
+            stops = 0.5 * quicksum( [ quicksum([ d_q_in[i][n] + d_q_out[i][n] for i in range(Q) ]) for n in range(0,N)])
             m.setObjective(alpha * flow  -  (1-alpha)*stops + beta*in_flow, GRB.MAXIMIZE)
             #m.setObjective(flow + beta*in_flow, GRB.MAXIMIZE)
         elif obj == 'MAX_ALL_QOUT':
-            m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + beta * ((T_MAX-time[n]) * in_q[i][n])  for i in range(Q) for n in range(1,N)]), GRB.MAXIMIZE)
+            m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + beta * ((T_MAX-time[n]) * in_q[i][n])  for i in range(Q) for n in range(0,N)]), GRB.MAXIMIZE)
             # m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + 1*((T_MAX-time[n]) * in_q[i][n]) for i in range(Q) for n in range(N)]), GRB.MAXIMIZE)
         else:
             print 'No objective: %s' % obj
@@ -333,8 +334,10 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
         for i in range(Q):
             m.addConstr(q[i][0] == q0[i])
-            m.addConstr(q_in[i][0] == q0_in[i])
+            m.addConstr(in_q[i][0] == Q_IN[i])
+            m.addConstr(q_in[i][0] == in_q[i][0] * DT[0] + quicksum([f[j][i][0]*DT[0] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
             m.addConstr(q_stop[i][0] == 0)
+            m.addConstr(qm_in[i][0] == 0)
             m.addConstr(q_out[i][0] == q0_out[i])
             for j in range(Q):
                 f_ij = '%d_%d' % (i,j)
@@ -358,21 +361,21 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
 
                 if 'In_Flow_limit' in data and flow_weights == None:
-                    if time[n-1] < data['In_Flow_limit'] and data['In_Flow_limit'] <= time[n]:
-                        flow_alpha = (data['In_Flow_limit'] - time[n-1]) / (time[n]-time[n-1])
-                        if i==1: print time[n],'flow_alpha=',flow_alpha
-                        m.addConstr(in_q[i][n] <= flow_alpha*Q_IN[i])
-                        cars_in+=flow_alpha*Q_IN[i]*DT[n-1]
-                        Q_in[i].append(flow_alpha*Q_IN[i])
-                        if i==1:
-                            cars_in_1+=flow_alpha*Q_IN[i]*DT[n-1]
-                            #print "cars_in_1 =",cars_in_1, ' @',time[n], ' alpha =',flow_alpha ,' limit =',data['In_Flow_limit'],time[n] < data['In_Flow_limit'] and data['In_Flow_limit'] < time[n+1]
-                    elif time[n-1] < data['In_Flow_limit']:
+                    # if time[n-1] <= data['In_Flow_limit'] and data['In_Flow_limit'] < time[n]:
+                    #     flow_alpha = (data['In_Flow_limit'] - time[n-1]) / (time[n]-time[n-1])
+                    #     if i==1: print time[n-1],'flow_alpha=',flow_alpha
+                    #     m.addConstr(in_q[i][n-1] <= flow_alpha*Q_IN[i])
+                    #     cars_in+=flow_alpha*Q_IN[i]*DT[n-1]
+                    #     Q_in[i].append(flow_alpha*Q_IN[i])
+                    #     if i==1:
+                    #         cars_in_1+=flow_alpha*Q_IN[i]*DT[n-1]
+                    #         #print "cars_in_1 =",cars_in_1, ' @',time[n], ' alpha =',flow_alpha ,' limit =',data['In_Flow_limit'],time[n] < data['In_Flow_limit'] and data['In_Flow_limit'] < time[n+1]
+                    if time[n] < data['In_Flow_limit']:
                         m.addConstr(in_q[i][n] <= Q_IN[i])
-                        cars_in+=Q_IN[i]*DT[n-1]
+                        cars_in+=Q_IN[i]*DT[n]
                         Q_in[i].append(Q_IN[i])
                         if i==1:
-                            cars_in_1+=Q_IN[i]*DT[n-1]
+                            cars_in_1+=Q_IN[i]*DT[n]
                             #print "cars_in_1 =",cars_in_1, ' @',time[n]
                     else:
                         Q_in[i].append(0)
@@ -384,13 +387,13 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 else:
                     m.addConstr(in_q[i][n] <= Q_IN[i]) #m.addConstr(in_q[i][n] <= Q_IN[i])
                     cars_in+=Q_IN[i]*DT[n-1]
-                m.addConstr(q_in[i][n] == in_q[i][n] * DT[n-1] + quicksum([f[j][i][n]*DT[n-1] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
+                m.addConstr(q_in[i][n] == in_q[i][n] * DT[n] + quicksum([f[j][i][n]*DT[n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
 
                 m.addConstr(out_q[i][n] <= Q_OUT[i])
 
                 m.addConstr(q_out[i][n] == out_q[i][n] * DT[n] + quicksum([f[i][j][n]*DT[n] if '%d_%d' % (i,j) in data['Flows'] and i != j else 0 for j in range(Q)]))
 
-                m.addConstr( q_out[i][n] <= q[i][n] + q_stop[i][n])
+                #m.addConstr( q_out[i][n] <= q[i][n] + q_stop[i][n])
 
 
                 m.addConstr(q[i][n] <= Q_MAX[i] ) #+ q_sl[i][n])
@@ -404,14 +407,15 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                         n1+=1
                         t_n1=time[n1]
                     n0=n1-1
+                    m.addConstr(qm_in[i][n] == n0)
                     alpha = (t_q_in-time[n0])/(time[n1]-time[n0])
                     #if i==1: print '@',time[n],'alpha=',alpha,'t_q_in=',t_q_in,'t_n0=',time[n0],'t_n1=',time[n1],'1/DT_n0-1=',(1.0/DT[n0-1]),'t_n-Q_DELAY-t_n0=',(time[n] - Q_DELAY[i] - time[n0])
                     #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1])
-                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1]  + q_in[i][n0] * (DT[n-1]/DT[n0-1])  )
-                    m.addConstr(q_stop[i][n] == q_in[i][n0] * (DT[n-1]/DT[n0-1])  )
+                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1]  + q_stop[i][n-1] ) #q_in[i][n0-1] * (DT[n-1]/DT[n0-1])  )
+                    m.addConstr(q_stop[i][n] == q_in[i][n0] * (DT[n]/DT[n0])  )
 
                     #m.addConstr((1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1] + quicksum([q_in[i][k] for k in range(n1+1,n)]) <= Q_MAX[i] - q[i][n-1])
-                    m.addConstr(  q_in[i][n0] * (DT[n-1]/DT[n0-1]) + quicksum([q_in[i][k] for k in range(n0+1,n)]) <= Q_MAX[i] - q[i][n-1])
+                    m.addConstr( q_stop[i][n] + quicksum([q_in[i][k] for k in range(n0+1,n)]) <= Q_MAX[i] - q[i][n-1] ) #q_in[i][n0-1] * (DT[n-1]/DT[n0-1]) + quicksum([q_in[i][k] for k in range(n0,n)]) <= Q_MAX[i] - q[i][n-1])
                     #m.addConstr( q_out[i][n-1] <= q[i][n-1] + q_in[i][n0] * (DT[n-1]/DT[n0-1]) )
 
                 elif fixed_plan == None and step != None and step > 0 and 'Out' in data:
@@ -421,6 +425,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                         n1+=1
                         t_n1=t_prev[n1]
                     n0=n1-1
+                    m.addConstr(qm_in[i][n] == n0)
                     alpha = (t_q_in-t_prev[n0])/(t_prev[n1]-t_prev[n0])
                     #if i==1: print  '_',time[n],'alpha=',alpha,t_q_in,t_prev[n0],t_prev[n1]
                     #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in_prev[i][n0] + alpha * q_in_prev[i][n1])
@@ -436,6 +441,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 else:
                     m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1])
                     m.addConstr(q_stop[i][n] == 0)
+                    m.addConstr(qm_in[i][n] == 0)
                     #m.addConstr( q_out[i][n] <= q[i][n] )
 
                 m.addConstr( q[i][n] - q[i][n-1] == d_q_out[i][n] - d_q_in[i][n]  )
@@ -628,6 +634,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 data_out[r'q_%d' % i]  =  [q[i][n].x for n in range(N-1)]
                 data_out[r'q_{%d,in}' % i] = [q_in[i][n].x for n in range(N-1)]
                 data_out[r'q_{%d,stop}' % i] = [q_stop[i][n].x for n in range(N-1)]
+                data_out[r'qm_{%d,in}' % i] = [qm_in[i][n].x for n in range(N-1)]
                 data_out[r'total_q_{%d,in}' % i] = sum(data_out[r'q_{%d,in}' % i])
                 if major_frame==0: print 'total q_in,%d=' % i, sum(data_out[r'q_{%d,in}' % i])
                 data_out[r'q_{%d,out}' % i] = [q_out[i][n].x for n in range(N-1)]

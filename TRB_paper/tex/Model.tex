@@ -193,6 +193,11 @@ and $w$ is the interval such that $\tn[w] \le \tn[n+1]-\QDELAY{i} < \tn[w+1]$.
 %
 \end{cAlign}
 
+%%
+%% IG: will probably change q_stop to be weighted sum of q_in
+%% where weight vector is pre-calcalulated for each n and i.
+%%
+
 %%\toFelipe{Do we really need this as a constraint?}
 %% FWT: Yes because t_n is used in the objective function and implicitly in
 %% c:qUpdate. Notice that it is not a constraint, just a helper variable (an
@@ -212,7 +217,9 @@ $\qin[m]{i}$ with $\DT[m]$, and then the total traffic arriving during the
 interval $n$ is found by multiplying this rate by $\DT$.
 %
 The flow conservation principle for non-homogeneous time steps is presented in
-\eqref{c:qUpdate}. If \DT[] is homogeneous for all $n$ then \eqref{c:qUpdate} 
+\eqref{c:qUpdate}. If \DT[] is homogeneous for all $n$ and \QDELAY{i}
+is a multiple of \DT[] for all $i$, then \eqref{def:qstop}
+reduces to $\qstop{i} = \qin[m]{i}$ and \eqref{c:qUpdate}
 reduces to $\q{i} = \q[n-1]{i} - \qout[n-1]{i} + \qin[m]{i}$.
 %
 To insure that the total volume of traffic travelling down the queue and waiting
@@ -221,11 +228,11 @@ apply~\eqref{c:10}.
 %
 \begin{cAlign}
 %
-\q{i} &= \q[n-1]{i} - \qout[n-1]{i} + \frac{\DT[n]}{\DT[m]}\qin[m]{i}
+\q{i} &= \q[n-1]{i} - \qout[n-1]{i} + \qstop[n-1]{i}
 \tagconstrain{c:qUpdate}\\
 %
-\frac{\DT[n]}{\DT[m]}\qin[m]{i}  + \sum \limits_{k=m+1}^n \qin[k]{i} &\le
-\QMAX{i} - \q[n-1]{i} \tagconstrain{c:10}
+\frac{\tn - \tn[n+1] + \QDELAY{i}}{\DT[w]}\qin[w]{i}  + \sum \limits_{k=w+1}^n \qin[k]{i}
++ \q[n-1]{i}&\le \QMAX{i} \tagconstrain{c:10}
 %
 \end{cAlign}
 

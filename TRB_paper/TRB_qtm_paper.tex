@@ -101,10 +101,10 @@
 
 % NOTE: for my system 'count.txt' literally makes the file ``'count.txt'''.  -Scott
 \newcommand\wordcount{
-    \immediate\write18{texcount -inc -sum -1 \jobname.tex > 'count.txt'}
+    \immediate\write18{texcount -inc -sum -1 -opt=tcrules \jobname.tex > 'count.txt'}
     \IfFileExists{./count.txt}{\input{count.txt}}{?? }}
 \newcommand\weightedTotal{
-    \immediate\write18{texcount -inc -sum=1,1,1,0,250,1,1 -1 \jobname.tex > 'weightedCount.txt'}
+    \immediate\write18{texcount -inc -sum=1,1,1,0,250,1,1 -1 -opt=tcrules \jobname.tex > 'weightedCount.txt'}
     \IfFileExists{./weightedCount.txt}{\input{weightedCount.txt}}{?? }}
 
 

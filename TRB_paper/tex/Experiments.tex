@@ -349,13 +349,15 @@ differ, it is currently not backing up any of our claims.}
 \includegraphics[keepaspectratio,height=0.31\textwidth]
 {box_plot_converg_9l.pdf}
 \includegraphics[keepaspectratio,height=0.31\textwidth]{box_plot_final_9l.pdf}}
-\caption{Results for the three networks showing the comparitive \% increase in 
-total travel time for the network between using a homogeneous $\DT[]$ and a 
-non-homogeneous $\DT[]$, and the 
-distribution of delay time at the convergence point of non-homogeneous $\DT[]
-$, the convergence point of homogeneous $\DT[]$ and for the fully solved 
-optimal solution. (a) and (b) 3 light avenue, 
-(c) and (d) 6 light grid, and (e) and (f) 9 light grid.}
+%
+\caption{Increase in the total travel time w.r.t. the optimal solution as a
+function of \Nn (Figures a, c, and e) and distribution of the total delay of
+each car for different values of \Nn (Figures b, d, and f).
+%
+The mean of the total delay is presented as a red square in box plots.
+%
+Plots in the $i$-th row correspond to the results for the $i$-th network in
+\cref{fig:networks}.}
 \label{fig:results}
 \end{figure*}
 
@@ -372,12 +374,16 @@ optimal solution. (a) and (b) 3 light avenue,
 \subfigure[]{
 \label{subfig:cumu3}
 \includegraphics[width=0.32\textwidth]{cum_plot_final_6l.pdf}}
-\caption{Cumulative arrival and departure curves and delay for queue 1 in the 6 
-light grid. (a) at the convergence point of the non-homogeneous $\DT[]$ it is 
-near to the optimum solution while 
-homogeneous $\DT[]$ lags behind (b) at the convergence point of 
-homogeneous $\DT[]$ both are near optimum, and (c) the fully solved optimal 
-solution}
+%
+\caption{Cumulative arrival and departure curves and delay for queue 1 in the
+2-by-3 network (\cref{subfig:network2}.
+%
+The value of \Nn in plots (a) and (b) corresponds, respectively, to the
+convergence point of the non-homogeneous and homogeneous approaches
+(\cref{subfig:travel_time_6}).
+%
+(c)~presents the same curves for the \authorHighlight{optimal} solution.}
+%
 \label{fig:cumu}
 \end{figure*}
 

@@ -350,6 +350,10 @@ def plot_network_figure(data,figsize,type='arrow'):
     nodes = []
     edges = {}
 
+    if "Annotations" in data:
+        for a in data['Annotations']:
+            p = a['point']
+            ax.text(p[0],p[1],a['label'],fontsize=16,color=text_color)
 
     x_min=data['Nodes'][0]['p'][0]
     y_min=data['Nodes'][0]['p'][1]
@@ -392,6 +396,10 @@ def plot_network_figure(data,figsize,type='arrow'):
 
     for i,q in enumerate(data['Queues']):
         pair = edges[q['pair']] > 1
+        if 'label' in q:
+            label = q['label']
+        else:
+            label = ''
         n0= data['Nodes'][q['edge'][0]]
         n1= data['Nodes'][q['edge'][1]]
         rx0=n0['p'][0]
@@ -487,15 +495,17 @@ def plot_network_figure(data,figsize,type='arrow'):
             bar_widths = 1 + np.array(q['cmap'])*2*width
             lc = LineCollection(segments,linewidths=bar_widths,colors=bar_cmap)
             ax.add_collection(lc)
-        for i,l in enumerate(data['Lights']):
-            n=data['Nodes'][l['node']]
-            nodes[l['node']]['l']=i
-            n['light']=i
-            x=n['p'][0]
-            y=n['p'][1]
-            p = Circle((x,y), r,ec=scalarMap.to_rgba(0),fc='w')
-            ax.add_patch(p)
-            ax.text(x-3,y-3,r'%d' % i,fontsize=10,color=scalarMap.to_rgba(0))
+        if type == 'bar' or type == 'carrow':
+            for i,l in enumerate(data['Lights']):
+                n=data['Nodes'][l['node']]
+                nodes[l['node']]['l']=i
+                n['light']=i
+                x=n['p'][0]
+                y=n['p'][1]
+                p = Circle((x,y), r,ec=scalarMap.to_rgba(0),fc='w')
+                ax.add_patch(p)
+                ax.text(x-3,y-3,r'%d' % i,fontsize=10,color=scalarMap.to_rgba(0))
+
 
 
     pl.axis('scaled')
@@ -1160,10 +1170,20 @@ def plot_av_travel_time(args):
                     label_test=False
                 if label_test == True:
                     ax.text(X[j],Y[j],plot_data_mf[i][x],size=8,color=args.color[c_i])
+
         if l_i+1 < len(args.linestyle): l_i += 1
         if c_i+1 < len(args.color): c_i += 1
         if m_i+1 < len(args.marker): m_i += 1
         i += 1
+
+    if args.annotate_labels is not None and args.annotate_x is not None and args.annotate_y is not None:
+        assert len(args.annotate_labels) == len(args.annotate_x) == len(args.annotate_y)
+        for i,_ in enumerate(args.annotate_labels):
+            if args.annotate_size is not None:
+                size = args.annotate_size[i]
+            else:
+                size = 8
+            ax.text(args.annotate_x[i],args.annotate_y[i],args.annotate_labels[i],size=size)
 
     if args.x_limit:
         ax.set_xlim(args.x_limit[0], args.x_limit[1])
@@ -1903,6 +1923,10 @@ if __name__ == '__main__':
     parser.add_argument("--debug", help="output debug messages", action="store_true", default=False)
     parser.add_argument("--dump_vars", help="Dump raw data for each var in the list",nargs='*')
     parser.add_argument("--annotate", help="List of y|n whether to annotate the points of each plot with the major frame time", default='n')
+    parser.add_argument("--annotate_x", help="List of x points to plot each label in annotate_labels", nargs='*', type=float)
+    parser.add_argument("--annotate_y", help="List of y points to plot each label in annotate_labels", nargs='*', type=float)
+    parser.add_argument("--annotate_labels", help="List of labels to annotate on plot", nargs='*')
+    parser.add_argument("--annotate_size", help="List of label font sizes for each label in annotate_label", nargs='*', type=int)
 
     args = parser.parse_args()
 

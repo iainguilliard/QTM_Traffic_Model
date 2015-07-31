@@ -602,6 +602,14 @@
 
     "Plot" : { "extent": [-220,370,-110,110], "fig_size": [15,5] },
 
+    "Annotations" : [
+        {"label": "$\\diamondsuit$", "point": [-75,100] },
+        {"label": "$\\clubsuit$", "point": [75,100] },
+        {"label": "$\\clubsuit$", "point": [225,100] },
+        {"label": "$\\spadesuit$", "point": [-200,-80] },
+        {"label": "$\\spadesuit$", "point": [305,-40] }
+    ],
+
     "Nodes" : [
         {"id":0, "p": [-50,100]},
         {"id":1, "p": [-200,-50]},

@@ -1,5 +1,5 @@
 \newcommand{\wordsInAbstract}{
-    \immediate\write18{texcount -sum -1 tex/Abstract.tex > 'countInAbstract.txt'}
+    \immediate\write18{texcount -sum -1 -opt=tcrules tex/Abstract.tex > 'countInAbstract.txt'}
     \IfFileExists{./countInAbstract.txt}{\input{countInAbstract.txt}}{??}}
 \remark{Using \wordsInAbstract{} words up to here. Maximum is 250 words.}
 

@@ -112,6 +112,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 DT.append(dt1)
                 DT.append(dt1)
                 N = len(DT)
+                n_samples = N-2
             else:
                 DT = [(t_period)/n_samples for n in range(N)]
         print 'DT_offset=',DT_offset
@@ -208,32 +209,32 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 out = out['Run'][run]
             if step != None and step > 0:
                 out = out['Step'][step-1]
-            n0 = 0
+            m0 = 0
             for n,tn in enumerate(out['t']):
                 if tn == t0:
-                    n0 = n
+                    m0 = n
                     break
                 if tn > t0:
-                    n0 = n-1
+                    m0 = n-1
                     break
-            n1=n0+1
-            if n1>= len(out['t']): n1=n0
-            dt_ratio = DT[0] / out['DT'][n0]
-            td = t0-out['t'][n0]
-            alpha = 1-(td / out['DT'][n0]) #(out['t'][n1] - out['t'][n0]))
-            q0 =    [ alpha * out['q_%d' % i][n0] + (1-alpha) * out['q_%d' % i][n1]     for i,q in enumerate(data['Queues']) ]
-            q0_in = [ (alpha * out['q_{%d,in}' % i][n0] + (1-alpha) * out['q_{%d,in}' % i][n1]) * dt_ratio  for i,q in enumerate(data['Queues']) ]
+            m1=m0+1
+            if m1>= len(out['t']): m1=m0
+            dt_ratio = DT[0] / out['DT'][m0]
+            td = t0-out['t'][m0]
+            alpha = 1-(td / out['DT'][m0]) #(out['t'][m1] - out['t'][m0]))
+            q0 =    [ alpha * out['q_%d' % i][m0] + (1-alpha) * out['q_%d' % i][m1]     for i,q in enumerate(data['Queues']) ]
+            q0_in = [ (alpha * out['q_{%d,in}' % i][m0] + (1-alpha) * out['q_{%d,in}' % i][m1]) * dt_ratio  for i,q in enumerate(data['Queues']) ]
             q_in_prev = [ out['q_{%d,in}' % i] for i,q in enumerate(data['Queues']) ]
             t_prev = out['t']
             DT_prev = out['DT']
-            q0_out =[ (alpha * out['q_{%d,out}' % i][n0] + (1-alpha) * out['q_{%d,out}' % i][n1]) * dt_ratio for i,q in enumerate(data['Queues']) ]
-            p0 = [ [ out['p_{%d,%d}' %(i,j)][n0] for j,p in enumerate(light['p0'])] for i,light in enumerate(data['Lights']) ]
-            d0 = [ [ (alpha * out['d_{%d,%d}' %(i,j)][n0] + (1-alpha) * out['d_{%d,%d}' %(i,j)][n1]) for j,d in enumerate(light['p0'])] for i,light in enumerate(data['Lights']) ]
+            q0_out =[ (alpha * out['q_{%d,out}' % i][m0] + (1-alpha) * out['q_{%d,out}' % i][m1]) * dt_ratio for i,q in enumerate(data['Queues']) ]
+            p0 = [ [ out['p_{%d,%d}' %(i,j)][m0] for j,p in enumerate(light['p0'])] for i,light in enumerate(data['Lights']) ]
+            d0 = [ [ (alpha * out['d_{%d,%d}' %(i,j)][m0] + (1-alpha) * out['d_{%d,%d}' %(i,j)][m1]) for j,d in enumerate(light['p0'])] for i,light in enumerate(data['Lights']) ]
             for i in range(Q):
                 for j in range(Q):
                     f_ij = '%d_%d' % (i,j)
                     if f_ij in data['Flows'] and i != j:
-                        f0[i][j] = (alpha * out['f_{%d,%d}' % (i,j)][n0] + (1-alpha) * out['f_{%d,%d}' % (i,j)][n1]) * dt_ratio
+                        f0[i][j] = (alpha * out['f_{%d,%d}' % (i,j)][m0] + (1-alpha) * out['f_{%d,%d}' % (i,j)][m1]) * dt_ratio
                     else:
                         f0[i][j] = 0
 
@@ -247,7 +248,8 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         q = [[m.addVar(lb=0, name="q%d_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_in = [[m.addVar(lb=0, name="q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_stop = [[m.addVar(lb=0, name="q%d_stop_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        qm_in = [[m.addVar( name="qm%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
+        qm_in = [[m.addVar(lb=-1, name="qm%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
+        qw_in = [[m.addVar(lb=-1, name="qw%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         q_out = [[m.addVar(lb=0, name="q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         d_q_out = [[m.addVar(lb=0, name="d_q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
         d_q_in = [[m.addVar(lb=0, name="d_q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
@@ -337,7 +339,8 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             m.addConstr(in_q[i][0] == Q_IN[i])
             m.addConstr(q_in[i][0] == in_q[i][0] * DT[0] + quicksum([f[j][i][0]*DT[0] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
             m.addConstr(q_stop[i][0] == 0)
-            m.addConstr(qm_in[i][0] == 0)
+            m.addConstr(qm_in[i][0] == -1)
+            m.addConstr(qw_in[i][0] == -1)
             m.addConstr(q_out[i][0] == q0_out[i])
             for j in range(Q):
                 f_ij = '%d_%d' % (i,j)
@@ -354,6 +357,8 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         cars_in =0
         cars_in_1 =0
 
+        print 'n\ttime\tt_m\tt_w\tm0\tw0\tDTm\tDTw\tDTw1'
+        queue_print = 1
 
         for n in range(1,N):
 
@@ -398,54 +403,98 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
                 m.addConstr(q[i][n] <= Q_MAX[i] ) #+ q_sl[i][n])
 
-                t_q_in = time[n]-Q_DELAY[i]
+                t_m = time[n]-Q_DELAY[i]
+                t_w = time[n]-Q_DELAY[i] + DT[n]
+                if i==queue_print:
+                    print n,'\t',time[n],'\t',t_m,'\t',t_w,
+                if t_w >= time[0]:
+                    if t_m >= time[0]:
+                        m1=1
+                        t_n1=time[1]
+                        while t_n1 < t_m:
+                            m1+=1
+                            t_n1=time[m1]
+                        m0=m1-1
+                        w1=m1+1
+                        DTm = ((time[m1] - t_m)/DT[m0])
+                    else:
+                        w1=1
+                    if w1 < N:
+                        t_w1=time[w1]
+                        while t_w1 < t_w:
+                            w1+=1
+                            t_w1=time[w1]
+                    else:
+                        w1=m1
+                    w0=w1-1
+                    DTw = ((t_w - time[w0])/DT[w0])
+                    DTw1 = ((time[w1] - t_w)/DT[w0])
 
-                if t_q_in >= time[0]:
-                    n1=1
-                    t_n1=time[1]
-                    while t_n1 <= t_q_in:
-                        n1+=1
-                        t_n1=time[n1]
-                    n0=n1-1
-                    m.addConstr(qm_in[i][n] == n0)
-                    alpha = (t_q_in-time[n0])/(time[n1]-time[n0])
-                    #if i==1: print '@',time[n],'alpha=',alpha,'t_q_in=',t_q_in,'t_n0=',time[n0],'t_n1=',time[n1],'1/DT_n0-1=',(1.0/DT[n0-1]),'t_n-Q_DELAY-t_n0=',(time[n] - Q_DELAY[i] - time[n0])
-                    #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1])
-                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1]  + q_stop[i][n-1] ) #q_in[i][n0-1] * (DT[n-1]/DT[n0-1])  )
-                    m.addConstr(q_stop[i][n] == q_in[i][n0] * (DT[n]/DT[n0])  )
+                    #alpha = (t_m-time[m0])/(time[m1]-time[m0])
+                    #if i==1: print '@',time[n],'alpha=',alpha,'t_m=',t_m,'t_n0=',time[m0],'t_n1=',time[m1],'1/DT_n0-1=',(1.0/DT[m0-1]),'t_m-Q_DELAY-t_n0=',(time[n] - Q_DELAY[i] - time[m0])
+                    #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in[i][m0] + alpha * q_in[i][m1])
+                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1]  + q_stop[i][n-1] ) #q_in[i][m0-1] * (DT[n-1]/DT[m0-1])  )
+                    if t_m >= time[0]:
+                        m.addConstr(q_stop[i][n] == q_in[i][m0] * DTm + quicksum([q_in[i][k] for k in range(m1,w0)]) + q_in[i][w0] * DTw )
+                        m.addConstr(qm_in[i][n] == m0)
+                        if i==queue_print:
+                            print '\t',m0,'\t',w0,
+                            print '\t',DTm,'\t',DTw,'\t',DTw1,
+                    else:
+                        m.addConstr(q_stop[i][n] == q_in[i][w0] * ((t_w - time[w0])/DT[w0]) )
+                        m.addConstr(qm_in[i][n] == -1)
+                        if i==queue_print:
+                            print '\t''\t',w0,
+                            print '\t','\t',DTw,'\t',DTw1,
 
-                    #m.addConstr((1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1] + quicksum([q_in[i][k] for k in range(n1+1,n)]) <= Q_MAX[i] - q[i][n-1])
-                    m.addConstr( q_stop[i][n] + quicksum([q_in[i][k] for k in range(n0+1,n)]) <= Q_MAX[i] - q[i][n-1] ) #q_in[i][n0-1] * (DT[n-1]/DT[n0-1]) + quicksum([q_in[i][k] for k in range(n0,n)]) <= Q_MAX[i] - q[i][n-1])
-                    #m.addConstr( q_out[i][n-1] <= q[i][n-1] + q_in[i][n0] * (DT[n-1]/DT[n0-1]) )
+                    m.addConstr(qw_in[i][n] == w0)
+                    #m.addConstr((1 - alpha) * q_in[i][m0] + alpha * q_in[i][m1] + quicksum([q_in[i][k] for k in range(m1+1,n)]) <= Q_MAX[i] - q[i][n-1])
+                    m.addConstr( q_in[i][w0] * DTw1 + quicksum([q_in[i][k] for k in range(w1,n)]) + q[i][n] <= Q_MAX[i]  ) #q_in[i][m0-1] * (DT[n-1]/DT[m0-1]) + quicksum([q_in[i][k] for k in range(m0,n)]) <= Q_MAX[i] - q[i][n-1])
+                    #m.addConstr( q_out[i][n-1] <= q[i][n-1] + q_in[i][m0] * (DT[n-1]/DT[m0-1]) )
+
+
 
                 elif fixed_plan == None and step != None and step > 0 and 'Out' in data:
-                    n1=1
-                    t_n1=t_prev[1]
-                    while t_n1 < t_q_in:
-                        n1+=1
-                        t_n1=t_prev[n1]
-                    n0=n1-1
-                    m.addConstr(qm_in[i][n] == n0)
-                    alpha = (t_q_in-t_prev[n0])/(t_prev[n1]-t_prev[n0])
-                    #if i==1: print  '_',time[n],'alpha=',alpha,t_q_in,t_prev[n0],t_prev[n1]
-                    #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in_prev[i][n0] + alpha * q_in_prev[i][n1])
-                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n] + (0) * q_in_prev[i][n0] + alpha * q_in_prev[i][n1])
-                    n2 = n1
+                    m1=1
+                    t_n1=time[1]
+                    while t_n1 <= t_m:
+                        m1+=1
+                        t_n1=time[m1]
+                    m0=m1-1
+
+                    w1=m1+1
+                    if w1 < N:
+                        t_w1=time[w1]
+                        while t_w1 <= t_w:
+                            w1+=1
+                            t_w1=time[w1]
+                    else:
+                        w1=m1
+                    w0=w1-1
+                    m.addConstr(qm_in[i][n] == m0)
+                    m.addConstr(qw_in[i][n] == w0)
+                    alpha = (t_m-t_prev[m0])/(t_prev[m1]-t_prev[m0])
+                    #if i==1: print  '_',time[n],'alpha=',alpha,t_m,t_prev[m0],t_prev[m1]
+                    #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in_prev[i][m0] + alpha * q_in_prev[i][m1])
+                    m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n] + (0) * q_in_prev[i][m0] + alpha * q_in_prev[i][m1])
+                    n2 = m1
                     #print 'n2=',n2,'len(t_prev)=',len(t_prev),'len(time)',len(time)
                     #print 'time=',t_prev
                     #print 'time=',time
                     while t_prev[n2] < time[0]: n2+=1
 
-                    m.addConstr((1 - alpha) * q_in[i][n0] + alpha * q_in[i][n1] + quicksum([q_in_prev[i][k] for  k in range(n1+1,n2)]+[q_in[i][k] for k in range(0,n)]) <= Q_MAX[i] - q[i][n-1])
+                    m.addConstr((1 - alpha) * q_in[i][m0] + alpha * q_in[i][m1] + quicksum([q_in_prev[i][k] for  k in range(m1+1,n2)]+[q_in[i][k] for k in range(0,n)]) <= Q_MAX[i] - q[i][n-1])
 
                 else:
                     m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1])
                     m.addConstr(q_stop[i][n] == 0)
-                    m.addConstr(qm_in[i][n] == 0)
+                    m.addConstr(qm_in[i][n] == -1)
+                    m.addConstr(qw_in[i][n] == -1)
                     #m.addConstr( q_out[i][n] <= q[i][n] )
 
                 m.addConstr( q[i][n] - q[i][n-1] == d_q_out[i][n] - d_q_in[i][n]  )
-
+                if i==queue_print:
+                    print
 
                 if fixed_plan == None:
                     for j in range(Q):
@@ -635,6 +684,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 data_out[r'q_{%d,in}' % i] = [q_in[i][n].x for n in range(N-1)]
                 data_out[r'q_{%d,stop}' % i] = [q_stop[i][n].x for n in range(N-1)]
                 data_out[r'qm_{%d,in}' % i] = [qm_in[i][n].x for n in range(N-1)]
+                data_out[r'qw_{%d,in}' % i] = [qw_in[i][n].x for n in range(N-1)]
                 data_out[r'total_q_{%d,in}' % i] = sum(data_out[r'q_{%d,in}' % i])
                 if major_frame==0: print 'total q_in,%d=' % i, sum(data_out[r'q_{%d,in}' % i])
                 data_out[r'q_{%d,out}' % i] = [q_out[i][n].x for n in range(N-1)]

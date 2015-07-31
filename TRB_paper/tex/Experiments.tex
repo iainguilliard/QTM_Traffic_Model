@@ -32,6 +32,25 @@ the experiments, our methodology, and the results.
 
 \subsection{Networks}
 
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:network1}
+\includegraphics[width=0.45\textwidth]{network_3_lights}}
+\subfigure[]{
+\label{subfig:network2}
+\includegraphics[width=0.45\textwidth]{network_6_lights}}
+\subfigure[]{
+\label{subfig:network3}
+\includegraphics[width=0.45\textwidth]{network_9_lights}}
+\caption{Networks used to evaluate the QTM performance. \remark{Iain: please,
+mark the input queues.}}
+\label{fig:networks}
+\end{figure*}
+
+
 We consider three networks of increasing complexity (\cref{fig:networks}): an
 avenue crossed by three side streets; a 2-by-3 grid; and a 3-by-3 grid with a
 diagonal avenue.
@@ -120,6 +139,16 @@ cars/s.
 
 
 
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\includegraphics[width=1.0\textwidth]{non_homogeneous_control.eps}
+\caption{Receding horizon planning}
+\label{fig:multiplan}
+\end{figure*}
+
+
 % def major and minor frame tell about overlapping and fig:multiplan show
 % parameters, i.e., delta ts
 % - fairness: same delta t for minor frame
@@ -184,34 +213,6 @@ to 3000s for the receding horizon approaches and unbounded for the optimal plan.
 %
 All our results are averaged over five runs to account for Gubori's
 stochastic strategies.
-
-
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\includegraphics[width=1.0\textwidth]{non_homogeneous_control.eps}
-\caption{Receding horizon planning}
-\label{fig:multiplan}
-\end{figure*}
-
-
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{subfig:network1}
-\includegraphics[width=0.45\textwidth]{network_3_lights}}
-\subfigure[]{
-\label{subfig:network2}
-\includegraphics[width=0.45\textwidth]{network_6_lights}}
-\subfigure[]{
-\label{subfig:network3}
-\includegraphics[width=0.45\textwidth]{network_9_lights}}
-\caption{Networks used to evaluate the QTM performance. \remark{Iain: please,
-mark the input queues.}}
-\label{fig:networks}
-\end{figure*}
-
 
 
 

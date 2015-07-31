@@ -3,7 +3,7 @@
 In this section we compare the solutions for traffic networks modeled as a QTM
 using homogeneous and non-homogeneous time intervals in two aspects:
 %
-the quality of the solution and convergence to the \remark{optimal
+the quality of the solution and convergence to the \authorHighlight{optimal
 solution}.\fnremark{FWT: I don't think that optimal is the best word here since
 we arbitrarily fixed a value of \DT[]. Also, there is the technical problem that
 Gurobi might not have found the true optimal.}
@@ -32,15 +32,35 @@ the experiments, our methodology, and the results.
 
 \subsection{Networks}
 
-We consider three networks of increasing complexity: an avenue crossed by three
-side streets; a 2-by-3 grid; and a 3-by-3 grid with a diagonal avenue.
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:network1}
+\includegraphics[width=0.45\textwidth]{network_3_lights}}
+\subfigure[]{
+\label{subfig:network2}
+\includegraphics[width=0.45\textwidth]{network_6_lights}}
+\subfigure[]{
+\label{subfig:network3}
+\includegraphics[width=0.45\textwidth]{network_9_lights}}
+\caption{Networks used to evaluate the QTM performance. \remark{Iain: please,
+mark the input queues.}}
+\label{fig:networks}
+\end{figure*}
+
+
+We consider three networks of increasing complexity (\cref{fig:networks}): an
+avenue crossed by three side streets; a 2-by-3 grid; and a 3-by-3 grid with a
+diagonal avenue.
 %
 The queues receiving cars from outside of the network are marked in
 \cref{fig:networks} and we refer to them as input queues.
 %
 The maximum capacity~(\QMAX{i}) is 60 cars for non-input queues and
-\remark{infinity} for input queues to prevent interruption of the input demand
-due to spill back from the stop line. 
+\authorHighlight{infinity} for input queues to prevent interruption of the input
+demand due to spill back from the stop line. 
 %
 The traversal time of each queue $i$~(\QDELAY{i}) is set at 9s (a distance of
 about 100m with a free flow speed of 50km/h).
@@ -94,8 +114,8 @@ lights 2, 4 and 6 in which \CTMIN{\tl} is 3s and \CTMAX{\tl} is 18s.
 For each network, a constant background level traffic is injected in the network
 in the first 55s to allow the solver to settle on a stable policy.
 %
-Then a spike in demand is introduced in the queues marked as \qVarTraf from time
-55s to 70s to trigger a policy change.
+Then a spike in demand is introduced in the queues marked as \qVarTraf
+(\cref{fig:networks}) from time 55s to 70s to trigger a policy change.
 %
 %with the expectation that plans generated with longer look ahead will produce a
 %more coordinated global policy change.
@@ -113,9 +133,20 @@ compute the total travel time still necessary?}
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
 The background level for the input queues are 1, 4 and 2 cars/s for queues
-marked as \qLowTraf, \qHighTraf and \qVarTraf, respectively; and during the high
-demand period, the queues \qVarTraf receive 4 cars/s.
+marked as \qLowTraf, \qHighTraf and \qVarTraf (\cref{fig:networks}),
+respectively; and during the high demand period, the queues \qVarTraf receive 4
+cars/s.
 
+
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\includegraphics[width=1.0\textwidth]{non_homogeneous_control.eps}
+\caption{Receding horizon planning}
+\label{fig:multiplan}
+\end{figure*}
 
 
 % def major and minor frame tell about overlapping and fig:multiplan show
@@ -130,8 +161,8 @@ this plan is executed before generating a new control plan.
 planning horizon as a major frame and its executable prefix as a minor frame.
 %
 Notice that, while the plan for a minor frame is being executed, we can start
-computing the solution for the next major frame \remark{based on a forecast
-model}.\footnote{FWT: not sure if we should mention this.}
+computing the solution for the next major frame \authorHighlight{based on a
+forecast model}.\fnremark{FWT: not sure if we should mention this.}
 
 
 To perform a fair comparison between the homogeneous and non-homogeneous
@@ -159,9 +190,9 @@ formulation with a fixed (homogeneous) $\DT[]$ of 0.25s.
 \fnremark{Do we need to justify why we use the QTM as the simulator over say a
 micro simulator?}
 %
-We also compare both receding horizon approaches against the \remark{optimal}
-solution obtained by computing a single control plan for the entire control
-horizon (i.e., $[0,\TMAX]$) using a fixed \DT[] of 0.25s.
+We also compare both receding horizon approaches against the
+\authorHighlight{optimal} solution obtained by computing a single control plan
+for the entire control horizon (i.e., $[0,\TMAX]$) using a fixed \DT[] of 0.25s.
 
 
 For all our experiments, we used Gurobi\textsuperscript{TM} as MILP solver with
@@ -180,17 +211,10 @@ to 3000s for the receding horizon approaches and unbounded for the optimal plan.
 %% with 10s solver time limit. Or we perhaps explain that 3000s shows that it
 %% could be scaled up to real time}
 %
-All our results are averaged over five runs \remark{to account for Gubori's
-stochastic strategies.}
+All our results are averaged over five runs to account for Gubori's
+stochastic strategies.
 
 
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\includegraphics[width=1.0\textwidth]{non_homogeneous_control.eps}
-\caption{Receding horizon planning}
-\label{fig:multiplan}
-\end{figure*}
 
 
 \begin{figure*}[t!]
@@ -198,17 +222,14 @@ stochastic strategies.}
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
 \label{subfig:network1}
-\includegraphics[width=0.45\textwidth]{network_1.pdf}}
+\includegraphics[width=0.45\textwidth]{network_3_lights}}
 \subfigure[]{
 \label{subfig:network2}
 \includegraphics[width=0.45\textwidth]{network_6_lights}}
 \subfigure[]{
 \label{subfig:network3}
 \includegraphics[width=0.45\textwidth]{network_9_lights}}
-\subfigure[]{
-\label{subfig:cumu_plot}
-\includegraphics[width=0.45\textwidth]{cumu_plot_final_6l.pdf}}
-\caption{(a),(b),(c) Networks used in the evaluation of the QTM. (d) Cumulative arrival and departure curves for lane $q_1\to q_3\to q_6 \to q_9$ on network 2. \remark{Iain: please,
+\caption{Networks used to evaluate the QTM performance. \remark{Iain: please,
 mark the input queues.}}
 \label{fig:networks}
 \end{figure*}
@@ -282,14 +303,11 @@ also better.}
 Finally, \cref{fig:cumu} shows the cumulative arrival and departure curves and
 the how delay evolves over time for $q_1$ of network 2.  \cref{subfig:cumu1}
 shows the comparison at the point where the non-homogeneous $\DT[]$ first
-converges and shows that with the longer major frame time of the
-non-homogeneous $\DT[]$, the solver is able to find a coordinated signal policy
-along the avenue to dissipate the extra traffic that arrives at the 55s point,
-while the homogeneous $\DT[]$ with its shorter major frame \remark{fails to find
-a coordinated policy along the avenue and experiences more delay}.\toIain{I
-don't think that failure to coordinate is the best way to describe it because
-there is coordination but it happens too late.} Once the homogeneous $\DT[]$ has
-converged in \cref{subfig:cumu2}, both solutions are close to the optimum
+converges and shows that with the longer major frame time of the non-homogeneous
+$\DT[]$, the solver is able to find a coordinated signal policy along the avenue
+to dissipate the extra traffic that arrives at the 55s point, while the
+homogeneous $\DT[]$ with its shorter major frame. Once the homogeneous $\DT[]$
+has converged in \cref{subfig:cumu2}, both solutions are close to the optimum
 solution which is shown in \cref{subfig:cumu3}.\fnremark{FWT: although
 \cref{fig:cumu} is a nice illustration of how homogeneous and non-homogeneous
 differ, it is currently not backing up any of our claims.}

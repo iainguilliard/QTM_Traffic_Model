@@ -85,7 +85,6 @@ illustrate the model and comment about it.}
 
 
 
-
 \subsection{Traffic Flow Simulation with QTM}\label{sec:lp}
 
 In this section, we present how to simulate traffic flow in a network using QTM
@@ -106,24 +105,29 @@ We represent the problem of finding the flow between queues as a Linear Program
 
 \begin{itemize}
 %
-\item $\q{i} \in [0,\QMAX{i}]$: traffic volume of queue $i$ during interval $n$;
+\item $\q{i} \in [0,\QMAX{i}]$: traffic volume waiting in the stop line of queue
+  $i$ at the beginning of interval~$n$;
 %
-\item $\inq{i} \in [0,\QIN{i}{n}]$: inflow to the network via queue $i$
-during interval $n$;
+\item $\inq{i} \in [0,\QIN{i}{n}]$: inflow to the network via queue $i$ during
+  interval $n$;
 %
 \item $\outq{i} \in [0,\QOUT{i}]$: outflow from the network via queue $i$ during
-interval $n$; and
+  interval $n$; and
 %
 \item $\f{i}{j} \in [0,\FMAX{i}{j}]$: flow from queue $i$ into queue $j$ during
-interval $n$.
+  interval $n$.
 %
 \end{itemize}
+
+
 
 %% FWT: These constraints are not necessary because we defined the domain of the
 %% variables in the paragraph above
 %\inq{i} &\le \QIN{i}{n} \tag{C1}\label{eq:C1}\\ 
 %\outq{i} &\le \QOUT{i} \tag{C2}\label{eq:C2}\\
 % \q{i} &\le \QMAX{i} \tag{C9}\label{eq:C9}\\
+
+
 
 
 The maximum traffic flow from queue $i$ to queue $j$ is enforced by
@@ -144,42 +148,16 @@ subsumed by the domain upper bound of $\f{i}{j}$.
 \end{cAlign}
 
 
+
+
 %% TODO(fwt): improve the beginning of this paragraph
 
 To simplify the presentation of remainder of the LP, we define the helper
-variables \qin{i}~\eqref{def:qin}, \qout{i}~\eqref{def:qout}, \qstop{i}~\eqref{def:qstop} and
-\tn[n]~\eqref{def:tn} to represent the volume of traffic to enter, reach the stop line and leave
+variables \qin{i}~\eqref{def:qin}, \qout{i}~\eqref{def:qout}, and
+\tn[n]~\eqref{def:tn} to represent the volume of traffic to enter and leave
 queue $i$ during interval~$n$, and the time elapsed since the beginning of the
 simulation until the end of interval \DT[n].
-%
-In order to account for the misalignment of the different \DT[] and
-\QDELAY{i}, we need to find the volume of traffic that was able to arrive at
-queue $i$, traverse it (i.e., wait \QDELAY{i} seconds), and reach the stop line
-before \DT[n] is over.
-%
-%% TODO(fwt): improve this explanation
-%
-This volume of traffic is obtained by integrating over the current interval
-with the rate at which traffic was arriving during the intervals $m$ to $w$ containing
-the time $\tn - \QDELAY{i}$ to $\tn[n+1] - \QDELAY{i}$.
-Where $m$ is the interval such that $\tn[m] \le \tn-\QDELAY{i} < \tn[m+1]$,
-and $w$ is the interval such that $\tn[w] \le \tn[n+1]-\QDELAY{i} < \tn[w+1]$.
-%
-%Using these helper variables, the flow conservation principle for queue $i$ and
-%\textit{homogeneous} \DT[] is simply $\q{i} = \q[n-1]{i} - \qout[n-1]{i} +
-%\qin[n-1]{i}$; however, a more sophisticated principle is need for
-%non-homogeneous time intervals because \DT[n-1] might be smaller than
-%\QDELAY{i}, therefore, there are cars at the stop line of $i$ in the beginning
-%of \DT[n] that started traversing $i$ before \DT[n-1].
-%
-\toIain{Triple check my explanation.}
-%
-%% FWT: Text related to the removed constraint:
-%with the constraint \ref{eq:C7} that the total flow out of queue $i$ during
-%interval $n$ cannot exceed the sum of the volume of the queue at the start of
-%that interval and the volume of traffic arriving at the stop line during the
-%interval.
-%
+
 \begin{cAlign}
 %
 \qin{i} &= \DT (\inq{i} + \sum_{j=1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
@@ -187,52 +165,58 @@ and $w$ is the interval such that $\tn[w] \le \tn[n+1]-\QDELAY{i} < \tn[w+1]$.
 \qout{i} &= \DT (\outq{i} +  \sum_{j=1}^{\Qn} \f{i}{j})
 \tagconstrain{def:qout}\\
 %
-\qstop{i} &= \frac{\tn[m+1] - \tn + \QDELAY{i}}{\DT[m]}\qin[m]{i} + \sum_{k=m+1}^{w-1} \qin[k]{i} + \frac{\tn[n+1]  - \tn[w] - \QDELAY{i}}{\DT[w]}\qin[w]{i}  \tagconstrain{def:qstop} \\
-%
 \tn[n] &= \sum_{x=1}^{n} \DT[x] \tagconstrain{def:tn}
 %
 \end{cAlign}
 
-%%
-%% IG: will probably change q_stop to be weighted sum of q_in
-%% where weight vector is pre-calcalulated for each n and i.
-%%
-
-%%\toFelipe{Do we really need this as a constraint?}
-%% FWT: Yes because t_n is used in the objective function and implicitly in
-%% c:qUpdate. Notice that it is not a constraint, just a helper variable (an
-%% alias) to make presentation simpler (instead of carrying this summation
-%% around).
 
 
-
-
-\toFelipe{Perhaps add this: Since the QTM is
-piecewise linear over an interval, the rate at which traffic enters a queue 
-remains constant over the interval, and can be found by dividing $\qin[m]{i}$
-by the \DT[m]}
+% Introduce the idea of V_i
+In order to account for the misalignment of the different \DT[] and \QDELAY{i},
+we need to find the volume of traffic that entered queue $i$ between two
+arbitrary points in time $x$ and $y$ ($x \in [0,\TMAX], y \in [0,\TMAX],$ and $x
+< y$), i.e., $x$ and $y$ might not coincide with any $t_n$ for $n \in
+\{1,\dots,N\}$.
 %
-The input rate of queue $i$ during interval $m$ is found by dividing
-$\qin[m]{i}$ with $\DT[m]$, and then the total traffic arriving during the
-interval $n$ is found by multiplying this rate by $\DT$.
+This volume of traffic, denoted as $\Vol_i(x,y)$, is obtained by integrating
+\qin{i} over $[x,y]$ and is defined in \eqref{eq:vol} where $m$ and $w$ are the
+index of the time intervals s.t. $\tn[m] \le x < \tn[m+1]$, and $\tn[w] \le y <
+\tn[w+1]$.
 %
-The flow conservation principle for non-homogeneous time steps is presented in
-\eqref{c:qUpdate}. If \DT[] is homogeneous for all $n$ and \QDELAY{i}
-is a multiple of \DT[] for all $i$, then \eqref{def:qstop}
-reduces to $\qstop{i} = \qin[m]{i}$ and \eqref{c:qUpdate}
-reduces to $\q{i} = \q[n-1]{i} - \qout[n-1]{i} + \qin[m]{i}$.
+Because the QTM dynamics is piecewise linear, \qin{i} is a step function w.r.t.
+time and this integral reduces to the sum of \qin{i} over the intervals
+contained in $[x,y]$ and the appropriate fraction of \qin[m]{i} and \qin[w]{i}
+representing the misaligned beginning and end of $[x,y]$.
 %
-To insure that the total volume of traffic travelling down the queue and waiting
-at the stop line does not exceed the capacity if the queue, we
-apply~\eqref{c:10}.
+\begin{equation}
+\Vol_{i}(x,y) =
+  (\tn[m+1] - x) \frac{\qin[m]{i}}{\DT[m]}
+  + \sum_{k=m+1}^{w-1} \qin[k]{i}
+  + (y - \tn[w]) \frac{\qin[w]{i}}{\DT[w]}
+\label{eq:vol}
+\end{equation}
+
+
+Using these helper variables, \eqref{c:qUpdate} represents the flow conservation
+principle for queue $i$ where $\Vol_i(\tn[n-1]-\QDELAY{i},\tn[n]-\QDELAY{i})$ is
+the volume of cars that reached stop line during \DT[n].
+%
+Since \vecDT and \QDELAY{i} for all queues are known a priori, the indexes $m$
+and $w$ used by $V_i$ can be pre-computed in order to encode \eqref{eq:vol};
+moreover, \eqref{c:qUpdate} represents a non-first order Markovian update
+because the update considers the previous $w-m$ time steps.
+%
+To insure that the total volume of traffic traversing $i$ (i.e.,
+$\Vol_i(\tn[n] - \QDELAY{i}, \tn[n])$) and waiting at the stop line does not
+exceed the capacity of the queue, we apply~\eqref{c:10}.
 %
 \begin{cAlign}
 %
-\q{i} &= \q[n-1]{i} - \qout[n-1]{i} + \qstop[n-1]{i}
-\tagconstrain{c:qUpdate}\\
+\q{i} &= \q[n-1]{i} - \qout[n-1]{i} +
+\Vol_i(\tn[n-1]-\QDELAY{i},\tn[n]-\QDELAY{i}) \tagconstrain{c:qUpdate}\\
 %
-\frac{\tn - \tn[n+1] + \QDELAY{i}}{\DT[w]}\qin[w]{i}  + \sum \limits_{k=w+1}^n \qin[k]{i}
-+ \q[n]{i}&\le \QMAX{i} \tagconstrain{c:10}
+\Vol_i(\tn[n] - \QDELAY{i}, \tn[n]) + \q{i} &\le \QMAX{i}
+\tagconstrain{c:10}
 %
 \end{cAlign}
 

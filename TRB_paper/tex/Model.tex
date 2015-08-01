@@ -319,14 +319,15 @@ phase~$k+1$ must be active in interval~$n$.
 %
 \eqref{c:seqPhases} assumes that $k+1$ equals 1 if $k = \Pn{}$.
 %
-\toIain{I removed the constraint $\p{\ell}{k} + \p{\ell}{k+1} \le 1$ because it
-is subsumed by $\p{\ell}{k} \in \{0,1\}$ and \eqref{c:onlyOnePhaseOn}}
-
-
+%% TODO: We need to understand this issue better:
+% \toIain{I removed the constraint $\p{\ell}{k} + \p{\ell}{k+1} \le 1$ because it
+% is subsumed by $\p{\ell}{k} \in \{0,1\}$ and \eqref{c:onlyOnePhaseOn}}
+%
+%
 %% FWT: note sure if the text bellow is necessary
 %Note that there could be more than one queue mapped to each $\p[]{\ell}{k}$, or
 %their could be none
-
+%
 \begin{cAlign}
 %
 \sum\limits_{k=1}^{\Pn} \p{\ell}{k} &= 1\tagconstrain{c:onlyOnePhaseOn}\\
@@ -334,6 +335,40 @@ is subsumed by $\p{\ell}{k} \in \{0,1\}$ and \eqref{c:onlyOnePhaseOn}}
 \p[n-1]{\ell}{k} &\le \p{\ell}{k} + \p{\ell}{k+1}\tagconstrain{c:seqPhases}
 %
 \end{cAlign}
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{fig:pd:inc}
+\includegraphics[width=0.45\textwidth]{phase_plot_fig_1.png}}
+\subfigure[]{
+\label{fig:pd:inactive}
+\includegraphics[width=0.45\textwidth]{phase_plot_fig_2.png}}
+\subfigure[]{
+\label{fig:pd:resetAndLB}
+\includegraphics[width=0.45\textwidth]{phase_plot_fig_3.png}}
+\subfigure[]{
+\label{fig:cycleTimeC}
+\includegraphics[width=0.45\textwidth]{phase_plot_fig_4.png}}
+%
+\caption{Visualization of constraints (\ref{c:pd:incUB}--\ref{c:cycleUB})
+for a traffic light \tl as a function of time.
+%
+(a--c) present, pairwise, the constraints (\ref{c:pd:incUB}--\ref{c:minPhase})
+for phase $k$ (\pd{\ell}{k} as the black line) and the activation variable
+\p[n]{\ell}{k} in the attached plot.
+%
+(d) presents the constraint for the cycle time of \tl (\ref{c:cycleLB} and
+\ref{c:cycleUB}) where T.C.T. is the total cycle time and is defined as the
+left hand side of both constraints.
+%
+For this example, $\PTMIN{\ell}{k}=1$, $\PTMAX{\ell}{k}=3$, $\CTMIN{\ell}=7$, and
+$\CTMAX{\ell}=8$.}
+\label{fig:phase_plots}
+\end{figure*}
+
 
 
 Next, we enforce the minimum and maximum phase durations (i.e.,
@@ -345,24 +380,29 @@ To encode these constraints, we use the helper variable $\pd{\ell}{k} \in
 that:
 %
 (i) holds the elapsed time since the start of phase $k$ when $\p[n]{\ell}{k}$ is
-active~(\ref{c:pd:incUB},\ref{c:pd:incLB}) (\cref{subfig:test1});
+active~(\ref{c:pd:incUB},\ref{c:pd:incLB});
 %
 (ii) is constant and holds the duration of the last phase until the next
 activation when $\p[n]{\ell}{k}$ is
-inactive~(\ref{c:pd:inactiveUB},\ref{c:pd:inactiveLB}) (\cref{subfig:test2}); and
+inactive~(\ref{c:pd:inactiveUB},\ref{c:pd:inactiveLB}); and
 %
 (iii) is restarted when phase~$k$ changes from inactive to
-active~\eqref{c:pd:reset} (\cref{subfig:test3}).
+active~\eqref{c:pd:reset}.
 %
 Notice that (\ref{c:pd:incUB}--\ref{c:pd:reset}) employs the \textit{big-M}
 method to turn the cases that should not be active into subsumed constraints
-based on the value of $\p[]{\tl}{k}$.
+based on the value of $\p[n]{\tl}{k}$.
 %
 We use~\PTMAX{\ell}{k} as our large constant since $\pd[n]{\ell}{k} \le
 \PTMAX{\ell}{k}$ and $\DT[n] \le \PTMAX{\ell}{k}$ by assumption (\cref{sec:lp}).
 %
 Similarly, \cref{c:minPhase} ensures the minimum phase time of $k$ and is
 not enforced while $k$ is still active.
+%
+\cref{fig:pd:inc,fig:pd:inactive,fig:pd:resetAndLB} present an example of how
+(\ref{c:pd:incUB}--\ref{c:minPhase}) work together as a function of the time $n$ 
+for $\pd[n]{\ell}{k}$; the domain constraint $0 \le \pd[n]{\ell}{k} \le
+\PTMAX{\ell}{k}$ for all $n \in \{1,\dots,\Nn\}$ is omitted for clarity.
 %
 %% FWT: I think the mathematical definition of \pd is redundant now.
 %\begin{equation}
@@ -397,7 +437,11 @@ not enforced while $k$ is still active.
   - \PTMAX{\ell}{k} (1 - \p[n-1]{\ell}{k})\tagconstrain{c:pd:incLB}\\
 %
 \pd{\ell}{k} &\le \pd[n-1]{\ell}{k} + \PTMAX{\ell}{k} \p[n-1]{\ell}{k}
-  \tagconstrain{c:pd:inactiveUB} \fnremark{check the n-1 in \eqref{c:pd:inactiveUB}}\\ 
+  \tagconstrain{c:pd:inactiveUB}\\
+%
+%% TODO understand this issue:  
+%  \fnremark{check the n-1 in \eqref{c:pd:inactiveUB}}\\
+%
 %
 \pd{\ell}{k} &\ge \pd[n-1]{\ell}{k} - \PTMAX{\ell}{k} \p{\ell}{k}
   \tagconstrain{c:pd:inactiveLB}\\
@@ -410,9 +454,9 @@ not enforced while $k$ is still active.
 
 
 
-Finally, we constrain the sum of all the phase durations for light \tl to be
+Lastly, we constrain the sum of all the phase durations for light \tl to be
 within the cycle time limits \CTMIN{\tl}~\eqref{c:cycleLB} and
-\CTMAX{\tl}~\eqref{c:cycleUB} (\cref{subfig:test4}).
+\CTMAX{\tl}~\eqref{c:cycleUB}.
 %
 In both \eqref{c:cycleLB} and \eqref{c:cycleUB}, we use the duration of phase 1
 of \tl from the previous interval $n-1$ instead of the current interval $n$
@@ -425,7 +469,8 @@ the correct elapse time of phase 1.
 Additionally, \eqref{c:cycleLB} is enforced right after the end of the each
 cycle, i.e., when its first phase is changed from inactive to active.
 %
-\toIain{Relate the phase and cycle constraints with the plots}
+The value \eqref{c:cycleLB} and \eqref{c:cycleUB} over time for a traffic light
+\tl is illustrated in \cref{fig:cycleTimeC}.
 %
 \begin{cAlign}
 %
@@ -442,25 +487,4 @@ by~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cycleUB}).
 %\fnremark{Extend the conclusion of this section}
 
 
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{subfig:test1}
-\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_1.pdf}}
-\subfigure[]{
-\label{subfig:test2}
-\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_2.pdf}}
-\subfigure[]{
-\label{subfig:test3}
-\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_3.pdf}}
-\subfigure[]{
-\label{subfig:test4}
-\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{phase_plot_fig_4.pdf}}
-\caption{An example showing the phase and cycle time constraint envelopes. In
-(a), (b) and (c), $\PTMIN{\ell}{k}=1$ and $\PTMAX{\ell}{k}=3$, the duration of
-the previous activation was 2 and the duration of the current activation is 3.
-In (d), the total cycle time is 7 with $\CTMIN{\ell}=7$, $\CTMAX{\ell}=8$}
-\label{fig:phase_plots}
-\end{figure*}
 

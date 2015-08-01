@@ -319,6 +319,11 @@ def plot_network_figure(data,figsize,type='arrow'):
     line_width = 1
     tail_width = 0
     head_width = 5
+    r=15 # radius of intersection nodes
+    d=5 # distance to space two edges that share a pair of nodes
+    width = 3 # width of bar
+    lx = 3 # light label x offset
+    ly = 3 # light label y offset
     line_color = 'k'
     light_color = 'w'
     text_color = 'k'
@@ -342,11 +347,17 @@ def plot_network_figure(data,figsize,type='arrow'):
             line_color = data['Plot']['line_color']
             light_color = data['Plot']['light_color']
             text_color = data['Plot']['text_color']
+        if 'r_light' in data['Plot']:
+            r = data['Plot']['r_light']
+        if 'd_edges' in data['Plot']:
+            d = data['Plot']['d_edges']
+        if 'width_bar' in data['Plot']:
+            width = data['Plot']['width_bar']
+        if 'lx' in data['Plot']:
+            lx = data['Plot']['lx']
+        if 'ly' in data['Plot']:
+            ly = data['Plot']['ly']
 
-
-    r=15 # radius of intersection nodes
-    d=5 # distance to space two edges that share a pair of nodes
-    width = 3 # width of bar
     nodes = []
     edges = {}
 
@@ -390,7 +401,7 @@ def plot_network_figure(data,figsize,type='arrow'):
         if type == 'arrow':
             p = Circle((x,y), r, fc=light_color)
             ax.add_patch(p)
-            ax.text(x-3,y-3,r'$l_{%d}$' % i,fontsize=16)
+            ax.text(x-lx,y-ly,r'$l_{%d}$' % i,fontsize=16)
         else:
             r=15
 

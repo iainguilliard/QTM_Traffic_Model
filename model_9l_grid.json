@@ -1,7 +1,24 @@
 {
     "Title" : "Lin Wang 6l Grid",
 
-    "Plot" : { "extent": [-220,420,-410,110], "fig_size": [15,10] },
+    "Plot" : { "extent": [-220,420,-410,110], "fig_size": [15,10], "r_light": 25, "d_edges": 7, "lx": 7, "ly" : 5  },
+
+
+    "Annotations" : [
+        {"label": "$\\diamondsuit$", "point": [-85,80] },
+        {"label": "$\\clubsuit$", "point": [60,80] },
+        {"label": "$\\clubsuit$", "point": [210,80] },
+        {"label": "$\\clubsuit$", "point": [-200,-180] },
+        {"label": "$\\clubsuit$", "point": [-200,-280] },
+        {"label": "$\\spadesuit$", "point": [-200,-80] },
+        {"label": "$\\spadesuit$", "point": [375,-35] },
+        {"label": "$\\spadesuit$", "point": [375,-135] },
+        {"label": "$\\spadesuit$", "point": [375,-235] },
+        {"label": "$\\spadesuit$", "point": [260,-395] },
+        {"label": "$\\spadesuit$", "point": [110,-395] },
+        {"label": "$\\spadesuit$", "point": [375,60] }
+    ],
+
 
     "Nodes" : [
         {"id":0, "p": [-50,100]},

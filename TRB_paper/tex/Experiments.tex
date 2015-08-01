@@ -3,10 +3,11 @@
 In this section we compare the solutions for traffic networks modeled as a QTM
 using homogeneous and non-homogeneous time intervals in two aspects:
 %
-the quality of the solution and convergence to the \authorHighlight{optimal
-solution}.\fnremark{FWT: I don't think that optimal is the best word here since
-we arbitrarily fixed a value of \DT[]. Also, there is the technical problem that
-Gurobi might not have found the true optimal.}
+the quality of the solution and convergence to the optimal solution.
+%
+% TODO \fnremark{FWT: I don't think that optimal is the best word here since
+%we arbitrarily fixed a value of \DT[]. Also, there is the technical problem that
+%Gurobi might not have found the true optimal.}
 %
 We compare the quality of solutions based on the total travel time and we also
 consider the third quartile and maximum of the observed delay distribution.
@@ -128,7 +129,7 @@ cars/s.
 \centering
 %  trim={<left> <lower> <right> <upper>}
 \includegraphics[width=0.75\textwidth]{non_homogeneous_control.png}
-\caption{Receding horizon control. For this figure, the problem horizon \TMAX
+\caption{Receding horizon control. In this example, the problem horizon \TMAX
 is 40s. The major frames are discretized in 12 time intervals ($\Nn = 12$) and
 they span 15s and 30s for homogeneous and non-homogeneous discretizations,
 respectively.}
@@ -370,7 +371,7 @@ The value of \Nn in plots (a) and (b) corresponds, respectively, to the
 convergence point of the non-homogeneous and homogeneous approaches
 (\cref{subfig:travel_time_6}).
 %
-(c)~presents the same curves for the \authorHighlight{optimal} solution.}
+(c)~presents the same curves for the optimal solution.}
 %
 \label{fig:cumu}
 \end{figure*}

@@ -752,6 +752,10 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
 
 
     i=0
+    if args.markerfill == True:
+        mfc =args.color
+    else:
+        mfc = ['None'] * len(args.color)
     for d in data:
         results = d['Out']
         if 'Run' in results:
@@ -766,15 +770,15 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
             #title = d['Title']
             #titles.append(d['Title'])
             time,cumu_in,cumu_out,cumu_delay = calc_delay(d, results, args=q)
-            ax.plot(time,cumu_in,c=args.color[c_i], linestyle=line_style[i], label='%s cumulative arrivals' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor='None',markevery=5)
+            ax.plot(time,cumu_in,c=args.color[c_i], linestyle=line_style[i], label='%s cumulative arrivals' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor=mfc[c_i],markevery=5)
             if i+1 < len(line_style): i += 1
             if c_i+1 < len(line_style): c_i += 1
             if m_i+1 < len(args.marker): m_i += 1
-            ax.plot(time,cumu_out,c=args.color[c_i],linestyle=line_style[i], label='%s cumulative departures' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor='None',markevery=5)
+            ax.plot(time,cumu_out,c=args.color[c_i],linestyle=line_style[i], label='%s cumulative departures' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=5)
             if i+1 < len(line_style): i += 1
             if c_i+1 < len(line_style): c_i += 1
             if m_i+1 < len(args.marker): m_i += 1
-            ax2.plot(time,cumu_delay,c=args.color[c_i], linestyle=line_style[i], label='%s delay' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor='None',markevery=1)
+            ax2.plot(time,cumu_delay,c=args.color[c_i], linestyle=line_style[i], label='%s delay' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=1)
             #ax.plot(time,[10 * cumu_delay[i]/q if q != 0 else 0 for i,q in enumerate(cumu_in)],label='norm delay')
             if i+1 < len(line_style): i += 1
             if c_i+1 < len(line_style): c_i += 1
@@ -1964,6 +1968,8 @@ if __name__ == '__main__':
     parser.add_argument("--y_label", help="set the y axis label of the plot",nargs='+', default=' ')
     parser.add_argument("--figsize", help="width and height of the plot", nargs='+',type=float)
     parser.add_argument("--marker", help="line maker for the plot",default=' ')
+    parser.add_argument("--markerfill", help="fill maker if True",action="store_true")
+    parser.add_argument("--markevery", help="maker every MARKEVERY points",nargs='+',type=int,default=[1])
     parser.add_argument("--debug", help="output debug messages", action="store_true", default=False)
     parser.add_argument("--dump_vars", help="Dump raw data for each var in the list",nargs='*')
     parser.add_argument("--annotate", help="List of y|n whether to annotate the points of each plot with the major frame time", default='n')

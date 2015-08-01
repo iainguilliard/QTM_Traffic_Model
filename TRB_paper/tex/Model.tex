@@ -223,15 +223,6 @@ exceed the capacity of the queue, we apply~\eqref{c:10}.
 
 \begin{figure*}[t!]
 \centering
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{subfig:overlay}
-\includegraphics[width=0.5\textwidth,trim={1cm 1cm 0cm 1cm},clip]{map_overlay.png}
-}
-\subfigure[]{
-\label{subfig:example}
-\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{map_example.png}
-}
 \subfigure[]{
 \label{subfig:converg_a}
 \includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence.pdf}
@@ -240,24 +231,22 @@ exceed the capacity of the queue, we apply~\eqref{c:10}.
 \label{subfig:converg_b}
 \includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_vari.pdf}
 }
-\caption{A QTM example showing the evolution of traffic volume in $q_{27}$ over
-time. (a) Streetmap overlay showing how each queue in QTM network corresponds to
-a segment of roadway and each light to a controlled intersection. (b) Convergence
-with increasing refinement of $\Delta t$ from $5.0$ down to $1.0$. (c) Dilation
-of $\Delta t$ from $1.0$ to $2.5$ compared to a fixed $\Delta t$ of $1.0$.}
-
+\caption{(a) Convergence with increasing refinement of $\Delta t$ from $5.0$
+down to $1.0$. (c) Dilation of $\Delta t$ from $1.0$ to $2.5$ compared to a
+fixed $\Delta t$ of $1.0$.}
+%
 \end{figure*}
 
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_NH.pdf}
-\caption{An example showing the convergence between a homogeneous solution with
-$\Delta t=1.0$ and a non-homogeneous solution over 30 seconds for the same
-network. By using non-homogeneous time steps the same solution is found with
-only 14 sample points compared to 30 for homogeneous solution.}
-\label{fig:converg_c}
-\end{figure*}
+%\begin{figure*}[t!]
+%\centering
+%%  trim={<left> <lower> <right> <upper>}
+%\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_NH.pdf}
+%\caption{An example showing the convergence between a homogeneous solution with
+%$\Delta t=1.0$ and a non-homogeneous solution over 30 seconds for the same
+%network. By using non-homogeneous time steps the same solution is found with
+%only 14 sample points compared to 30 for homogeneous solution.}
+%\label{fig:converg_c}
+%\end{figure*}
 
 
 
@@ -307,7 +296,7 @@ constraints~(\ref{c:turnProb}--\ref{c:10}) form the LP representing the
 dynamic, piecewise linear model of flow in a QTM network over time when a
 control plan \p{\tl}{k} is given as an input parameter.
 
-\cref{subfig:converg_a,subfig:converg_b,fig:converg_c} show the results of applying the LP formulation to a simple model with a fixed signal plan, using both homogeneous \vecDT and non-homogeneous \vecDT.
+\cref{subfig:converg_a,subfig:converg_b} show the results of applying the LP formulation to a simple model with a fixed signal plan, using both homogeneous \vecDT and non-homogeneous \vecDT.
 
 
 

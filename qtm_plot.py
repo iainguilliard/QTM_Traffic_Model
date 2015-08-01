@@ -265,7 +265,21 @@ def plot_delay_histogram(data, step, width, queues=[],line_style=['--'],colours=
 
     pl.title('Delay Histogram for Queues %s' % ', '.join([str(q) for q in queues]) )
 
-
+def label_distance(theta,i):
+    dx = 0
+    dy = 0
+    if theta > 155 or theta < -155: # Vertical down
+        if i>9: dx = -15
+        else: dx = -4
+    elif theta > -25 and theta < 25: # Vertical up
+        dx = -22
+    elif theta > -115 and theta < -65: # Vertical up
+        dy = 16
+    elif theta > 65 and theta < 115: # Vertical up
+        dy = -8
+    else: # Default
+        dx =  -7
+    return dx,dy
 
 def plot_network_figure(data,figsize,type='arrow'):
 
@@ -343,10 +357,15 @@ def plot_network_figure(data,figsize,type='arrow'):
         fig_size = tuple(data['Plot']['fig_size'])
         if 'line_width' in data['Plot']:
             line_width = data['Plot']['line_width']
+        if 'head_width' in data['Plot']:
             head_width = data['Plot']['head_width']
+        if 'tail_width' in data['Plot']:
             tail_width = data['Plot']['tail_width']
+        if 'line_color' in data['Plot']:
             line_color = data['Plot']['line_color']
+        if 'light_color' in data['Plot']:
             light_color = data['Plot']['light_color']
+        if 'text_color' in data['Plot']:
             text_color = data['Plot']['text_color']
         if 'r_light' in data['Plot']:
             r = data['Plot']['r_light']
@@ -402,7 +421,7 @@ def plot_network_figure(data,figsize,type='arrow'):
         if type == 'arrow':
             p = Circle((x,y), r, fc=light_color)
             ax.add_patch(p)
-            ax.text(x-lx,y-ly,r'$l_{%d}$' % i,fontsize=16)
+            ax.text(x-lx,y-ly,r'$l_{%d}$' % int(i+1),fontsize=16)
         else:
             r=15
 
@@ -457,20 +476,24 @@ def plot_network_figure(data,figsize,type='arrow'):
         rx = rx1-rx0
         ry = ry1-ry0
         lth = math.sqrt(rx*rx+ry*ry)
-        tx=rx/lth * r; ty=ry/lth * r
-
-        rx = rx0+(rx1-rx0)/2
-        ry = ry0+(ry1-ry0)/2
+        theta = math.degrees(math.atan2(rx,ry))
+        dx,dy = label_distance(theta,i)
+        tx=ry/lth * r + dx; ty=rx/lth * r + dy
+        tc = 0.5
+        if 'text_pos' in q:
+            tc = q['text_pos']
+        rx = rx0+(rx1-rx0)*tc
+        ry = ry0+(ry1-ry0)*tc
 
         if type == 'arrow':
-            ax.text(rx+(ty-7),ry-(tx),r'$q_{%d}$' % i,fontsize=16,color=text_color)
+            ax.text(rx+(tx),ry-(ty),r'$q_{%d}$' % int(i+1),fontsize=16,color=text_color)
             #plot([rx,rx+ty],[ry,ry-tx])
             arrow = ax.arrow(rx0,ry0,rx1-rx0,ry1-ry0, shape='full', lw=line_width,color=line_color,length_includes_head=True, head_width=head_width, width=tail_width)
             arrow.set_ec('k')
             arrow.set_fc(line_color)
 
         elif type == 'bar' or type == 'carrow':
-            ax.text(rx+(ty-7),ry-(tx),'%d' % i,fontsize=10,color=scalarMap.to_rgba(0))
+            ax.text(rx+(tx),ry-(ty),'%d' % int(i+1),fontsize=10,color=scalarMap.to_rgba(0))
             N=len(q['cmap'])
             t=0
             #q=0.0
@@ -516,7 +539,7 @@ def plot_network_figure(data,figsize,type='arrow'):
                 y=n['p'][1]
                 p = Circle((x,y), r,ec=scalarMap.to_rgba(0),fc='w')
                 ax.add_patch(p)
-                ax.text(x-3,y-3,r'%d' % i,fontsize=10,color=scalarMap.to_rgba(0))
+                ax.text(x-3,y-3,r'%d' % int(i+1),fontsize=10,color=scalarMap.to_rgba(0))
 
 
 
@@ -722,6 +745,7 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
     i=0
     c_i=0
     l_i=0
+    m_i=0
     lab_i=0
     labels=['']
     if args.labels: labels=args.labels
@@ -742,11 +766,19 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
             #title = d['Title']
             #titles.append(d['Title'])
             time,cumu_in,cumu_out,cumu_delay = calc_delay(d, results, args=q)
-            ax.plot(time,cumu_in,c='b', linestyle=line_style[i], label='%s cum. arrivals' % labels[lab_i])
-            ax.plot(time,cumu_out,c='g',linestyle=line_style[i], label='%s cum. departures' % labels[lab_i])
-            ax2.plot(time,cumu_delay,c='r', linestyle=line_style[i], label='%s delay' % labels[lab_i])
+            ax.plot(time,cumu_in,c=args.color[c_i], linestyle=line_style[i], label='%s cumulative arrivals' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor='None',markevery=5)
+            if i+1 < len(line_style): i += 1
+            if c_i+1 < len(line_style): c_i += 1
+            if m_i+1 < len(args.marker): m_i += 1
+            ax.plot(time,cumu_out,c=args.color[c_i],linestyle=line_style[i], label='%s cumulative departures' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor='None',markevery=5)
+            if i+1 < len(line_style): i += 1
+            if c_i+1 < len(line_style): c_i += 1
+            if m_i+1 < len(args.marker): m_i += 1
+            ax2.plot(time,cumu_delay,c=args.color[c_i], linestyle=line_style[i], label='%s delay' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor='None',markevery=1)
             #ax.plot(time,[10 * cumu_delay[i]/q if q != 0 else 0 for i,q in enumerate(cumu_in)],label='norm delay')
             if i+1 < len(line_style): i += 1
+            if c_i+1 < len(line_style): c_i += 1
+            if m_i+1 < len(args.marker): m_i += 1
         if lab_i+1 < len(labels): lab_i += 1
     if args.x_limit:
         ax.set_xlim(args.x_limit[0], args.x_limit[1])

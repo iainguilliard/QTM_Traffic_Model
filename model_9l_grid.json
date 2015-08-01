@@ -1,7 +1,7 @@
 {
     "Title" : "Lin Wang 6l Grid",
 
-    "Plot" : { "extent": [-220,420,-410,110], "fig_size": [15,10], "r_light": 25, "d_edges": 7, "lx": 7, "ly" : 5  },
+    "Plot" : { "extent": [-220,420,-410,110], "fig_size": [15,10], "line_width": 1, "head_width": 7, "tail_width": 0,  "r_light": 25, "d_edges": 7, "lx": 7, "ly" : 5  },
 
 
     "Annotations" : [
@@ -76,7 +76,7 @@
          {"id": 13, "edge": [4,1],"Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
 
          {"id": 14, "edge": [12,2], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0, "weights": ["background_1"], "Q_P": [3,1], "Q_MAX": 500,  "q0": 0, "q0_in": 0, "q0_out": 0 },
-        {"id": 15, "edge": [2,6], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0, "Q_P": [4,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 15, "edge": [2,6], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0, "Q_P": [4,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0, "text_pos": 0.4 },
         {"id": 16, "edge": [6,10], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0, "Q_P": [5,1],  "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
         {"id": 17, "edge": [10,13], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null, "Q_MAX": 20,  "q0": 0, "q0_in": 0, "q0_out": 0 },
 
@@ -114,9 +114,9 @@
          {"id": 43, "edge": [8,5],"Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
 
          {"id": 44, "edge": [3,7], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "weights": ["background","wave"], "Q_P": [2,2], "Q_MAX": 500,  "q0": 0, "q0_in": 0, "q0_out": 0 },
-         {"id": 45, "edge": [7,6], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0, "Q_P": [4,2], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
-         {"id": 46, "edge": [6,14], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0,  "Q_P": [6,2],  "Q_MAX": 60,"q0": 0, "q0_in": 0, "q0_out": 0 },
-         {"id": 47, "edge": [14,22],"Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 }
+         {"id": 45, "edge": [7,6], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0, "Q_P": [4,2], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0, "text_pos": 0.6 },
+         {"id": 46, "edge": [6,14], "Q_DELAY": 9, "Q_IN": 0, "Q_OUT": 0,  "Q_P": [6,2],  "Q_MAX": 60,"q0": 0, "q0_in": 0, "q0_out": 0, "text_pos": 0.75 },
+         {"id": 47, "edge": [14,22],"Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0, "text_pos": 0.7 }
 
 
         ],

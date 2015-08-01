@@ -258,37 +258,40 @@ network.}
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
 \label{subfig:travel_time_3}
-\includegraphics[keepaspectratio,height=0.31\textwidth]{network_1_converge.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_1_converge.pdf}}
 \subfigure[]{
 \label{subfig:delay_3}
-\includegraphics[keepaspectratio,height=0.31\textwidth]{box_plot_early_3l.pdf}
-\includegraphics[keepaspectratio,height=0.31\textwidth]
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_3l.pdf}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]
 {box_plot_converg_3l.pdf}
-\includegraphics[keepaspectratio,height=0.31\textwidth]{box_plot_final_3l.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_3l.pdf}}
 
 \subfigure[]{
 \label{subfig:travel_time_6}
-\includegraphics[keepaspectratio,height=0.31\textwidth]{network_2_converge.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_2_converge.pdf}}
 \subfigure[]{
 \label{subfig:delay_6}
-\includegraphics[keepaspectratio,height=0.31\textwidth]{box_plot_early_6l.pdf}
-\includegraphics[keepaspectratio,height=0.31\textwidth]
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_6l.pdf}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]
 {box_plot_converg_6l.pdf}
-\includegraphics[keepaspectratio,height=0.31\textwidth]{box_plot_final_6l.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_6l.pdf}}
 
 \subfigure[]{
 \label{subfig:travel_time_9}
-\includegraphics[keepaspectratio,height=0.31\textwidth]{network_3_converge.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_3_converge.pdf}}
 \subfigure[]{
 \label{subfig:delay_9}
-\includegraphics[keepaspectratio,height=0.31\textwidth]{box_plot_early_9l.pdf}
-\includegraphics[keepaspectratio,height=0.31\textwidth]
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_9l.pdf}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]
 {box_plot_converg_9l.pdf}
-\includegraphics[keepaspectratio,height=0.31\textwidth]{box_plot_final_9l.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_9l.pdf}}
 %
-\caption{Increase in the total travel time w.r.t. the optimal solution as a
+\caption{Increase in the total travel time w.r.t.~the optimal solution as a
 function of \Nn (Figures a, c, and e) and distribution of the total delay of
 each car for different values of \Nn (Figures b, d, and f).
+%
+For each row, the roman numeral on top of the box plots corresponds to point the 
+travel time plot marked with the same numeral.
 %
 The mean of the total delay is presented as a red square in box plots.
 %
@@ -304,7 +307,7 @@ Plots in the $i$-th row correspond to the results for the $i$-th network in
 %queue of the network.
 %
 \cref{subfig:travel_time_3,subfig:travel_time_6,subfig:travel_time_9} show, for
-each network, the increase in the total travel time w.r.t. the optimal solution
+each network, the increase in the total travel time w.r.t.~the optimal solution
 as a function of \Nn.
 %
 As we hypothesized, the non-homogeneous discretization requires less time
@@ -320,7 +323,7 @@ solution of major frames with large \Nn requires more time than our imposed
 3000s time cutoff; therefore, Gurobi returns a feasible control plan that is far
 from optimal.
 %
-This effect can be seen in \cref{subfig:travel_time_6} for $\Nn > 110$.
+This effect can be seen in \cref{subfig:travel_time_9} for $\Nn > 120$.
 
 
 

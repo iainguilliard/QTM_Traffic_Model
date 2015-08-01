@@ -335,13 +335,16 @@ def plot_network_figure(data,figsize,type='arrow'):
     tail_width = 0
     head_width = 5
     r=15 # radius of intersection nodes
+    label_space=15 # label spacing from line
     d=5 # distance to space two edges that share a pair of nodes
     width = 3 # width of bar
     lx = 3 # light label x offset
     ly = 3 # light label y offset
     line_color = 'k'
+    edge_color = 'k'
     light_color = 'w'
     text_color = 'k'
+    font_size = 16
     ext = [-200,200,-110,110]
     if 'Plot' in data:
         ext = data['Plot']['extent']
@@ -363,10 +366,16 @@ def plot_network_figure(data,figsize,type='arrow'):
             tail_width = data['Plot']['tail_width']
         if 'line_color' in data['Plot']:
             line_color = data['Plot']['line_color']
+        if 'edge_color' in data['Plot']:
+            edge_color = data['Plot']['edge_color']
         if 'light_color' in data['Plot']:
             light_color = data['Plot']['light_color']
         if 'text_color' in data['Plot']:
             text_color = data['Plot']['text_color']
+        if 'font_size' in data['Plot']:
+            font_size = data['Plot']['font_size']
+        if 'label_space' in data['Plot']:
+            label_space = data['Plot']['label_space']
         if 'r_light' in data['Plot']:
             r = data['Plot']['r_light']
         if 'd_edges' in data['Plot']:
@@ -384,7 +393,7 @@ def plot_network_figure(data,figsize,type='arrow'):
     if "Annotations" in data:
         for a in data['Annotations']:
             p = a['point']
-            ax.text(p[0],p[1],a['label'],fontsize=16,color=text_color)
+            ax.text(p[0],p[1],a['label'],fontsize=font_size,color=text_color)
 
     x_min=data['Nodes'][0]['p'][0]
     y_min=data['Nodes'][0]['p'][1]
@@ -421,7 +430,7 @@ def plot_network_figure(data,figsize,type='arrow'):
         if type == 'arrow':
             p = Circle((x,y), r, fc=light_color)
             ax.add_patch(p)
-            ax.text(x-lx,y-ly,r'$l_{%d}$' % int(i+1),fontsize=16)
+            ax.text(x-lx,y-ly,r'$l_{%d}$' % int(i+1),fontsize=font_size)
         else:
             r=15
 
@@ -478,7 +487,7 @@ def plot_network_figure(data,figsize,type='arrow'):
         lth = math.sqrt(rx*rx+ry*ry)
         theta = math.degrees(math.atan2(rx,ry))
         dx,dy = label_distance(theta,i)
-        tx=ry/lth * r + dx; ty=rx/lth * r + dy
+        tx=ry/lth * label_space + dx; ty=rx/lth * label_space + dy
         tc = 0.5
         if 'text_pos' in q:
             tc = q['text_pos']
@@ -486,14 +495,27 @@ def plot_network_figure(data,figsize,type='arrow'):
         ry = ry0+(ry1-ry0)*tc
 
         if type == 'arrow':
-            ax.text(rx+(tx),ry-(ty),r'$q_{%d}$' % int(i+1),fontsize=16,color=text_color)
+            if 'text_color' in q:
+                qtext_color = q['text_color']
+            else:
+                qtext_color = text_color
+
+            ax.text(rx+(tx),ry-(ty),r'$q_{%d}$' % int(i+1),fontsize=font_size,color=qtext_color)
             #plot([rx,rx+ty],[ry,ry-tx])
             arrow = ax.arrow(rx0,ry0,rx1-rx0,ry1-ry0, shape='full', lw=line_width,color=line_color,length_includes_head=True, head_width=head_width, width=tail_width)
-            arrow.set_ec('k')
-            arrow.set_fc(line_color)
+            if 'edge_color' in q:
+                qedge_color = q['edge_color']
+            else:
+                qedge_color = edge_color
+            arrow.set_ec(qedge_color)
+            if 'line_color' in q:
+                qline_color = q['line_color']
+            else:
+                qline_color = line_color
+            arrow.set_fc(qline_color)
 
         elif type == 'bar' or type == 'carrow':
-            ax.text(rx+(tx),ry-(ty),'%d' % int(i+1),fontsize=10,color=scalarMap.to_rgba(0))
+            ax.text(rx+(tx),ry-(ty),'%d' % int(i+1),fontsize=font_size,color=scalarMap.to_rgba(0))
             N=len(q['cmap'])
             t=0
             #q=0.0
@@ -752,10 +774,16 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
 
 
     i=0
-    if args.markerfill == True:
-        mfc =args.color
-    else:
+    print args.markerfill
+    if args.markerfill == 'n':
         mfc = ['None'] * len(args.color)
+    else:
+        mfc = [args.color[i] if args.markerfill[i]=='y' else 'None' for i in range(len(args.markerfill))]
+
+    mevery = args.markevery
+    if len(mevery) < len(args.marker):
+        mevery = mevery + [1] * (len(args.marker) - len(mevery))
+
     for d in data:
         results = d['Out']
         if 'Run' in results:
@@ -770,15 +798,15 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
             #title = d['Title']
             #titles.append(d['Title'])
             time,cumu_in,cumu_out,cumu_delay = calc_delay(d, results, args=q)
-            ax.plot(time,cumu_in,c=args.color[c_i], linestyle=line_style[i], label='%s cumulative arrivals' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor=mfc[c_i],markevery=5)
+            ax.plot(time,cumu_in,c=args.color[c_i], linestyle=line_style[i], label='%s cumulative arrivals' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor=mfc[c_i],markevery=mevery[m_i])
             if i+1 < len(line_style): i += 1
             if c_i+1 < len(line_style): c_i += 1
             if m_i+1 < len(args.marker): m_i += 1
-            ax.plot(time,cumu_out,c=args.color[c_i],linestyle=line_style[i], label='%s cumulative departures' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=5)
+            ax.plot(time,cumu_out,c=args.color[c_i],linestyle=line_style[i], label='%s cumulative departures' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=mevery[m_i])
             if i+1 < len(line_style): i += 1
             if c_i+1 < len(line_style): c_i += 1
             if m_i+1 < len(args.marker): m_i += 1
-            ax2.plot(time,cumu_delay,c=args.color[c_i], linestyle=line_style[i], label='%s delay' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=1)
+            ax2.plot(time,cumu_delay,c=args.color[c_i], linestyle=line_style[i], label='%s delay' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=mevery[m_i])
             #ax.plot(time,[10 * cumu_delay[i]/q if q != 0 else 0 for i,q in enumerate(cumu_in)],label='norm delay')
             if i+1 < len(line_style): i += 1
             if c_i+1 < len(line_style): c_i += 1
@@ -1968,7 +1996,7 @@ if __name__ == '__main__':
     parser.add_argument("--y_label", help="set the y axis label of the plot",nargs='+', default=' ')
     parser.add_argument("--figsize", help="width and height of the plot", nargs='+',type=float)
     parser.add_argument("--marker", help="line maker for the plot",default=' ')
-    parser.add_argument("--markerfill", help="fill maker if True",action="store_true")
+    parser.add_argument("--markerfill", help="List of y|n whether to fill maker",default='n')
     parser.add_argument("--markevery", help="maker every MARKEVERY points",nargs='+',type=int,default=[1])
     parser.add_argument("--debug", help="output debug messages", action="store_true", default=False)
     parser.add_argument("--dump_vars", help="Dump raw data for each var in the list",nargs='*')

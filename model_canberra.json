@@ -7,9 +7,13 @@
         "line_width" : 1,
         "head_width" : 5,
         "tail_width" : 2,
-        "line_color" : "r",
+        "line_color" : "0.35",
+        "edge_color" : "0.35",
         "light_color" : "y",
-        "text_color" : "r"
+        "r_light" : 21,
+        "text_color" : "0.25",
+        "font_size" : 20,
+        "label_space": 25, "d_edges": 7, "lx": 11, "ly" : 5
     },
 
     "Nodes" : [
@@ -38,17 +42,18 @@
         ],
 
      "Queues": [
+        {"edge": [7,8], "Q_DELAY": 3, "Q_IN": 1, "Q_OUT": 0,  "Q_P": [0,0], "Q_MAX": 20,  "q0": 0, "q0_in": 2, "q0_out": 0, "text_color": "b", "edge_color": "b", "line_color": "b"  },
         {"edge": [0,1], "Q_DELAY": 3, "Q_IN": 1, "Q_OUT": 0,  "Q_P": [0,0], "Q_MAX": 20,  "q0": 0, "q0_in": 2, "q0_out": 0 },
-        {"edge": [7,8], "Q_DELAY": 3, "Q_IN": 1, "Q_OUT": 0,  "Q_P": [0,0], "Q_MAX": 20,  "q0": 0, "q0_in": 2, "q0_out": 0 },
         {"edge": [1,2], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 0, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
          {"edge": [2,1], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 0, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
         {"edge": [2,3], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 1e30,"q0": 0, "q0_in": 0, "q0_out": 0 },
          {"edge": [3,2], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 0, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
+         {"edge": [8,9], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "Q_P": [0,1], "Q_MAX": 20,  "q0": 0, "q0_in": 2, "q0_out": 0, "text_color": "b", "edge_color": "b", "line_color": "b"},
          {"edge": [21,3], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 1e30,"q0": 0, "q0_in": 0, "q0_out": 0 },
-         {"edge": [8,9], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "Q_P": [0,1], "Q_MAX": 20,  "q0": 0, "q0_in": 2, "q0_out": 0 },
 
+
+        {"edge": [9,10], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 1e30,"q0": 0, "q0_in": 0, "q0_out": 0, "text_color": "b", "edge_color": "b", "line_color": "b"},
         {"edge": [4,5], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 1e30,"q0": 0, "q0_in": 0, "q0_out": 0 },
-        {"edge": [9,10], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 1e30,"q0": 0, "q0_in": 0, "q0_out": 0 },
         {"edge": [5,6], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 1e30,"q0": 0, "q0_in": 0, "q0_out": 0 },
         {"edge": [6,5], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 0, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
 

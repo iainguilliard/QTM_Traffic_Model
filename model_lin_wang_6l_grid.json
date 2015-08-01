@@ -1,7 +1,7 @@
 {
     "Title" : "Lin Wang 6l Grid",
 
-    "Plot" : { "extent": [-220,370,-210,110], "fig_size": [15,10], "r_light": 25, "d_edges": 7, "lx": 7, "ly" : 5 },
+    "Plot" : { "extent": [-220,420,-260,110], "fig_size": [15,10], "line_width": 1, "head_width": 7, "tail_width": 0, "r_light": 25, "d_edges": 7, "lx": 7, "ly" : 5 },
 
     "Annotations" : [
         {"label": "$\\diamondsuit$", "point": [-85,80] },
@@ -9,8 +9,8 @@
         {"label": "$\\clubsuit$", "point": [215,80] },
         {"label": "$\\clubsuit$", "point": [-200,-180] },
         {"label": "$\\spadesuit$", "point": [-200,-80] },
-        {"label": "$\\spadesuit$", "point": [305,-40] },
-        {"label": "$\\spadesuit$", "point": [305,-140] }
+        {"label": "$\\spadesuit$", "point": [375,-35] },
+        {"label": "$\\spadesuit$", "point": [375,-135] }
     ],
 
     "Nodes" : [
@@ -26,14 +26,14 @@
 
         {"id":9, "p": [250,100]},
         {"id":10, "p": [250,-150]},
-        {"id":11, "p": [300,-50]},
+        {"id":11, "p": [400,-50]},
 
         {"id":12, "p": [-200,-150]},
-        {"id":13, "p": [300,-150]},
+        {"id":13, "p": [400,-150]},
 
-        {"id":14, "p": [-50,-200]},
-        {"id":15, "p": [100,-200]},
-        {"id":16, "p": [250,-200]}
+        {"id":14, "p": [-50,-250]},
+        {"id":15, "p": [100,-250]},
+        {"id":16, "p": [250,-250]}
 
         ],
 

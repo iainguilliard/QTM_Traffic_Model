@@ -1,6 +1,7 @@
 from __future__ import division
 import matplotlib.pyplot as pl
 import matplotlib as mp
+import matplotlib.image as mpimg
 from matplotlib.patches import Arc,Arrow,Circle
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.collections import LineCollection

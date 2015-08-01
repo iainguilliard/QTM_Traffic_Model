@@ -292,6 +292,12 @@ minimized, which in turn minimizes the delay.
 
 
 
+%The objective function~\eqref{eq:objFunc} and
+%constraints~(\ref{c:turnProb}--\ref{c:10}) form the LP representing the
+%dynamic, piecewise linear model of flow in a QTM network over time when a
+%control plan \p{\tl}{k} is given as an input parameter.
+
+
 
 
 \begin{figure*}[t!]
@@ -304,32 +310,33 @@ minimized, which in turn minimizes the delay.
 \label{subfig:converg_b}
 \includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_vari.pdf}
 }
-\caption{(a) Convergence with increasing refinement of $\Delta t$ from $5.0$
-down to $1.0$. (c) Dilation of $\Delta t$ from $1.0$ to $2.5$ compared to a
-fixed $\Delta t$ of $1.0$.}
+\label{fig:conv}
+%
+\caption{Approximations of a queue volume obtained using homogeneous
+\DT[] = 1s using: (a) homogeneous \DT[] = 2.5s and 5s; and (b) non-homogeneous
+$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.}
 %
 \end{figure*}
 
 
-\remark{\cref{subfig:converg_a,subfig:converg_b} show the results of applying the LP
-formulation to a simple model with a fixed signal plan, using both homogeneous
-\vecDT and non-homogeneous \vecDT.}
+To illustrate the representation tradeoff offered by non-homogeneous time
+intervals, we simulate a fixed signal control plan derived for homogeneous
+\DT[n] = 1s (ground truth) using different discretizations.
 %
-\fnremark{This part needs to be connected to the text.}
+\cref{subfig:converg_a} shows the approximation of the ground truth using
+homogeneous \DT[] = 2.5 and \DT[] = 5.0, and \cref{subfig:converg_b} using
+non-homogeneous time intervals that linearly increases from 1s to 2.5s, i.e.,
+$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.
 %
-\fnremark{Show diagrams with traffic
-predictions converging as time increment gets smaller.  Validates that large
-time-steps are rough approximations while model behavior converges for small
-time steps.}
+As \cref{subfig:converg_a} shows, large time steps can be rough approximations
+of the ground truth.
+%
+Non-homogeneous discretization (\cref{subfig:converg_b}) exploit this fact to
+provide a good approximation in the initial time steps and progressively
+decrease precision for points far in the future.
 
 
 
-
-
-The objective function~\eqref{eq:objFunc} and
-constraints~(\ref{c:turnProb}--\ref{c:10}) form the LP representing the
-dynamic, piecewise linear model of flow in a QTM network over time when a
-control plan \p{\tl}{k} is given as an input parameter.
 
 
 

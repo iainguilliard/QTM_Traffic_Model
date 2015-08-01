@@ -390,11 +390,11 @@ for a traffic light \tl as a function of time.
 %
 (a--c) present, pairwise, the constraints (\ref{c:pd:incUB}--\ref{c:minPhase})
 for phase $k$ (\pd{\ell}{k} as the black line) and the activation variable
-\p[n]{\ell}{k} in the attached plot.
+\p[n]{\ell}{k} in the small plot.
 %
-(d) presents the constraint for the cycle time of \tl (\ref{c:cycleLB} and
-\ref{c:cycleUB}) where T.C.T. is the total cycle time and is defined as the
-left hand side of both constraints.
+(d) presents the constraints for the cycle time of \tl (\ref{c:cycleLB} and
+\ref{c:cycleUB}), where T.C.T. is the total cycle time and is the left hand side
+of both constraints.
 %
 For this example, $\PTMIN{\ell}{k}=1$, $\PTMAX{\ell}{k}=3$, $\CTMIN{\ell}=7$, and
 $\CTMAX{\ell}=8$.}
@@ -408,8 +408,8 @@ $\PTMIN{\ell}{k}$ and $\PTMAX{\ell}{k}$) for each phase $k \in \Pset_\tl$ of
 traffic light \tl.
 %
 To encode these constraints, we use the helper variable $\pd{\ell}{k} \in
-[0,\PTMAX{\ell}{k}]$ defined by constraints (\ref{c:pd:incUB}--\ref{c:pd:reset})
-that:
+[0,\PTMAX{\ell}{k}]$, defined by constraints
+(\ref{c:pd:incUB}--\ref{c:pd:reset}), that:
 %
 (i) holds the elapsed time since the start of phase $k$ when $\p[n]{\ell}{k}$ is
 active~(\ref{c:pd:incUB},\ref{c:pd:incLB});

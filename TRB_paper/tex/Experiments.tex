@@ -39,9 +39,9 @@ diagonal avenue.
 The queues receiving cars from outside of the network are marked in
 \cref{fig:networks} and we refer to them as input queues.
 %
-The maximum capacity~(\QMAX{i}) is 60 cars for non-input queues and
-\authorHighlight{infinity} for input queues to prevent interruption of the input
-demand due to spill back from the stop line. 
+The maximum queue capacity~(\QMAX{i}) is 60 cars for non-input queues and
+infinity for input queues to prevent interruption of the input demand due to
+spill back from the stop line. 
 %
 The traversal time of each queue $i$~(\QDELAY{i}) is set at 9s (a distance of
 about 100m with a free flow speed of 50km/h).
@@ -61,7 +61,8 @@ For networks 1 and 2, \PTMIN{\tl}{k} is 1s, \PTMAX{\tl}{k} is 3s, \CTMIN{\tl} is
 %
 For network 3, \PTMIN{\tl}{k} is 1s and \PTMAX{\tl}{k} is 6s for all \tl and
 $k$; and \CTMIN{\tl} is 2s and \CTMAX{\tl} is 12s for all lights \tl except for
-lights 2, 4 and 6 in which \CTMIN{\tl} is 3s and \CTMAX{\tl} is 18s.
+lights 2, 4 and 6 (i.e., lights also used by the diagonal avenue) in which
+\CTMIN{\tl} is 3s and \CTMAX{\tl} is 18s.
 
 
 
@@ -108,8 +109,10 @@ We extend the problem horizon~\TMAX until all cars have left the network.
 %
 By clearing the network, we can easily measure the total travel time for all the
 traffic as the area between the cumulative arrival and departure curves measured
-at the boundaries of the network.\fnremark{FWT: is this explanation of how to
-compute the total travel time still necessary?}
+at the boundaries of the network.
+%
+%TODO \fnremark{FWT: is this explanation of how to compute the total travel time
+%still necessary?}
 %
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
@@ -145,8 +148,7 @@ this plan is executed before generating a new control plan.
 planning horizon as a major frame and its executable prefix as a minor frame.
 %
 Notice that, while the plan for a minor frame is being executed, we can start
-computing the solution for the next major frame \authorHighlight{based on a
-forecast model}.\fnremark{FWT: not sure if we should mention this.}
+computing the solution for the next major frame based on a forecast model.
 
 
 To perform a fair comparison between the homogeneous and non-homogeneous
@@ -171,20 +173,21 @@ Once we have generated a series of minor frames, we concatenate them into a
 single plan and simulate the flow through the network using the QTM LP
 formulation with a fixed (homogeneous) $\DT[]$ of 0.25s.
 %
-\fnremark{Do we need to justify why we use the QTM as the simulator over say a
-micro simulator?}
+%TODO \fnremark{Do we need to justify why we use the QTM as the simulator over
+%say a micro simulator?}
 %
-We also compare both receding horizon approaches against the
-\authorHighlight{optimal} solution obtained by computing a single control plan
-for the entire control horizon (i.e., $[0,\TMAX]$) using a fixed \DT[] of 0.25s.
+We also compare both receding horizon approaches against the optimal solution
+obtained by computing a single control plan for the entire control horizon
+(i.e., $[0,\TMAX]$) using a fixed \DT[] of 0.25s.
 
 
 For all our experiments, we used Gurobi\textsuperscript{TM} as MILP solver with
 12 threads on a 3.1GHz AMD Opteron\textsuperscript{TM}~4334 processor with 12
 cores.
 %
-We limit MIP gap accuracy to 0.1\% and the time cutoff for solving a major frame
-to 3000s for the receding horizon approaches and unbounded for the optimal plan.
+We limit the MIP gap accuracy to 0.1\% and the time cutoff for solving a major
+frame to 3000s for the receding horizon approaches and unbounded for the optimal
+plan.
 %
 %% \toIain{Can you explain the following better and provide evidence:
 %% \textit{while we can solve non-homogeneous major frames up to convergence in
@@ -319,11 +322,12 @@ variables, scales linearly with \Nn; therefore, the non-homogeneous approach can
 scale up better than the homogeneous one (e.g., \cref{subfig:travel_time_9}).
 %
 Also, for homogeneous and non-homogeneous discretizations, finding the optimal
-solution of major frames with large \Nn requires more time than our imposed
-3000s time cutoff; therefore, Gurobi returns a feasible control plan that is far
-from optimal.
+solution of major frames with large \Nn might require more time than our imposed
+3000s time cutoff and, in this case, Gurobi returns a feasible control plan that
+is far from optimal.
 %
-This effect can be seen in \cref{subfig:travel_time_9} for $\Nn > 120$.
+The effect in the total travel time of these poor solutions can be seen in
+\cref{subfig:travel_time_9} for $\Nn > 120$.
 
 
 
@@ -331,9 +335,8 @@ The distribution of the total delay observed by each car while traversing the
 network is shown in \cref{subfig:delay_3,subfig:delay_6,subfig:delay_9}.
 %
 Each group of box plots represents a different value of~\Nn: when the
-non-homogeneous $\DT[]$ first converges to the optimum solution; when the
-homogeneous~$\DT[]$ first converges on the optimum solution; and the optimum
-solution itself.
+non-homogeneous $\DT[]$ first converges; when the homogeneous~$\DT[]$ first
+converges; and the optimum solution itself.
 %
 In all networks, the quality of the solution obtained using non-homogeneous
 $\DT[]$ is better or equal than using homogeneous $\DT[]$ for fixed \Nn in both

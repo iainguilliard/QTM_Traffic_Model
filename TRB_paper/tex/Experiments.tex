@@ -33,6 +33,32 @@ the experiments, our methodology, and the results.
 
 \subsection{Networks}
 
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:network1}
+\includegraphics[width=0.45\textwidth]{network_1.pdf}}
+\subfigure[]{
+\label{subfig:network2}
+\includegraphics[width=0.45\textwidth]{network_2.pdf}}
+\subfigure[]{
+\label{subfig:network3}
+\includegraphics[width=0.45\textwidth]{network_3.pdf}}
+\subfigure[]{
+\label{subfig:demand_plot}
+\includegraphics[width=0.45\textwidth]{demand_plot.pdf}}
+\caption{(a--c) Networks used to evaluate the QTM performance.
+%
+(d) Demand profile of the queues marked as \qLowTraf,
+\qHighTraf, and \qVarTraf for our experiments.}
+\label{fig:networks}
+\end{figure*}
+
+
+
 We consider three networks of increasing complexity (\cref{fig:networks}): an
 avenue crossed by three side streets; a 2-by-3 grid; and a 3-by-3 grid with a
 diagonal avenue.
@@ -118,7 +144,7 @@ at the boundaries of the network.
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
 The background level for the input queues are 1, 4 and 2 cars/s for queues
-marked as \qLowTraf, \qHighTraf and \qVarTraf (\cref{fig:networks}),
+marked as \qLowTraf, \qHighTraf and \qVarTraf (\cref{subfig:demand_plot}),
 respectively; and during the high demand period, the queues \qVarTraf receive 4
 cars/s.
 
@@ -201,31 +227,6 @@ plan.
 %
 All our results are averaged over five runs to account for Gubori's
 stochastic strategies.
-
-
-
-
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{subfig:network1}
-\includegraphics[width=0.45\textwidth]{network_1.pdf}}
-\subfigure[]{
-\label{subfig:network2}
-\includegraphics[width=0.45\textwidth]{network_2.pdf}}
-\subfigure[]{
-\label{subfig:network3}
-\includegraphics[width=0.45\textwidth]{network_3.pdf}}
-\subfigure[]{
-\label{subfig:demand_plot}
-\includegraphics[width=0.45\textwidth]{demand_plot.pdf}}
-\caption{Networks used to evaluate the QTM performance. Queues markerd as
-\qLowTraf, \qHighTraf, and \qVarTraf recieve traffic from the outside of the
-network.}
-\label{fig:networks}
-\end{figure*}
-
 
 
 

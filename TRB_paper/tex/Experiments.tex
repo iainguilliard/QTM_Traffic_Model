@@ -253,58 +253,9 @@ still necessary?}}
 
 \subsection{Results}
 
-%We compare the performance of non-homogeneous and homogeneous solutions in two
-%ways: comparing the decrease in total travel time with increasing major frame
-%time (greater look ahead), and analysing the distribution of delay in each
-%queue of the network.
-%
-\cref{subfig:travel_time_3,subfig:travel_time_6,subfig:travel_time_9} show, for
-each network, the increase in the total travel time w.r.t. the optimal solution
-as a function of \Nn.
-%
-As we hypothesized, the non-homogeneous discretization requires less time
-intervals to converge.
-%
-This is important because the size of the MILP, including the number of binary
-variables, scales linearly with \Nn; therefore, the non-homogeneous approach can
-scale up better than the homogeneous one (e.g., \cref{subfig:travel_time_9}).
-
-
-The distribution of the total delay observed by each car while traversing the
-network is shown in \cref{subfig:delay_3,subfig:delay_6,subfig:delay_9}.
-%
-Each group of box plots represents a different value of \Nn: when the
-non-homogeneous $\DT[]$ first converges to the optimum solution; when the
-homogeneous $\DT[]$ first converges on the optimum solution; and the optimum
-solution itself.
-%
-In all networks, the quality of the solution obtained using non-homogeneous
-$\DT[]$ is better or equal than using homogeneous $\DT[]$ for fixed \Nn in both
-the total travel time and \emph{fairness}, i.e., smaller third quartile and
-maximum delay.
-
-\remark{FWT: In the paragraphs above, we need to address network 2 because it is
-the exception in both cases: in the end of \cref{subfig:travel_time_6},
-homogeneous is better, and the homogeneous delay in \cref{subfig:delay_6} is
-also better.}
-
-
-Finally, \cref{fig:cumu} shows the cumulative arrival and departure curves and
-the how delay evolves over time for $q_1$ of network 2.  \cref{subfig:cumu1}
-shows the comparison at the point where the non-homogeneous $\DT[]$ first
-converges and shows that with the longer major frame time of the non-homogeneous
-$\DT[]$, the solver is able to find a coordinated signal policy along the avenue
-to dissipate the extra traffic that arrives at the 55s point, while the
-homogeneous $\DT[]$ with its shorter major frame. Once the homogeneous $\DT[]$
-has converged in \cref{subfig:cumu2}, both solutions are close to the optimum
-solution which is shown in \cref{subfig:cumu3}.\fnremark{FWT: although
-\cref{fig:cumu} is a nice illustration of how homogeneous and non-homogeneous
-differ, it is currently not backing up any of our claims.}
-
 
 \begin{figure*}[t!]
 \centering
-
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
 \label{subfig:travel_time_3}
@@ -347,6 +298,52 @@ Plots in the $i$-th row correspond to the results for the $i$-th network in
 \label{fig:results}
 \end{figure*}
 
+
+%We compare the performance of non-homogeneous and homogeneous solutions in two
+%ways: comparing the decrease in total travel time with increasing major frame
+%time (greater look ahead), and analysing the distribution of delay in each
+%queue of the network.
+%
+\cref{subfig:travel_time_3,subfig:travel_time_6,subfig:travel_time_9} show, for
+each network, the increase in the total travel time w.r.t. the optimal solution
+as a function of \Nn.
+%
+As we hypothesized, the non-homogeneous discretization requires less time
+intervals (i.e., smaller \Nn) to obtain a solution with the same total travel
+time.
+%
+This is important because the size of the MILP, including the number of binary
+variables, scales linearly with \Nn; therefore, the non-homogeneous approach can
+scale up better than the homogeneous one (e.g., \cref{subfig:travel_time_9}).
+%
+Also, for homogeneous and non-homogeneous discretizations, finding the optimal
+solution of major frames with large \Nn requires more time than our imposed
+3000s time cutoff; therefore, Gurobi returns a feasible control plan that is far
+from optimal.
+%
+This effect can be seen in \cref{subfig:travel_time_6} for $\Nn > 110$.
+
+
+
+The distribution of the total delay observed by each car while traversing the
+network is shown in \cref{subfig:delay_3,subfig:delay_6,subfig:delay_9}.
+%
+Each group of box plots represents a different value of~\Nn: when the
+non-homogeneous $\DT[]$ first converges to the optimum solution; when the
+homogeneous~$\DT[]$ first converges on the optimum solution; and the optimum
+solution itself.
+%
+In all networks, the quality of the solution obtained using non-homogeneous
+$\DT[]$ is better or equal than using homogeneous $\DT[]$ for fixed \Nn in both
+the total travel time and \emph{fairness}, i.e., smaller third quartile and
+maximum delay.
+
+%\remark{FWT: In the paragraphs above, we need to address network 2 because it is
+%the exception in both cases: in the end of \cref{subfig:travel_time_6},
+%homogeneous is better, and the homogeneous delay in \cref{subfig:delay_6} is
+%also better.}
+
+
 \begin{figure*}[t!]
 \centering
 
@@ -372,4 +369,19 @@ convergence point of the non-homogeneous and homogeneous approaches
 %
 \label{fig:cumu}
 \end{figure*}
+
+
+Finally, \cref{fig:cumu} shows the cumulative arrival and departure curves and
+the how delay evolves over time for $q_1$ of network 2.  \cref{subfig:cumu1}
+shows the comparison at the point where the non-homogeneous $\DT[]$ first
+converges and shows that with the longer major frame time of the non-homogeneous
+$\DT[]$, the solver is able to find a coordinated signal policy along the avenue
+to dissipate the extra traffic that arrives at the 55s point, while the
+homogeneous $\DT[]$ with its shorter major frame. Once the homogeneous $\DT[]$
+has converged in \cref{subfig:cumu2}, both solutions are close to the optimum
+solution which is shown in \cref{subfig:cumu3}.\fnremark{FWT: although
+\cref{fig:cumu} is a nice illustration of how homogeneous and non-homogeneous
+differ, it is currently not backing up any of our claims.}
+
+
 

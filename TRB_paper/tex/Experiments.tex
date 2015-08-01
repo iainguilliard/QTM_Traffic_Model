@@ -376,17 +376,24 @@ convergence point of the non-homogeneous and homogeneous approaches
 \end{figure*}
 
 
-Finally, \cref{fig:cumu} shows the cumulative arrival and departure curves and
-the how delay evolves over time for $q_1$ of network 2.  \cref{subfig:cumu1}
-shows the comparison at the point where the non-homogeneous $\DT[]$ first
-converges and shows that with the longer major frame time of the non-homogeneous
-$\DT[]$, the solver is able to find a coordinated signal policy along the avenue
-to dissipate the extra traffic that arrives at the 55s point, while the
-homogeneous $\DT[]$ with its shorter major frame. Once the homogeneous $\DT[]$
-has converged in \cref{subfig:cumu2}, both solutions are close to the optimum
-solution which is shown in \cref{subfig:cumu3}.\fnremark{FWT: although
-\cref{fig:cumu} is a nice illustration of how homogeneous and non-homogeneous
-differ, it is currently not backing up any of our claims.}
-
-
-
+To further illustrate the differences between homogeneous and non-homogeneous
+discretizations, \cref{fig:cumu} shows the cumulative arrival and departure
+curves and the how delay evolves over time for $q_1$ of network 2
+(\cref{subfig:network2}).
+%
+In \cref{subfig:cumu1}, the comparison is done when non-homogeneous $\DT[]$
+first converges (i.e., point I in \cref{subfig:travel_time_6}) and for this
+value of \Nn, the major frame size in seconds of the non-homogeneous approach is
+19.125s longer than the homogeneous one.
+%
+This allows the MILP solver to ``see'' 19s further in the future when using
+non-homogeneous discretization and find a coordinated signal policy along the
+avenue to dissipate the extra traffic that arrives at time 55s.
+%
+The shorter major frame of the homogeneous discretization does not allow the
+solver to adapt this far in advance and its delay observed after 55s is much
+larger than the non-homogeneous one.
+%
+Once the homogeneous $\DT[]$ has converged (\cref{subfig:cumu2}), it is also
+able to anticipate the increased demand and adapt well in advance and both
+approaches generate solutions close to optimum (\cref{subfig:cumu3}).

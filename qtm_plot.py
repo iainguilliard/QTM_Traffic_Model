@@ -794,8 +794,8 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
     if args.labels: labels=args.labels
 
 
-    i=0
-    print args.markerfill
+
+
     if args.markerfill == 'n':
         mfc = ['None'] * len(args.color)
     else:
@@ -804,7 +804,8 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
     mevery = args.markevery
     if len(mevery) < len(args.marker):
         mevery = mevery + [1] * (len(args.marker) - len(mevery))
-
+    i=0
+    arrival_plot = False
     for d in data:
         results = d['Out']
         if 'Run' in results:
@@ -819,10 +820,12 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
             #title = d['Title']
             #titles.append(d['Title'])
             time,cumu_in,cumu_out,cumu_delay = calc_delay(d, results, args=q)
-            ax.plot(time,cumu_in,c=args.color[c_i], linestyle=line_style[i], label='%s cumulative arrivals' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor=mfc[c_i],markevery=mevery[m_i])
-            if i+1 < len(line_style): i += 1
-            if c_i+1 < len(line_style): c_i += 1
-            if m_i+1 < len(args.marker): m_i += 1
+            if arrival_plot == False:
+                ax.plot(time,cumu_in,c=args.color[c_i], linestyle=line_style[i], label='Cumulative arrivals', marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor=mfc[c_i],markevery=mevery[m_i])
+                if i+1 < len(line_style): i += 1
+                if c_i+1 < len(line_style): c_i += 1
+                if m_i+1 < len(args.marker): m_i += 1
+                arrival_plot = True
             ax.plot(time,cumu_out,c=args.color[c_i],linestyle=line_style[i], label='%s cumulative departures' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=mevery[m_i])
             if i+1 < len(line_style): i += 1
             if c_i+1 < len(line_style): c_i += 1
@@ -832,6 +835,7 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
             if i+1 < len(line_style): i += 1
             if c_i+1 < len(line_style): c_i += 1
             if m_i+1 < len(args.marker): m_i += 1
+
         if lab_i+1 < len(labels): lab_i += 1
     if args.x_limit:
         ax.set_xlim(args.x_limit[0], args.x_limit[1])

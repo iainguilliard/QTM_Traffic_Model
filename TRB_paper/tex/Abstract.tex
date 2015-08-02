@@ -9,7 +9,7 @@ critical to maximize capacity and throughput of existing road
 infrastructure through optimized traffic signal control.  To this end,
 we build on the body of work in mixed integer linear programming
 (MILP) approaches that attempt to jointly optimize traffic signal
-control over an \emph{entire traffic network} and specifically on
+control over an entire traffic network and specifically on
 improving the scalability of these methods for large numbers of
 intersections.  Our primary insight in this work stems from the fact
 that MILP-based approaches to traffic control used in a receding
@@ -23,9 +23,19 @@ of cell-based and link-based modeling approaches to enable a
 non-homogeneous time MILP formulation of traffic signal control.
 %
 We then experiment with this novel QTM-based MILP control in a range
-of networks demonstrating substantially improved scalability and
-traffic signal control quality when using non-homogeneous time steps
-in comparison to homogeneous time steps.
+of traffic networks demonstrating that using non-homogeneous time steps, we can
+optimally solve large networks with a fraction of the MILP binary
+variables required to achieve the same solution quality with a
+homogeneous time step.
+%demonstrating substantially improved scalability and
+%traffic signal control quality when using non-homogeneous time steps
+%in comparison to homogeneous time steps.
+%
+%
+%Since the number of binary variables has a large impact on MILP solving efficiency, 
+%reducing the number of binary variables is critical for scalability of MILP-based
+%traffic signal control solutions.
+
 %
 %% I think the following statement I wrote is too risky to say given that
 %% - the traffic withholding problem may occur

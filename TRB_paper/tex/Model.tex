@@ -7,7 +7,7 @@
 A Queue Transmission Model (QTM) is the tuple $(\Qset, \Lset, \vecDT, \MatQIN)$,
 where \Qset and \Lset are, respectively, the set of queues and lights;
 %
-\vecDT is a vector of size \Nn representing the discretization of the simulation
+\vecDT is a vector of size \Nn representing the discretization of the problem
 horizon $[0,\TMAX]$ and the duration in seconds of the $n$-th time interval is
 denoted as \DT[n];
 %
@@ -85,9 +85,9 @@ all $n \in \{1,\dots,\Nn\}$.
 
 
 
-\subsection{Traffic Flow Simulation with QTM}
+\subsection{\authorHighlight{Computing Traffic Flows with QTM}}
 
-In this section, we present how to simulate traffic flow using QTM and
+In this section, we present how to compute traffic flows using QTM and
 non-homogeneous time intervals \DT[].
 %
 We assume for the remainder of this section that a \emph{valid} control plan for
@@ -157,7 +157,7 @@ To simplify the presentation of remainder of the LP, we define the helper
 variables \qin{i}~\eqref{def:qin}, \qout{i}~\eqref{def:qout}, and
 \tn[n]~\eqref{def:tn} to represent the volume of traffic to enter and leave
 queue $i$ during interval~$n$, and the time elapsed since the beginning of the
-simulation until the end of interval \DT[n].
+problem until the end of interval \DT[n], respectively.
 %
 \begin{cAlign}
 %
@@ -247,7 +247,7 @@ We address this well-known issue through our objective function~\eqref{eq:objFun
 maximizing the total outflow~\qout{i}~(i.e., both internal and external outflow)
 of~$i$ plus the inflow~\inq{i} from the outside of the network to~$i$.
 %
-This quantity is weighted by the remaining time until the end of the simulation
+This quantity is weighted by the remaining time until the end of the problem
 horizon \TMAX to force the optimizer to allow as much traffic volume as possible
 into the network and move traffic to the outside of the network as soon as
 possible.
@@ -327,8 +327,9 @@ the long-term, where accuracy will be less critical for receding horizon control
 
 
 To illustrate the representation tradeoff offered by non-homogeneous time
-intervals, we simulate a fixed signal control plan derived for homogeneous
-\DT[n] = 1s (ground truth) using different discretizations.
+intervals, we computed flows and queue volumes for a fixed signal control plan
+derived for homogeneous \mbox{\DT[n] = 1s} (ground truth) using different
+discretizations.
 %
 \cref{subfig:converg_a} shows the approximation of the ground truth using
 homogeneous \DT[] = 2.5 and \DT[] = 5.0, and \cref{subfig:converg_b} using
@@ -347,7 +348,7 @@ decrease precision for points far in the future.
 
 
 
-\section{Traffic Control with QTM as an MILP}
+\section{Traffic Control with QTM encoded as an MILP}
 
 In this section, we remove the assumption that a valid control plan for all
 traffic lights is given and extend the LP

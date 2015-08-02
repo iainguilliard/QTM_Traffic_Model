@@ -1,15 +1,16 @@
 \section{Empirical Evaluation}
   
 In this section we compare the solutions for traffic networks modeled as a QTM
-using homogeneous and non-homogeneous time intervals in two aspects:
+using homogeneous and non-homogeneous time intervals w.r.t.\ to two evaluation criteria:
 %
-the quality of the solution and convergence to the optimal solution.
+the quality of the solution and convergence to the optimal solution vs.\ the number
+of time steps.
 %
 % TODO \fnremark{FWT: I don't think that optimal is the best word here since
 %we arbitrarily fixed a value of \DT[]. Also, there is the technical problem that
 %Gurobi might not have found the true optimal.}
 %
-We compare the quality of solutions based on the total travel time and we also
+Specifically, we compare the quality of solutions based on the total travel time and we also
 consider the third quartile and maximum of the observed delay distribution.
 %
 %% TODO(fwt): maybe define what we mean by optimal here, for instance
@@ -155,10 +156,13 @@ cars/s.
 \centering
 %  trim={<left> <lower> <right> <upper>}
 \includegraphics[width=0.75\textwidth]{non_homogeneous_control.png}
-\caption{Receding horizon control. In this example, the problem horizon \TMAX
-is 40s. The major frames are discretized in 12 time intervals ($\Nn = 12$) and
-they span 15s and 30s for homogeneous and non-homogeneous discretizations,
-respectively.}
+\caption{Receding horizon control. In this example, the problem
+  horizon \TMAX is 40s. The major frames for MILP optimization are
+  discretized in 12 time intervals ($\Nn = 12$) and they span 15s and
+  30s for homogeneous and non-homogeneous discretizations,
+  respectively.  The minor frames represent the prefix of the 
+  major frame MILP optimization that is executed.  The horizon
+  recedes by the minor frame duration after each execution.}
 \label{fig:multiplan}
 \end{figure*}
 
@@ -208,13 +212,13 @@ obtained by computing a single control plan for the entire control horizon
 (i.e., $[0,\TMAX]$) using a fixed \DT[] of 0.25s.
 
 
-For all our experiments, we used Gurobi\textsuperscript{TM} as MILP solver with
+For all our experiments, we used Gurobi\textsuperscript{TM} as the MILP solver with
 12 threads on a 3.1GHz AMD Opteron\textsuperscript{TM}~4334 processor with 12
 cores.
 %
 We limit the MIP gap accuracy to 0.1\% and the time cutoff for solving a major
-frame to 3000s for the receding horizon approaches and unbounded for the optimal
-plan.
+frame to 3000s for the receding horizon approaches and unbounded in order to
+determine the optimal minimum travel time solution to which all other solutions are compared.
 %
 %% \toIain{Can you explain the following better and provide evidence:
 %% \textit{while we can solve non-homogeneous major frames up to convergence in
@@ -295,7 +299,7 @@ stochastic strategies.
 function of \Nn (Figures a, c, and e) and distribution of the total delay of
 each car for different values of \Nn (Figures b, d, and f).
 %
-For each row, the roman numeral on top of the box plots corresponds to point the 
+For each row, the Roman numeral on top of the box plots corresponds to point the 
 travel time plot marked with the same numeral.
 %
 The mean of the total delay is presented as a red square in box plots.

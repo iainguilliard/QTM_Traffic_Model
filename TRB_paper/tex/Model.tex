@@ -85,7 +85,7 @@ all $n \in \{1,\dots,\Nn\}$.
 
 
 
-\subsection{Traffic Flow Simulation with QTM}\label{sec:lp}
+\subsection{Traffic Flow Simulation with QTM}
 
 In this section, we present how to simulate traffic flow using QTM and
 non-homogeneous time intervals \DT[].
@@ -347,7 +347,7 @@ decrease precision for points far in the future.
 
 
 
-\section{Traffic Control with QTM as an MILP}\label{sec:milp}
+\section{Traffic Control with QTM as an MILP}
 
 In this section, we remove the assumption that a valid control plan for all
 traffic lights is given and extend the LP
@@ -441,7 +441,7 @@ method to turn the cases that should not be active into subsumed constraints
 based on the value of $\p[n]{\tl}{k}$.
 %
 We use~\PTMAX{\ell}{k} as our large constant since $\pd[n]{\ell}{k} \le
-\PTMAX{\ell}{k}$ and $\DT[n] \le \PTMAX{\ell}{k}$ by assumption (\cref{sec:lp}).
+\PTMAX{\ell}{k}$ and $\DT[n] \le \PTMAX{\ell}{k}$.
 %
 Similarly, \cref{c:minPhase} ensures the minimum phase time of $k$ and is
 not enforced while $k$ is still active.

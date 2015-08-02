@@ -296,8 +296,8 @@ stochastic strategies.
 \includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_9l.pdf}}
 %
 \caption{Increase in the total travel time w.r.t.~the optimal solution as a
-function of \Nn (Figures a, c, and e) and distribution of the total delay of
-each car for different values of \Nn (Figures b, d, and f).
+function of \Nn (a,c,e) and distribution of the total delay of
+each car for different values of \Nn (b,d,f).
 %
 For each row, the Roman numeral on top of the box plots corresponds to point the 
 travel time plot marked with the same numeral.
@@ -305,7 +305,10 @@ travel time plot marked with the same numeral.
 The mean of the total delay is presented as a red square in box plots.
 %
 Plots in the $i$-th row correspond to the results for the $i$-th network in
-\cref{fig:networks}.}
+\cref{fig:networks}.  Non-homogeneous (NH) achieves much better solutions
+at smaller \Nn than Homogeneous (H).}
+%control and achieves }
+%smaller third quartile and maximum per-car delay for the same \Nn.}
 \label{fig:results}
 \end{figure*}
 
@@ -373,10 +376,12 @@ maximum delay.
 2-by-3 network (\cref{subfig:network2}).
 %
 The value of \Nn in plots (a) and (b) corresponds, respectively, to the
-convergence point of the non-homogeneous and homogeneous approaches
+convergence point of the Non-homogeneous (NH) and Homogeneous (H) approaches
 (\cref{subfig:travel_time_6}).
 %
-(c)~presents the same curves for the optimal solution.}
+(c)~presents the same curves for the optimal solution.  NH provides
+near-optimal signal plans over a longer time horizon than H when the number
+of time intervals \Nn is small.}
 %
 \label{fig:cumu}
 \end{figure*}

@@ -248,17 +248,24 @@ williams@csail.mit.edu\\[5mm]
 %Atlanta, GA 30332-0335 \\
 %gregmacfarlane@gatech.edu\\[1cm]
 
+% WARNING: Scott had to set wordcount manually above, does not work on cygwin.
+\renewcommand{\wordcount}{4516\ }
+
 \wordcount words + \total{figure} figures + \total{table} table +
 \total{citnum} citations
+
+%(Weighted total words: \weightedTotal{} out of 7000 + 35 references)
+(Weighted total words: 6516 out of 7000 + 35 references)
+
 %% FWT: weightedTotal does not take into account the words in the references
 %% and according to http://onlinepubs.trb.org/onlinepubs/AM/InfoForAuthors.pdf
 %% the limits are 7500 words including references OR 7000 words + 35 references.
 %% The latter seems to be the best deal for us since ours 23 references already
 %% take a bit more than 500 words.
-\remark{(Weighted total words: \weightedTotal{} out of 7000 + 35 references)}
+%\remark{(Weighted total words: \weightedTotal{} out of 7000 + 35 references)}
 
 
-\today
+August 1, 2015 %\today -- this will show as August 2 if compiled in Australia
 \end{flushleft}
 \end{titlepage}
 

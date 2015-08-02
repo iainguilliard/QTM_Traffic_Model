@@ -71,7 +71,7 @@ prediction of traffic flows, we remark that a major drawback is the
 CTM-imposed requirement to choose a predetermined \emph{homogeneous} (and
 often necessarily small) time step for reasonable modeling fidelity.
 This need to model a large number of CTM cells with a small time step
-leads to MILPs that are exceedingly large and intractable to
+leads to MILPs that are exceedingly large and often intractable to
 solve. %% FWT: seems redundant "for large traffic networks."
 
 Our primary insight in this work stems from the fact that MILP-based
@@ -117,17 +117,20 @@ our novel MILP-based control approach.
 \includegraphics[width=0.44\textwidth,trim={0cm 0cm 0cm 0cm},clip]{plots/pw_queues.pdf}
 }
 % NOTE: Reviewers like to skim a paper by reading captions so I intentionally
-\caption{(a) Example of a real traffic network modeled using the QTM. (b) A
-  preview of different QTM model parameters as a function of
-  \emph{non-homogeneous} discretized time intervals indexed by $n$.
+\caption{(a) Example of a real traffic network modeled using the
+  QTM. (b) A preview of different QTM model parameters as a function
+  of \emph{non-homogeneous} discretized time intervals indexed by $n$.
   For each $n$, we show the following parameters: the elapsed time
   $t$, the non-homogeneous time step length $\Delta t$, the cumulative
-  duration $d$ of two different light phases for $l_6$, and the phase
-  $p$ of light $l_6$ (there is technically a binary $p$ for each
-  phase, but here we abuse notation and simply show the current active phase),
-  and the traffic volume of different queues $q$ linearly interpolated
-  between time points.  Here we can see traffic progress from $q_1$ to $q_7$
-  to $q_9$ according to light phases and traffic propagation delay.
+  duration $d$ of two different light phases for $l_6$, the phase $p$
+  of light $l_6$, and the traffic volume of different queues $q$
+  linearly interpolated between time points.  There is technically a
+  binary $p$ for each phase, but we abuse notation and simply
+  show the current active phase: $\mathit{NS}$ for \emph{north-south green} and 
+  $\mathit{EW}$ for \emph{east-west green} assuming the top of the map is north.
+  Here we see that traffic progresses from $q_1$ to $q_7$ to $q_9$
+  according to light phases and traffic propagation delay with non-homogeneous time steps
+  only at required changepoints.
   %Time interval boundaries are only necessary at
   %nonlinear changepoints in queue volume.
   We refer to the QTM model section for
@@ -143,22 +146,22 @@ cell-based and link-based modeling approaches as illustrated
 and summarized in Figure~\ref{fig:qtm}.  The QTM offers the following key benefits:
 \begin{itemize}
 %
-\item  unlike previous joint intersection control
-  work~\trbcitenum{lo1998novel,lin2004enhanced,han2012link}, the QTM is
-  inherently intended for \emph{non-homogeneous} time steps that can
-  be used for control over large horizons, 
+\item  Unlike previous CTM-based joint intersection signal 
+  optimization~\trbcitenum{lo1998novel,lin2004enhanced,han2012link}, the QTM is
+  intended for \emph{non-homogeneous} time steps that can
+  be used for control over large horizons.
 %
-\item any length of roadway with no merges or diverges can be modeled
+\item Any length of roadway with no merges or diverges can be modeled
   as a single queue leading to compact QTM models of large traffic
   networks thus maintaining relatively compact MILPs
-  (i.e., large numbers of cells and associated MILP variables are not required \emph{between}
-  intersections), and 
+  (i.e., large numbers of cells and their associated MILP variables are
+  not required \emph{between} intersections).
 %
-\item the QTM accurately models fixed travel time delays critical to green wave
+\item The QTM accurately models fixed travel time delays critical to green wave
   coordination as
   in~\trbcitenum{gartner1974optimization,gartner2002arterial,he2011pamscod}
   through the use of a non-first order Markovian update model and further combines this
-  with the fully joint intersection signal optimization approach
+  with fully joint intersection signal optimization in the spirit 
   of~\trbcitenum{lo1998novel,lin2004enhanced,han2012link}.
 \end{itemize}
 
@@ -166,15 +169,23 @@ In the remainder of this paper, we first formalize our
 novel QTM model of traffic flow with non-homogeneous time steps and
 show how to encode it as a linear program for computing traffic flows.
 %
-Next we proceed to allow the traffic signals to
-become discrete phase variables that are optimized subject to a delay minimizing 
-objective and standard constraints for cycle and phase times; this results in our
-final MILP formulation of traffic signal control.
+Next we proceed to allow the traffic signals to become discrete phase
+variables that are optimized subject to a delay minimizing objective
+and standard minimum and maximum time constraints for cycles and
+phases; this results in our final MILP formulation of traffic signal
+control.
 %
 We then experiment with this novel QTM-based MILP control in a range
-of networks demonstrating substantially improved scalability and
-traffic signal control quality when using non-homogeneous time steps
-in comparison to homogeneous time steps.
+of traffic networks demonstrating that using non-homogeneous time steps, we can
+optimally solve large networks with a fraction of the MILP binary
+variables required to achieve the same solution quality with a
+homogeneous time step.
+%
+%We then experiment with this novel QTM-based MILP signal control in a range
+%of traffic networks demonstrating substantially improved scalability and
+%traffic signal control quality when using non-homogeneous time steps
+%in comparison to homogeneous time steps.
+%
 %We then experiment with this novel QTM-based MILP control in
 %a range of networks demonstrating the improved scalability possible
 %with non-homogeneous time steps in comparison to homogeneous

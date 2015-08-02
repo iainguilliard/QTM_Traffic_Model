@@ -71,7 +71,7 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 \end{itemize}
 
 
-Differently than CTM \cite{daganzo1994cell,lin2004enhanced}, QTM does not assume
+Differently than the CTM \cite{daganzo1994cell,lin2004enhanced}, the QTM does not assume
 that $\DT[n] = \QDELAY{i}$ for all $n$, that is, the QTM can represent
 non-homogeneous time intervals (\cref{subfig:example}).
 %
@@ -99,7 +99,8 @@ if phase $k$ of light \tl is active~(i.e., $\p{\tl}{k} = 1$) or not on interval
 $n$.
 
 
-We represent the problem of finding the flow between queues as a Linear Program
+We represent the problem of finding the maximal flow between capacity-constrained 
+queues as a Linear Program
 (LP) over the following variables defined for all interval $n \in
 \{1,\dots,\Nn\}$ and queues $i$ and $j$:
 
@@ -157,7 +158,7 @@ variables \qin{i}~\eqref{def:qin}, \qout{i}~\eqref{def:qout}, and
 \tn[n]~\eqref{def:tn} to represent the volume of traffic to enter and leave
 queue $i$ during interval~$n$, and the time elapsed since the beginning of the
 simulation until the end of interval \DT[n].
-
+%
 \begin{cAlign}
 %
 \qin{i} &= \DT (\inq{i} + \sum_{j=1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
@@ -183,7 +184,7 @@ This volume of traffic, denoted as $\Vol_i(x,y)$, is obtained by integrating
 index of the time intervals s.t. $\tn[m] \le x < \tn[m+1]$ and $\tn[w] \le y <
 \tn[w+1]$.
 %
-Because the QTM dynamics is piecewise linear, \qin{i} is a step function
+Because the QTM dynamics are \emph{piecewise linear}, \qin{i} is a step function
 w.r.t.~time and this integral reduces to the sum of \qin{i} over the intervals
 contained in $[x,y]$ and the appropriate fraction of \qin[m]{i} and \qin[w]{i}
 representing the misaligned beginning and end of $[x,y]$.
@@ -206,7 +207,7 @@ and $w$ used by $V_i$ can be pre-computed in order to encode \eqref{eq:vol};
 moreover, \eqref{c:qUpdate} represents a non-first order Markovian update
 because the update considers the previous $w-m$ time steps.
 %
-To insure that the total volume of traffic traversing $i$ (i.e.,
+To ensure that the total volume of traffic traversing $i$ (i.e.,
 $\Vol_i(\tn[n] - \QDELAY{i}, \tn[n])$) and waiting at the stop line does not
 exceed the capacity of the queue, we apply~\eqref{c:10}.
 %
@@ -237,9 +238,12 @@ exceed the capacity of the queue, we apply~\eqref{c:10}.
 As with MILP formulations of CTM (e.g. \trbcite{lin2004enhanced}),
 QTM is also susceptible to \emph{withholding traffic}, i.e., the
 optimizer might prevent cars from moving from $i$ to $j$ even though the
-associated traffic phase is active and $j$ is not full.
+associated traffic phase is active and $j$ is not full, e.g., this may
+reserve space for traffic from an alternate approach that allows the MILP
+to minimize delay in the long-term even though it leads to unintuitive traffic
+flow behavior.
 %
-We address this issue through our objective function~\eqref{eq:objFunc} by
+We address this well-known issue through our objective function~\eqref{eq:objFunc} by
 maximizing the total outflow~\qout{i}~(i.e., both internal and external outflow)
 of~$i$ plus the inflow~\inq{i} from the outside of the network to~$i$.
 %
@@ -267,8 +271,8 @@ possible.
 \includegraphics[width=0.55\textwidth,trim={0cm 0cm 0cm 0cm},clip]{cumu_plot_final_6l.pdf}
 \caption{Cumulative arrival (blue) and departure (green) curves, and the
 resulting delay curve (red). The departure curve is maximized by the objective
-function \eqref{eq:objFunc}, which has the same effect as minimizing the delay
-curve.}
+function \eqref{eq:objFunc}, which has the same effect as minimizing the area
+under the delay curve.}
 \label{fig:cumu_delay_plot}
 \end{figure*}
 
@@ -314,7 +318,10 @@ minimized, which in turn minimizes the delay.
 %
 \caption{Approximations of a queue volume obtained using homogeneous
 \DT[] = 1s using: (a) homogeneous \DT[] = 2.5s and 5s; and (b) non-homogeneous
-$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.}
+$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.  Here we see
+that (b) achieves accuracy in the near-term that somewhat degrades over
+the long-term, where accuracy will be less critical for receding horizon control.}
+%% Note: would actually be nice to say something about
 %
 \end{figure*}
 

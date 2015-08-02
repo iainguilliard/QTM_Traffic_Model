@@ -151,9 +151,9 @@ and summarized in Figure~\ref{fig:qtm}.  The QTM offers the following key benefi
   intended for \emph{non-homogeneous} time steps that can
   be used for control over large horizons.
 %
-\item Any length of roadway with no merges or diverges can be modeled
-  as a single queue leading to compact QTM models of large traffic
-  networks thus maintaining relatively compact MILPs
+\item Any length of roadway without merges or diverges can be modeled
+  as a single queue leading to compact QTM MILP encodings of large traffic
+  networks 
   (i.e., large numbers of cells and their associated MILP variables are
   not required \emph{between} intersections).
 %
@@ -176,10 +176,16 @@ phases; this results in our final MILP formulation of traffic signal
 control.
 %
 We then experiment with this novel QTM-based MILP control in a range
-of traffic networks demonstrating that using non-homogeneous time steps, we can
-optimally solve large networks with a fraction of the MILP binary
-variables required to achieve the same solution quality with a
-homogeneous time step.
+of traffic networks and demonstrate that the non-homogeneous MILP
+formulation achieves (i) substantially lower delay solutions, (ii)
+improved per-car delay distributions, and (iii) more optimal travel
+times over a longer horizon in comparison to the homogeneous MILP
+formulation with the same number of binary and continuous variables.
+
+%demonstrating that using non-homogeneous time steps, we can
+%optimally solve large networks with a fraction of the MILP binary
+%variables required to achieve the same solution quality with a
+%homogeneous time step.
 %
 %We then experiment with this novel QTM-based MILP signal control in a range
 %of traffic networks demonstrating substantially improved scalability and

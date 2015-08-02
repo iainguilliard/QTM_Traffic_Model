@@ -420,7 +420,6 @@ def plot_network_figure(data,figsize,type='arrow'):
             edges[pair]=1
         q['pair']=pair
 
-
     for i,l in enumerate(data['Lights']):
         n=data['Nodes'][l['node']]
         nodes[l['node']]['l']=i
@@ -495,27 +494,48 @@ def plot_network_figure(data,figsize,type='arrow'):
         ry = ry0+(ry1-ry0)*tc
 
         if type == 'arrow':
+            qtext_color = text_color
+            qline_width = line_width
+            qhead_width = head_width
+            qtail_width = tail_width
+            qedge_color = edge_color
+            qline_color = line_color
+            qfont_weight = None
+            qfont_size = font_size
+            qoutline = None
             if 'text_color' in q:
                 qtext_color = q['text_color']
-            else:
-                qtext_color = text_color
-
-            ax.text(rx+(tx),ry-(ty),r'$q_{%d}$' % int(i+1),fontsize=font_size,color=qtext_color)
-            #plot([rx,rx+ty],[ry,ry-tx])
-            arrow = ax.arrow(rx0,ry0,rx1-rx0,ry1-ry0, shape='full', lw=line_width,color=line_color,length_includes_head=True, head_width=head_width, width=tail_width)
+            if 'line_width' in q:
+                qline_width = q['line_width']
+            if 'head_width' in q:
+                qhead_width = q['head_width']
+            if 'tail_width' in q:
+                qtail_width = q['tail_width']
             if 'edge_color' in q:
                 qedge_color = q['edge_color']
-            else:
-                qedge_color = edge_color
-            arrow.set_ec(qedge_color)
             if 'line_color' in q:
                 qline_color = q['line_color']
+            if 'font_weight' in q:
+                qfont_weight = q['font_weight']
+            if 'font_size' in q:
+                qfont_size = q['font_size']
+            if 'outline' in q:
+                qoutline = q['outline']
+            if qfont_weight == 'bold':
+                qlabel = r'$\mathbf{q_{%d}}$' % int(i+1)
             else:
-                qline_color = line_color
+                qlabel = r'$q_{%d}$' % int(i+1)
+            if qoutline != None:
+                ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size+1, color=qoutline)
+            ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size, color=qtext_color)
+
+            #plot([rx,rx+ty],[ry,ry-tx])
+            arrow = ax.arrow(rx0,ry0,rx1-rx0,ry1-ry0, shape='full', lw=qline_width,color=qline_color,length_includes_head=True, head_width=qhead_width, width=qtail_width)
+            arrow.set_ec(qedge_color)
             arrow.set_fc(qline_color)
 
         elif type == 'bar' or type == 'carrow':
-            ax.text(rx+(tx),ry-(ty),'%d' % int(i+1),fontsize=font_size,color=scalarMap.to_rgba(0))
+            ax.text(rx+(tx),ry-(ty),'%d' % int(i+1),fontsize=font_size, fontweight=qfont_weight,color=scalarMap.to_rgba(0))
             N=len(q['cmap'])
             t=0
             #q=0.0
@@ -552,6 +572,7 @@ def plot_network_figure(data,figsize,type='arrow'):
             bar_widths = 1 + np.array(q['cmap'])*2*width
             lc = LineCollection(segments,linewidths=bar_widths,colors=bar_cmap)
             ax.add_collection(lc)
+
         if type == 'bar' or type == 'carrow':
             for i,l in enumerate(data['Lights']):
                 n=data['Nodes'][l['node']]

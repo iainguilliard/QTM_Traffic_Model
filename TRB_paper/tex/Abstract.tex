@@ -2,30 +2,39 @@
 
 % Basically just the topic sentences of the Intro. :)  < 250 words
 
-We build on the body of work in mixed integer linear programming
+% Motivation, quantify
+
+As urban traffic congestion is on the increase worldwide, it is
+critical to maximize capacity and throughput of existing road
+infrastructure through optimized traffic signal control.  To this end,
+we build on the body of work in mixed integer linear programming
 (MILP) approaches that attempt to jointly optimize traffic signal
-control over an \emph{entire traffic network} (rather than focus on
-arterial routes) and specifically on improving the scalability of
-these methods for large urban traffic networks.  Our primary insight
-in this work stems from the fact that MILP-based approaches to traffic
-control used in a receding horizon control manner (that replan at
-fixed time intervals) need to compute high fidelity control policies
-only for the early stages of the signal plan; therefore, coarser
-time steps can be employed to ``see'' over a long horizon to preemptively adapt to
-distant platoons and other predicted long-term changes in traffic
-flows.  To this end, we contribute the queue transmission model (QTM)
-which blends elements of cell-based and link-based modeling approaches
-to enable a non-homogeneous MILP formulation of traffic signal
-control.
+control over an \emph{entire traffic network} and specifically on
+improving the scalability of these methods for large numbers of
+intersections.  Our primary insight in this work stems from the fact
+that MILP-based approaches to traffic control used in a receding
+horizon control manner (that replan at fixed time intervals) need to
+compute high fidelity control policies only for the early stages of
+the signal plan; therefore, coarser time steps can be employed to
+``see'' over a long horizon to preemptively adapt to distant platoons
+and other predicted long-term changes in traffic flows.  To this end,
+we contribute the queue transmission model (QTM) which blends elements
+of cell-based and link-based modeling approaches to enable a
+non-homogeneous time MILP formulation of traffic signal control.
 %
-We then experiment with this novel QTM-based MILP control in
-a range of networks demonstrating the improved scalability possible
-with non-homogeneous time steps in comparison to the best homogeneous
-time step.
+We then experiment with this novel QTM-based MILP control in a range
+of networks demonstrating substantially improved scalability and
+traffic signal control quality when using non-homogeneous time steps
+in comparison to homogeneous time steps.
 %
-Our experiments also provide near-optimal traffic control policies
-for larger horizons and larger networks than shown in previous
-implementations of MILP-based traffic signal control.
+%% I think the following statement I wrote is too risky to say given that
+%% - the traffic withholding problem may occur
+%% - we are using the major/minor frame approach
+%% - we are somehow claiming that the QTM is an accurate model of real traffic flow
+%% - Gurobi may have a time-limit for some results
+%Our experiments also provide near-optimal traffic control policies
+%for dense traffic networks up to nine intersections than shown in previous
+%implementations of MILP-based traffic signal control.
 
 
-\input{tex/Abstract-debug.tex}
+%\input{tex/Abstract-debug.tex}

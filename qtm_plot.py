@@ -12,6 +12,7 @@ import argparse
 import os
 import os.path
 import numpy as np
+import scipy.interpolate as interp
 import math as math
 import zipfile
 import zlib
@@ -41,17 +42,9 @@ def calc_total_travel_time(data,results):
                 sum_out+=(t*results['q_{%d,out}' %i ][n])
     return sum_out-sum_in
 
-def calc_delay(data, results, args=[]):
-
+def calc_delay(data, results, queues=[], dp=6, dt=1):
 
     Queues = data['Queues']
-    #if args:
-    #    Queues=[data['Queues'][int(i)] for i in args]
-    #Q = len(Queues)
-    #results = data['Out']
-    #if step != None:
-    #    if 'Step' in results:
-    #        results = data['Out']['Step'][step]
     time=results['t']
     cumu_in = []
     cumu_out= []
@@ -59,8 +52,9 @@ def calc_delay(data, results, args=[]):
     in_q=[]
     out_q=[]
     q_delay=0
+    EPSILON = 1e-6
 
-    if not args:
+    if not queues or len(queues) == 0:
         for i,q in enumerate(Queues):
             if Queues[i]['Q_IN'] > 0:
                 in_q.append(results['q_{%d,in}' %i ])
@@ -68,10 +62,10 @@ def calc_delay(data, results, args=[]):
             if Queues[i]['Q_OUT'] > 0:
                 out_q.append(results['q_{%d,out}' %i ])
     else:
-        in_q.append(results['q_{%d,in}' % int(args[0]) ])
+        in_q.append(results['q_{%d,in}' % int(queues[0]) ])
 
-        out_q.append(results['q_{%d,out}' % int(args[-1]) ])
-        for i in args:
+        out_q.append(results['q_{%d,out}' % int(queues[-1]) ])
+        for i in queues:
             q_delay+=Queues[i]['Q_DELAY']
 
 
@@ -84,28 +78,107 @@ def calc_delay(data, results, args=[]):
             cumu_in.append(cumu_in[-1])
             cumu_out.append(cumu_out[-1])
 
-
             for q in in_q:
-                cumu_in[i]+=q[i]
+                cumu_in[i] += q[i]
+                #if abs(cumu_in[i - 1] - cumu_in[i]) < EPSILON:
+                #    cumu_in[i] = cumu_in[i - 1]
+
             for q in out_q:
                 cumu_out[i]+=q[i]
+                #if abs(cumu_out[i - 1] - cumu_out[i]) < EPSILON:
+                #    cumu_out[i] = cumu_out[i - 1]
 
-    n_out= 0
-    for n_in,q in enumerate(cumu_in):
-        if n_out<len(cumu_out):
-            while cumu_out[n_out] < q:
-                n_out+=1
-                if n_out>=len(cumu_out): break
-            if n_out<len(cumu_out):
-                cumu_delay.append(time[n_out]-time[n_in] - q_delay)
-            else:
-                cumu_delay.append(cumu_delay[-1])
-            if cumu_delay[-1]<0:
-                cumu_delay[-1]=0
+    cumu_in = np.array(cumu_in)
+    cumu_out = np.array(cumu_out)
 
-        else:
-            cumu_delay.append(cumu_delay[-1])
-    return time,cumu_in,cumu_out,cumu_delay
+
+    cumu_in = np.around(cumu_in,dp) #cumu_in[cumu_in < EPSILON] = 0
+    cumu_out = np.around(cumu_out,dp) #cumu_out[cumu_out < EPSILON] = 0
+    n0_in=0
+    while n0_in + 1 < len(cumu_in) and cumu_in[n0_in] == 0 and cumu_in[n0_in + 1] == 0: n0_in += 1
+    n1_in = len(cumu_in) - 1
+    while n1_in > 0 and abs(cumu_in[n1_in - 1] - cumu_in[n1_in]) < EPSILON: n1_in -= 1
+
+    icumu_in_f = interp.interp1d(cumu_in[n0_in:], time[n0_in:], assume_sorted = True, bounds_error = False, fill_value = time[n1_in])
+    icars = np.linspace(cumu_in[n0_in], max(cumu_in), (max(cumu_in) + 1) * 20, endpoint=True)
+    icars_in = icumu_in_f(icars)
+
+    n0_out=0
+    while n0_out + 1 < len(cumu_out) and cumu_out[n0_out] == 0 and cumu_out[n0_out + 1] == 0: n0_out += 1
+    n1_out = len(cumu_out) - 1
+    while n1_out > 0 and abs(cumu_out[n1_out - 1] - cumu_out[n1_out]) < EPSILON: n1_out -= 1
+
+    icumu_out_f = interp.interp1d(cumu_out[n0_out:], time[n0_out:], assume_sorted = True, bounds_error = False, fill_value = time[n1_out])
+    icars = np.linspace(cumu_out[n0_out], max(cumu_out), (max(cumu_out) + 1) * 20, endpoint=True)
+    icars_out = icumu_out_f(icars)
+
+    cumu_cars_in = cumu_in[n0_in:n1_in + 1]
+    cumu_cars_out = cumu_cars_in
+
+    tcars_in = np.copy(icumu_in_f(cumu_cars_in))
+    tcars_out = np.copy(icumu_out_f(cumu_cars_out))
+    #print len(tcars_in),len(tcars_out)
+    #tcars_in.resize(max(len(tcars_in),len(tcars_out)))
+    #tcars_out.resize(max(len(tcars_in),len(tcars_out)))
+
+    trimmed_cumu_delay = tcars_out - tcars_in - q_delay
+
+    trimmed_cumu_delay[trimmed_cumu_delay < 0] = 0
+    cumu_delay = np.zeros(len(time))
+    cumu_delay[n0_in:n0_in+len(trimmed_cumu_delay)] = trimmed_cumu_delay
+
+    #pl.figure()
+    #pl.plot(trimmed_cumu_delay,'rx-')
+    cumu_cars_in = np.linspace(dt, max(cumu_in), max(cumu_in)/dt, endpoint=True)
+    #print cumu_cars_in
+    cumu_cars_out = cumu_cars_in
+    tcars_in = np.copy(icumu_in_f(cumu_cars_in))
+    tcars_out = np.copy(icumu_out_f(cumu_cars_out))
+
+    delay_by_car = tcars_out - tcars_in - q_delay
+    delay_by_car[delay_by_car < 0] = 0
+
+    #pl.plot(delay_by_car,'.-')
+    #pl.show()
+    #print tcars_in,tcars_out
+    #print len(trimmed_cumu_delay),len(delay_by_car)
+    #cumu_delay = np.zeros(len(time))
+    #cumu_delay[n0_in:n0_in+len(delay_by_car)] = delay_by_car
+    #print delay_by_car
+    #print n0_in,cumu_in[:100]
+    #print n0_out,cumu_out[:100]
+
+    #print tcars_in[:100]
+    #print tcars_out[:100]
+    #print cumu_delay[:100]
+    #print cumu_delay
+    return time,cumu_in,cumu_out,cumu_delay.tolist(),delay_by_car.tolist(),trimmed_cumu_delay.tolist()
+
+def trim_delay(cumu_data):
+    """
+    :param cumu_data: tuple of cumulative data=(time vector,cumulative arrivals,cumulative depatures,delay)
+    :return: a delay curve trimmed of leading and trailing zero's
+    """
+    cumu_in = cumu_data[1]
+    #print cumu_in
+    cumu_delay = cumu_data[4]
+    EPSILON = 1e-6
+    j = 0
+    while j+1 < len(cumu_in) and (cumu_in[j+1] - cumu_in[j]) < EPSILON: j += 1
+    in_start = j
+    j = len(cumu_in) - 2
+    #print (cumu_in[j] - cumu_in[j+1])
+    while j > 0  and (cumu_in[j+1] - cumu_in[j]) < EPSILON:
+        #print (cumu_in[j] - cumu_in[j+1])
+        j -= 1
+    #print
+    in_end = j+1
+    #print in_start,in_end,cumu_delay[0:in_start],cumu_delay[in_end+1:-1]
+    #print '-----'
+    #print cumu_delay[in_start:in_end+1]
+    #print '*****'
+    return cumu_delay[in_start:in_end+1]
+
 
 def calc_histogram_delay(data, step, width, queues=[],oversample=10):
 
@@ -131,7 +204,7 @@ def calc_histogram_delay(data, step, width, queues=[],oversample=10):
 
     for q in queues:
 
-        cumu_time,cumu_in,cumu_out,cumu_delay = calc_delay(data,step, q)
+        cumu_time,cumu_in,cumu_out,cumu_delay,delay_by_car,delay = calc_delay(data,step, q)
         in_start=0
         in_end=1
         for j in range(len(cumu_in)):
@@ -819,7 +892,7 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
         for q in queues:
             #title = d['Title']
             #titles.append(d['Title'])
-            time,cumu_in,cumu_out,cumu_delay = calc_delay(d, results, args=q)
+            time,cumu_in,cumu_out,cumu_delay,delay_by_car,delay = calc_delay(d, results, queues=q)
             if arrival_plot == False:
                 ax.plot(time,cumu_in,c=args.color[c_i], linestyle=line_style[i], label='Cumulative arrivals', marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor=mfc[c_i],markevery=mevery[m_i])
                 if i+1 < len(line_style): i += 1
@@ -915,10 +988,14 @@ def plot_box_plot(args):
             if args.run != None:
                 runs=args.run
             else:
-                runs=[0]
+                if 'Run' in results:
+                    runs = range(0,len(results['Run']))
+                else:
+                    runs=[0]
             solve_time=[]
             #if 'Run' in results:
             #    runs = range(len(results['Run']))
+            delay = []
             for run in runs:
                 if 'Run' in results:
                     results = d['Out']['Run'][run]
@@ -928,20 +1005,26 @@ def plot_box_plot(args):
 
                 #total_travel_time = calc_total_travel_time(d,results)
                 #min_travel_time,total_q_in = calc_min_travel_time(d,args)
-                delay = []
+                #delay = []
                 for q in args.queues:
-                    time,cumu_in,cumu_out,cumu_delay = calc_delay(d, results, args=q)
-                    in_start=0
-                    in_end=1
-                    for j in range(len(cumu_in)):
-                        if cumu_in[j] > cumu_in[in_end]: in_end=j
-                    j=0
-                    q_delay=0
-                    for sub_q in q:
-                        q_delay+=d['Queues'][sub_q]['Q_DELAY']
+                    #trimmed_delay = trim_delay(calc_delay(d, results, queues=q))
+                    # in_start=0
+                    # in_end=1
+                    # for j in range(len(cumu_in)):
+                    #     if cumu_in[j] > cumu_in[in_end]: in_end=j
+                    # j=0
+                    # q_delay=0
+                    # for sub_q in q:
+                    #     q_delay+=d['Queues'][sub_q]['Q_DELAY']
+                    #
+                    # while cumu_in[in_start+1]<1e-6 and in_start<in_end-1: in_start+=1
 
-                    while cumu_in[in_start+1]<1e-6 and in_start<in_end-1: in_start+=1
-                    delay+=[cumu_delay[i] for i in range(in_start,in_end)]
+                    _,_,_,cumu_delay,delay_by_car,trimmed_delay = calc_delay(d, results, queues=q,dt=args.dt)
+                    if args.by_car == True:
+                        delay += delay_by_car # q_delay #[cumu_delay[i] for i in range(in_start,in_end)]
+                    else:
+                        delay += trimmed_delay
+                #print delay
                 #average = (total_travel_time - min_travel_time) / total_q_in
                 #mean = sum(delay)/len(delay)
                 #if len(plot_label)==0:
@@ -962,19 +1045,19 @@ def plot_box_plot(args):
                             solve_time.append(step['solver_runtime'])
                 else:
                      N = len(results['t'])-1
-                if args.plot_cpu_time:
-                    box_data=solve_time
-                else:
-                    box_data = delay
-                Ni = N - 0.25 + plot_i
-                #if Ni in plot_data:
+            if args.plot_cpu_time:
+                box_data=solve_time
+            else:
+                box_data = delay
+            Ni = N - 0.25 + plot_i
+            #if Ni in plot_data:
 
 #                    plot_data[Ni]=[plot_data[Ni][0]+box_data,0]
- #               else:
-                plot_data.append(box_data) #[delay,average]
-                plot_labels.append(labels[lab_i])
+#               else:
+            plot_data.append(box_data) #[delay,average]
+            plot_labels.append(labels[lab_i])
 
-                if lab_i+1 < len(labels): lab_i += 1
+            if lab_i+1 < len(labels): lab_i += 1
 
         X = sorted(plot_data)
         Y = plot_data
@@ -2030,7 +2113,8 @@ if __name__ == '__main__':
     parser.add_argument("--annotate_y", help="List of y points to plot each label in annotate_labels", nargs='*', type=float)
     parser.add_argument("--annotate_labels", help="List of labels to annotate on plot", nargs='*')
     parser.add_argument("--annotate_size", help="List of label font sizes for each label in annotate_label", nargs='*', type=int)
-
+    parser.add_argument("--by_car", help="Box plot of delay from travel time per car rather than per time step", action="store_true", default=False)
+    parser.add_argument("--dt", help="sampling step per car for box plots",type=float,default=1)
     args = parser.parse_args()
 
     linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.'}

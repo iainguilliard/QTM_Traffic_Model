@@ -608,6 +608,7 @@ def plot_network_figure(data,figsize,type='arrow'):
             arrow.set_fc(qline_color)
 
         elif type == 'bar' or type == 'carrow':
+            qfont_weight = None
             ax.text(rx+(tx),ry-(ty),'%d' % int(i+1),fontsize=font_size, fontweight=qfont_weight,color=scalarMap.to_rgba(0))
             N=len(q['cmap'])
             t=0

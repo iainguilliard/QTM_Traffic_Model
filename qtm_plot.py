@@ -1765,7 +1765,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                 else:
                     results = results['Run'][0]
             if args.steps != None and len(args.steps)>j:
-                if 'Step' in results:
+                if 'Step' in results and args.steps[j] > 0:
                     results = results['Step'][args.steps[j]]
             ls=args.linestyle[ls_i]
             col=args.color[c_i]
@@ -1839,7 +1839,10 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                 if var[0:3]=='q_{':
                     DT = results['DT']
                     #ax[i].plot(t,[results[var][0]]+[results[var][x]/DT[x-1] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col) #/DT[x_i]
-                    ax[i].plot(t,[results[var][0]]+[results[var][x] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col)
+                    if args.io_vars_as_rate == True:
+                        ax[i].plot(t,[results[var][x]/DT[x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
+                    else:
+                        ax[i].plot(t,[results[var][x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
                 else:
                     ax[i].plot(t,[results[var][x] for x in range(len(t))],marker=marker, label=label, linestyle = ls, color=col)
                 #else:
@@ -2092,6 +2095,7 @@ if __name__ == '__main__':
     parser.add_argument("--plot_phase_offset", help="Plots phase offset vs travel time for each file",action="store_true", default=False)
     parser.add_argument("--plot_box_plot", help="Plots a box plot for each file",action="store_true", default=False)
     parser.add_argument("--plot_vars", help="Plots each var in list",nargs='*')
+    parser.add_argument("--io_vars_as_rate", help="Plots input and output vars as rate (i.e. /DT) rather than volume",action="store_true", default=False)
     parser.add_argument("--plot_network", help="Plots a network as a link and node graph",action="store_true", default=False)
     parser.add_argument("--plot_network_delay", help="Plots a network as a coloured link and node graph", default='')
     parser.add_argument("--colormap", help="the color map name to use", default='green_red')

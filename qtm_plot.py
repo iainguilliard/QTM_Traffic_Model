@@ -1863,6 +1863,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
             if yl_i+1 < len(args.y_label): yl_i += 1
             if m_i+1 < len(args.marker): m_i += 1
             if var in results.keys():
+
                 if var[0] == 'q' or var[0] == 'f':
                     if var[2] != '{':
                         #ax[i].set_ylim(-1,data['Queues'][int(var[3:].split(',')[0])]['Q_MAX']+2)
@@ -1881,6 +1882,8 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                     ax[i].set_ylim(-1,len(data['Lights'][l]['P_MAX']) )
                 elif var[0] == 'p':
                     None
+                if args.y_limit is not None:
+                    ax[i].set_ylim(args.y_limit[0],args.y_limit[1])
                 #else:
                 #    ax[i].set_ylim(0,1)
             ax[i].legend(loc='best')

@@ -1,0 +1,67 @@
+{
+    "Title" : "Lin and Wang Transit",
+
+    "Nodes" : [
+        {"id": 0, "p": [-50,100]},
+        {"id": 1,"p": [-200,-50]},
+        {"id": 2, "p": [-50,-100]},
+        {"id": 3, "p": [0,0]},
+        {"id": 4, "p": [-50,-50]},
+        {"id": 5, "p": [100,100]},
+        {"id": 6, "p": [100,-100]},
+        {"id": 7, "p": [150,-50]},
+        {"id": 8, "p": [100,-50]}
+        ],
+
+     "Queues": [
+        {"id": 0, "edge": [0,4], "Q_DELAY": 3, "Q_IN": 1, "Q_OUT": 0,  "Q_P": [0,0], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 1, "edge": [1,4], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "Q_P": [0,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 2, "edge": [4,2], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 3, "edge": [4,8], "Q_DELAY": 3, "Q_IN": 0, "Q_OUT": 0,  "Q_P": [1,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+
+        {"id": 4, "edge": [5,8], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "Q_P": [1,0], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+
+        {"id": 5, "edge": [8,6], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 6, "edge": [8,7], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 }
+        ],
+
+      "Flows": {
+          "0_2": { "F_MAX": 5, "f0": 0 },
+          "1_3": { "F_MAX": 5, "f0": 0 },
+          "4_5": { "F_MAX": 5, "f0": 0 },
+          "3_6": { "F_MAX": 5, "f0": 0 }
+      },
+
+      "In_Flow_limit" : 22,
+
+      "Transits": [
+              {"id": "West-East", "links": [1,4,8,7]}
+      ],
+
+      "Lights": [
+          {
+              "id": 0,
+              "node": 4,
+              "P_MAX": [3,3],
+              "P_MIN": [1,1],
+              "C_MAX": 6,
+              "C_MIN": 2,
+              "p0" : [1,0],
+              "c0" : [0,0],
+              "d0" : [0,1],
+            "transits" : [{"id": "West-East" ,"phase": 0, "P_MAX_ext": [2,0],"offset": 10, "duration": 3, "period": 20}]
+          },
+           {
+              "id": 1,
+              "node": 8,
+              "P_MAX": [3,3],
+              "P_MIN": [1,1],
+              "C_MAX": 6,
+              "C_MIN": 2,
+              "p0" : [1,0],
+              "c0" : [0,0],
+              "d0" : [0,1],
+              "transits" : [{"id": "West-East" ,"phase": 0, "P_MAX_ext": [2,0],"offset": 20, "duration": 3, "period": 20}]
+          }
+      ]
+}

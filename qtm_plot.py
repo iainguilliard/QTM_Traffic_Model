@@ -354,7 +354,7 @@ def label_distance(theta,i):
         dx =  -7
     return dx,dy
 
-def plot_network_figure(data,figsize,type='arrow'):
+def plot_network_figure(data,figsize,type='arrow',index_label_base=0):
 
     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
 
@@ -411,6 +411,8 @@ def plot_network_figure(data,figsize,type='arrow'):
     label_space=15 # label spacing from line
     d=5 # distance to space two edges that share a pair of nodes
     width = 3 # width of bar
+    track_width = 2 # width of track
+    track_spacing = 5 # spacing between sleepers along track
     lx = 3 # light label x offset
     ly = 3 # light label y offset
     line_color = 'k'
@@ -455,6 +457,10 @@ def plot_network_figure(data,figsize,type='arrow'):
             d = data['Plot']['d_edges']
         if 'width_bar' in data['Plot']:
             width = data['Plot']['width_bar']
+        if 'track_width' in data['Plot']:
+            track_width = data['Plot']['track_width']
+        if 'track_spacing' in data['Plot']:
+            track_spacing = data['Plot']['track_spacing']
         if 'lx' in data['Plot']:
             lx = data['Plot']['lx']
         if 'ly' in data['Plot']:
@@ -493,6 +499,20 @@ def plot_network_figure(data,figsize,type='arrow'):
             edges[pair]=1
         q['pair']=pair
 
+    if 'Transits' in data:
+        for transit in data['Transits']:
+            for i in range(1,len(transit['links'])):
+                n0 = transit['links'][i-1]
+                n1 = transit['links'][i]
+                pair = (n0, n1)
+                if n1 < n0 : pair = (n1, n0)
+                if pair in edges:
+                    edges[pair] += 1
+                else:
+                    edges[pair] = 1
+
+                data['Queues'].append({'transit': True, 'edge': [n0,n1], 'pair': pair})
+
     for i,l in enumerate(data['Lights']):
         n=data['Nodes'][l['node']]
         nodes[l['node']]['l']=i
@@ -502,7 +522,7 @@ def plot_network_figure(data,figsize,type='arrow'):
         if type == 'arrow':
             p = Circle((x,y), r, fc=light_color)
             ax.add_patch(p)
-            ax.text(x-lx,y-ly,r'$l_{%d}$' % int(i+1),fontsize=font_size)
+            ax.text(x-lx,y-ly,r'$l_{%d}$' % int(i+index_label_base),fontsize=font_size)
         else:
             r=15
 
@@ -527,13 +547,13 @@ def plot_network_figure(data,figsize,type='arrow'):
         trx0=rx0
         try0=ry0
         if 'light' in n0:
-            if pair:
+            if pair and 'transit' not in q:
                 theta = -math.asin(d/r)
                 trx = rx * math.cos(theta) - ry * math.sin(theta);
                 ry = rx * math.sin(theta) + ry * math.cos(theta);
                 rx=trx
             trx0-=rx * r; try0-=ry * r
-        elif pair:
+        elif pair and 'transit' not in q:
             trx0-=ry * d; try0+=rx * d
         rx = rx1-rx0
         ry = ry1-ry0
@@ -541,7 +561,7 @@ def plot_network_figure(data,figsize,type='arrow'):
         rx/=lth
         ry/=lth
         if 'light' in n1:
-            if pair:
+            if pair and 'transit' not in q:
                 theta = math.asin(d/r)
                 trx = rx * math.cos(theta) - ry * math.sin(theta);
                 ry = rx * math.sin(theta) + ry * math.cos(theta);
@@ -550,7 +570,7 @@ def plot_network_figure(data,figsize,type='arrow'):
                 rx1-=rx * (r+line_width); ry1-=ry * (r+line_width)
             else:
                 rx1-=rx * (r); ry1-=ry * (r)
-        elif pair:
+        elif pair and 'transit' not in q:
             rx1+=ry * d; ry1-=rx * d
         rx0=trx0
         ry0=try0
@@ -566,97 +586,123 @@ def plot_network_figure(data,figsize,type='arrow'):
         rx = rx0+(rx1-rx0)*tc
         ry = ry0+(ry1-ry0)*tc
 
-        if type == 'arrow':
-            qtext_color = text_color
-            qline_width = line_width
-            qhead_width = head_width
-            qtail_width = tail_width
-            qedge_color = edge_color
-            qline_color = line_color
-            qfont_weight = None
-            qfont_size = font_size
-            qoutline = None
-            if 'text_color' in q:
-                qtext_color = q['text_color']
-            if 'line_width' in q:
-                qline_width = q['line_width']
-            if 'head_width' in q:
-                qhead_width = q['head_width']
-            if 'tail_width' in q:
-                qtail_width = q['tail_width']
-            if 'edge_color' in q:
-                qedge_color = q['edge_color']
-            if 'line_color' in q:
-                qline_color = q['line_color']
-            if 'font_weight' in q:
-                qfont_weight = q['font_weight']
-            if 'font_size' in q:
-                qfont_size = q['font_size']
-            if 'outline' in q:
-                qoutline = q['outline']
-            if qfont_weight == 'bold':
-                qlabel = r'$\mathbf{q_{%d}}$' % int(i+1)
-            else:
-                qlabel = r'$q_{%d}$' % int(i+1)
-            if qoutline != None:
-                ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size+1, color=qoutline)
-            ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size, color=qtext_color)
 
-            #plot([rx,rx+ty],[ry,ry-tx])
-            arrow = ax.arrow(rx0,ry0,rx1-rx0,ry1-ry0, shape='full', lw=qline_width,color=qline_color,length_includes_head=True, head_width=qhead_width, width=qtail_width)
-            arrow.set_ec(qedge_color)
-            arrow.set_fc(qline_color)
+        qtext_color = text_color
+        qline_width = line_width
+        qhead_width = head_width
+        qtail_width = tail_width
+        qedge_color = edge_color
+        qline_color = line_color
+        qfont_weight = None
+        qfont_size = font_size
+        qoutline = None
+        qtrack_width = track_width
+        qtrack_spacing = track_spacing
+        if 'text_color' in q:
+            qtext_color = q['text_color']
+        if 'line_width' in q:
+            qline_width = q['line_width']
+        if 'head_width' in q:
+            qhead_width = q['head_width']
+        if 'tail_width' in q:
+            qtail_width = q['tail_width']
+        if 'edge_color' in q:
+            qedge_color = q['edge_color']
+        if 'line_color' in q:
+            qline_color = q['line_color']
+        if 'font_weight' in q:
+            qfont_weight = q['font_weight']
+        if 'font_size' in q:
+            qfont_size = q['font_size']
+        if 'outline' in q:
+            qoutline = q['outline']
+        if qfont_weight == 'bold':
+            qlabel = r'$\mathbf{q_{%d}}$' % int(i+index_label_base)
+        else:
+            qlabel = r'$q_{%d}$' % int(i+index_label_base)
+        if 'track_width' in q:
+            qtrack_width = q['track_width']
+        if 'track_spacing' in q:
+            qtrack_spacing = q['track_spacing']
 
-        elif type == 'bar' or type == 'carrow':
-            qfont_weight = None
-            ax.text(rx+(tx),ry-(ty),'%d' % int(i+1),fontsize=font_size, fontweight=qfont_weight,color=scalarMap.to_rgba(0))
-            N=len(q['cmap'])
-            t=0
-            #q=0.0
+        if 'transit' in q:
             rx = rx1-rx0
             ry = ry1-ry0
-            tx=(rx/lth) * width; ty=(ry/lth) * width
-            qrx0=rx1 #- rx * q
-            qry0=ry1 #- ry * q
-            if N == 1:
-                dt = 1
-            else:
-                dt=(1.0)/(N)
-            # for j in range(N):
-            #     qrx0=rx0 + t * rx
-            #     qry0=ry0 + t * ry
-            #     qrx1=rx0 + (t+dt) * rx
-            #     qry1=ry0 + (t+dt) * ry
-            #     colorVal = scalarMap.to_rgba(q['cmap'][j])
-            #     if type == 'bar':
-            #         ax.add_patch(mp.patches.Polygon([[qrx0-ty,qry0+tx],[qrx1-ty,qry1+tx],[qrx1+ty,qry1-tx],[qrx0+ty,qry0-tx]],closed=True,fill='y',color=colorVal,ec='none',lw=0.9))
-            #     else:
-            #         arrow = ax.arrow(qrx0,qry0,rx1-qrx0,ry1-qry0, shape='full', lw=line_width,color=colorVal,length_includes_head=True, head_width=head_width, width=tail_width)
-            #         arrow.set_ec(colorVal)
-            #         arrow.set_fc(colorVal)
-            #     t+=dt
+            tx=(rx/lth) * qtrack_width; ty=(ry/lth) * qtrack_width
+            N = int(lth / qtrack_spacing)
+            dt = 1.0 / N
+            t=0
+            for j in range(N):
+                qrx0 = rx0 + t * rx
+                qry0 = ry0 + t * ry
+                qrx1 = rx0 + (t+dt) * rx
+                qry1 = ry0 + (t+dt) * ry
+                ax.plot([qrx0+ty,qrx0-ty],[qry0-tx,qry0+tx], lw=qline_width,color=qline_color)
+                t += dt
+            ax.plot([rx0,rx1],[ry0,ry1], lw=qline_width*2,color=qline_color)
+        else:
+            if type == 'arrow':
+                if qoutline != None:
+                    ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size+1, color=qoutline)
+                ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size, color=qtext_color)
+
+                #plot([rx,rx+ty],[ry,ry-tx])
+                arrow = ax.arrow(rx0,ry0,rx1-rx0,ry1-ry0, shape='full', lw=qline_width,color=qline_color,length_includes_head=True, head_width=qhead_width, width=qtail_width)
+
+                arrow.set_ec(qedge_color)
+                arrow.set_fc(qline_color)
+
+            elif type == 'bar' or type == 'carrow':
+                #qfont_weight = None
+                #ax.text(rx+(tx),ry-(ty),'%d' % int(i+index_label_base),fontsize=font_size, fontweight=qfont_weight,color=scalarMap.to_rgba(0))
+                ax.text(rx+(tx),ry-(ty),qlabel,fontsize=qfont_size, fontweight=qfont_weight,color=scalarMap.to_rgba(0))
+                N=len(q['cmap'])
+                t=0
+                #q=0.0
+                rx = rx1-rx0
+                ry = ry1-ry0
+                tx=(rx/lth) * width; ty=(ry/lth) * width
+                qrx0=rx1 #- rx * q
+                qry0=ry1 #- ry * q
+                if N == 1:
+                    dt = 1
+                else:
+                    dt=(1.0)/(N)
+                # for j in range(N):
+                #     qrx0=rx0 + t * rx
+                #     qry0=ry0 + t * ry
+                #     qrx1=rx0 + (t+dt) * rx
+                #     qry1=ry0 + (t+dt) * ry
+                #     colorVal = scalarMap.to_rgba(q['cmap'][j])
+                #     if type == 'bar':
+                #         ax.add_patch(mp.patches.Polygon([[qrx0-ty,qry0+tx],[qrx1-ty,qry1+tx],[qrx1+ty,qry1-tx],[qrx0+ty,qry0-tx]],closed=True,fill='y',color=colorVal,ec='none',lw=0.9))
+                #     else:
+                #         arrow = ax.arrow(qrx0,qry0,rx1-qrx0,ry1-qry0, shape='full', lw=line_width,color=colorVal,length_includes_head=True, head_width=head_width, width=tail_width)
+                #         arrow.set_ec(colorVal)
+                #         arrow.set_fc(colorVal)
+                #     t+=dt
 
 
-            t = np.linspace(0,1,N)
-            x =rx0 + t * rx
-            y =ry0 + t * ry
-            points = np.array([x,y]).T.reshape(-1,1,2)
-            segments = np.concatenate([points[:-1], points[1:]], axis=1)
-            bar_cmap = np.array([scalarMap.to_rgba(q['cmap'][j]) for j in range(N)])
-            bar_widths = 1 + np.array(q['cmap'])*2*width
-            lc = LineCollection(segments,linewidths=bar_widths,colors=bar_cmap)
-            ax.add_collection(lc)
+                t = np.linspace(0,1,N)
+                x =rx0 + t * rx
+                y =ry0 + t * ry
+                points = np.array([x,y]).T.reshape(-1,1,2)
+                segments = np.concatenate([points[:-1], points[1:]], axis=1)
+                bar_cmap = np.array([scalarMap.to_rgba(q['cmap'][j]) for j in range(N)])
+                bar_widths = 1 + np.array(q['cmap'])*2*width
+                lc = LineCollection(segments,linewidths=bar_widths,colors=bar_cmap)
+                ax.add_collection(lc)
 
-        if type == 'bar' or type == 'carrow':
-            for i,l in enumerate(data['Lights']):
-                n=data['Nodes'][l['node']]
-                nodes[l['node']]['l']=i
-                n['light']=i
-                x=n['p'][0]
-                y=n['p'][1]
-                p = Circle((x,y), r,ec=scalarMap.to_rgba(0),fc='w')
-                ax.add_patch(p)
-                ax.text(x-3,y-3,r'%d' % int(i+1),fontsize=10,color=scalarMap.to_rgba(0))
+            if type == 'bar' or type == 'carrow':
+                for i,l in enumerate(data['Lights']):
+                    n=data['Nodes'][l['node']]
+                    nodes[l['node']]['l']=i
+                    n['light']=i
+                    x=n['p'][0]
+                    y=n['p'][1]
+                    p = Circle((x,y), r,ec=scalarMap.to_rgba(0),fc='w')
+                    ax.add_patch(p)
+                    ax.text(x-3,y-3,r'%d' % int(i+index_label_base),fontsize=10,color=scalarMap.to_rgba(0))
 
 
 
@@ -677,7 +723,7 @@ def plot_network(args):
     for f in args.files:
         data = open_data_file(f)
         if data is not None:
-            plot_network_figure(data,args.figsize)
+            plot_network_figure(data,args.figsize,index_label_base=args.index_label_base)
 
 def plot_network_delay(args):
     """
@@ -844,7 +890,7 @@ def plot_network_delay(args):
                 #print 'q_%d' % i,'\tdelay: %f' % delay,'\tcars: %d' % np.sum(qi_in),'\tQ_DELAY: %d' %Q_DELAY
             #pl.xlim(0,600)
             #pl.ylim(75,100)
-            plot_network_figure(data,args.figsize,type=type)
+            plot_network_figure(data,args.figsize,type=type,index_label_base=args.index_label_base)
 
 
 def plot_delay(data, step, queues=[],line_style=['--'],args=None):
@@ -1215,7 +1261,7 @@ def plot_av_travel_time(args):
         ref_file = None
     #print len(plot_data_files)
     for data in plot_data_files:
-        #print len(data)
+        #print data
 
         plot_data.append( dict())
         plot_scatter_Y.append([])
@@ -1228,7 +1274,7 @@ def plot_av_travel_time(args):
             annotate=True
 
         for d in data:
-            #print d.keys()
+            #print d
             titles.append(d['Title'])
             results = d['Out']
             #print d.keys()
@@ -2123,6 +2169,7 @@ if __name__ == '__main__':
     parser.add_argument("--annotate_size", help="List of label font sizes for each label in annotate_label", nargs='*', type=int)
     parser.add_argument("--by_car", help="Box plot of delay from travel time per car rather than per time step", action="store_true", default=False)
     parser.add_argument("--dt", help="sampling step per car for box plots",type=float,default=1)
+    parser.add_argument("--index_label_base", help="base index of queue and light labels in network plots as INDEX_LABEL_BASE",type=int,default=0)
     args = parser.parse_args()
 
     linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.'}

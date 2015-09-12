@@ -42,6 +42,21 @@ def calc_total_travel_time(data,results):
                 sum_out+=(t*results['q_{%d,out}' %i ][n])
     return sum_out-sum_in
 
+def calc_total_traffic(data,results):
+    Queues = data['Queues']
+    time=results['t']
+    sum_in=0
+    sum_out=0
+    for i,q in enumerate(Queues):
+        #print i,sum(results['q_{%d,in}' %i ])
+        sum_in += sum(results['q_{%d,in}' %i ])
+        #for n,t in enumerate(time):
+        #    if Queues[i]['Q_IN'] > 0:
+        #        sum_in+=(results['q_{%d,in}' %i ][n])
+        #    if Queues[i]['Q_OUT'] > 0:
+        #        sum_out+=(results['q_{%d,out}' %i ][n])
+    return sum_in
+
 def calc_delay(data, results, queues=[], dp=6, dt=1):
 
     Queues = data['Queues']
@@ -353,8 +368,12 @@ def label_distance(theta,i):
     else: # Default
         dx =  -7
     return dx,dy
+def plot_circle_label(ax,label,x,y,r):
+    p = Circle((x,y), r,ec='k',fc='w')
+    ax.add_patch(p)
+    ax.text(x-3,y-3,label,fontsize=10,color='k')
 
-def plot_network_figure(data,figsize,type='arrow',index_label_base=0):
+def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,debug=False):
 
     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
 
@@ -390,20 +409,16 @@ def plot_network_figure(data,figsize,type='arrow',index_label_base=0):
     levels = range(0,110,10)
     CS3 = pl.contourf(Z, levels, cmap=cmap)
     pl.clf()
+    pl.close('all')
+    cNorm  = mp.colors.Normalize(vmin=0, vmax=1)
+    scalarMap = mp.cm.ScalarMappable(norm=cNorm,cmap=cmap)
+
+    #fig.set_size_inches(10, 5)
 
     cNorm  = mp.colors.Normalize(vmin=0, vmax=1)
     scalarMap = mp.cm.ScalarMappable(norm=cNorm,cmap=cmap)
 
-    fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
-    fig.set_size_inches(10, 5)
 
-    cNorm  = mp.colors.Normalize(vmin=0, vmax=1)
-    scalarMap = mp.cm.ScalarMappable(norm=cNorm,cmap=cmap)
-
-    if figsize != None:
-        fig.set_size_inches(figsize)
-    else:
-        fig.set_size_inches((10,5))
     line_width = 1
     tail_width = 0
     head_width = 5
@@ -431,8 +446,8 @@ def plot_network_figure(data,figsize,type='arrow',index_label_base=0):
                     if data['Plot']['bg_alpha'] != None:
                         bg_alpha = data['Plot']['bg_alpha']
                 pl.imshow(img,extent=ext,alpha=bg_alpha)
-
-        fig_size = tuple(data['Plot']['fig_size'])
+        if figsize is None and 'fig_size' in data['Plot']:
+            figsize = tuple(data['Plot']['fig_size'])
         if 'line_width' in data['Plot']:
             line_width = data['Plot']['line_width']
         if 'head_width' in data['Plot']:
@@ -465,6 +480,10 @@ def plot_network_figure(data,figsize,type='arrow',index_label_base=0):
             lx = data['Plot']['lx']
         if 'ly' in data['Plot']:
             ly = data['Plot']['ly']
+
+    if figsize is None:
+        figsize = (10,5)
+    fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False,figsize=figsize)
 
     nodes = []
     edges = {}
@@ -579,6 +598,9 @@ def plot_network_figure(data,figsize,type='arrow',index_label_base=0):
         lth = math.sqrt(rx*rx+ry*ry)
         theta = math.degrees(math.atan2(rx,ry))
         dx,dy = label_distance(theta,i)
+        #if debug:
+        #    dx *= 3
+        #    dy *= 3
         tx=ry/lth * label_space + dx; ty=rx/lth * label_space + dy
         tc = 0.5
         if 'text_pos' in q:
@@ -624,7 +646,26 @@ def plot_network_figure(data,figsize,type='arrow',index_label_base=0):
             qtrack_width = q['track_width']
         if 'track_spacing' in q:
             qtrack_spacing = q['track_spacing']
+        if debug and not 'transit' in q:
+            #qlabel += ',$%d,%ss$' % (q['Q_MAX'],q['Q_DELAY'])
+            #if q['Q_P'] is not None:
+            #    qlabel += '\n$%s$' % (q['Q_P'])
+            #if q['Q_IN'] > 0:
+            #    ax.text(rx0-5,ry0-5,r'%d' % q['Q_IN'],fontsize=10)
+            #if q['Q_OUT'] > 0:
+            #    ax.text(rx1-5,ry1-5,r'%d' % q['Q_OUT'],fontsize=10)
+            #for j in range(len(data['Queues'])):
+            #    flow = '%d_%d' % (i,j)
+            #    if flow in data['Flows']:
+            #        qlabel += '\n$f_{out,%d}=%s$' % (j,data['Flows'][flow]['F_MAX'])
+            #    flow = '%d_%d' % (j,i)
+            #    if flow in data['Flows']:
+            #        qlabel += '\n$f_{%d,in}=%s$' % (j,data['Flows'][flow]['F_MAX'])
+            rx = rx1-rx0
+            ry = ry1-ry0
+            plot_circle_label(ax,q['Q_MAX'],rx0+0.5*rx,ry0+0.5*ry,10)
 
+            #qfont_size = 12
         if 'transit' in q:
             rx = rx1-rx0
             ry = ry1-ry0
@@ -712,18 +753,23 @@ def plot_network_figure(data,figsize,type='arrow',index_label_base=0):
     #[-200,200,-110,110]
     #ax.set_ylim([-110,110])
     #ax.set_xlim([-200,200])
+    #if debug:
+    #    ax.set_ylim((ext[2]-50,ext[3]+50))
+    #    ax.set_xlim((ext[0]-50,ext[1]+50))
+    #else:
     ax.set_ylim(ext[2:4])
     ax.set_xlim(ext[0:2])
     pl.axis('off')
     if type == 'bar' or type == 'carrow':
         cax = fig.add_axes([0.9, 0.1, 0.03, 0.8])
         pl.colorbar(CS3,cax=cax)
+    pl.tight_layout()
 
 def plot_network(args):
     for f in args.files:
         data = open_data_file(f)
         if data is not None:
-            plot_network_figure(data,args.figsize,index_label_base=args.index_label_base)
+            plot_network_figure(data,args.figsize,index_label_base=args.index_label_base,debug=args.debug_network)
 
 def plot_network_delay(args):
     """
@@ -974,7 +1020,7 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
     ax.legend(h1+h2, l1+l2, loc='upper left')
     if args.title:
         #pl.title('Arrival Curves and Delay for Queues %s' % ', '.join([str(q) for q in queues]) )
-        pl.title(args.title )
+        pl.title(args.title[0] )
 
 def calc_min_travel_time(data,args):
     print data.keys()
@@ -998,9 +1044,12 @@ def calc_min_travel_time(data,args):
     return min_travel_time,total_q_in
 
 def plot_box_plot(args):
+
+    plot_data_files = read_files(args.files)
+
     pl.clf()
-    npLots=len(args.files)
-    fig, ax = pl.subplots(nrows=1, ncols=1, sharex=False, sharey=False)
+    nplots=len(plot_data_files)
+    fig, ax = pl.subplots(nrows=1, ncols=nplots, sharex=False, sharey=True)
 
     if not isinstance(ax,np.ndarray): ax=[ax]
 
@@ -1016,8 +1065,6 @@ def plot_box_plot(args):
     lab_i=0
     labels=['Plot 1']
     if args.labels: labels=args.labels
-
-    plot_data_files = read_files(args.files)
 
     for plot_i,plot in enumerate(plot_data_files):
 
@@ -1115,29 +1162,30 @@ def plot_box_plot(args):
         props3 = dict(markeredgecolor=args.color[c_i],
                       markerfacecolor=args.color[c_i])
         #print boxprops,c_i,len(args.color)
-        ax[0].boxplot(Y, vert=True, showmeans=True, widths=0.5, whis=1e99) #, boxprops=props, whiskerprops=props3, capprops=props,
+        ax[plot_i].boxplot(Y, vert=True, showmeans=True, widths=0.5, whis=1e99) #, boxprops=props, whiskerprops=props3, capprops=props,
                       #medianprops=props, meanprops=props3)#,flierprops=props3,positions=X)
         #Y = [plot_data[x][1] for x in X]
         #ax.plot(X,Y,c=args.color[c_i], label=plot_label,marker='x')
 
 
         if args.x_limit:
-            ax[0].set_xlim(args.x_limit[0], args.x_limit[1])
+            ax[plot_i].set_xlim(args.x_limit[0], args.x_limit[1])
         if args.y_limit:
-            ax[0].set_ylim(args.y_limit[0], args.y_limit[1])
-        ax[0].grid()
-        if args.plot_cpu_time:
-            ax[0].set_ylabel('Solve Time')
-        else:
-            ax[0].set_ylabel('Delay')
-        ax[0].set_xticklabels(plot_labels)
+            ax[plot_i].set_ylim(args.y_limit[0], args.y_limit[1])
+        ax[plot_i].grid()
+
+        ax[plot_i].set_xticklabels(plot_labels,rotation='vertical')
         if args.title:
-            ax[0].set_title(args.title)
+            ax[plot_i].set_title(args.title[plot_i % len(args.title)])
         if i+1 < len(args.linestyle): i += 1
         if c_i+1 < len(args.color): c_i += 1
         if l_i+1 < len(args.linestyle): l_i += 1
 
-
+    if args.plot_cpu_time:
+        ax[0].set_ylabel('Solve Time')
+    else:
+        ax[0].set_ylabel('Delay')
+    pl.tight_layout()
     #ax.set_ylabel('Total Travel Time')
     #ax.legend(loc='best')
     #if args.title:
@@ -1213,7 +1261,216 @@ def read_files(plot_files):
         plots.append(data)
     return plots
 
+def plot_anotations(ax,args):
+    if args.annotate_labels is not None and args.annotate_x is not None and args.annotate_y is not None:
+        assert len(args.annotate_labels) == len(args.annotate_x) == len(args.annotate_y)
+        for i,_ in enumerate(args.annotate_labels):
+            if args.annotate_size is not None:
+                size = args.annotate_size[i]
+            else:
+                size = 8
+            ax.text(args.annotate_x[i],args.annotate_y[i],args.annotate_labels[i],size=size)
+
+
+
 def plot_av_travel_time(args):
+    pl.clf()
+    fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
+    if args.figsize:
+        fig.set_size_inches(args.figsize[0], args.figsize[1])
+    else:
+        fig.set_size_inches(15, 7)
+    titles=[]
+    i=0
+    l_i=0
+    labels=[]
+    if args.labels: labels=args.labels
+    if args.markerfill == 'n':
+        mfc = ['None'] * len(args.color)
+    else:
+        mfc = [args.color[i] if args.markerfill[i]=='y' else 'None' for i in range(len(args.markerfill))]
+    plot_X = []
+    plot_Y = []
+    plot_data_files = read_files(args.files)
+
+    for data in plot_data_files:
+
+        plot_X.append([])
+        plot_Y.append([])
+
+        plot_label=''
+        if len(labels)>0: plot_label = labels[l_i]
+
+        for d in data:
+
+            titles.append(d['Title'])
+            results = d['Out']
+
+            runs=1
+            if 'Run' in results:
+                runs = len(results['Run'])
+                d_out = results['Run'][0]
+                label =  d_out
+            else:
+                d_out = results
+
+            delay = []
+            total_travel_time = 0
+            for run in range(runs):
+                if 'Run' in d['Out']:
+                    results = d['Out']['Run'][run]
+                for q in args.queues:
+                    _,_,_,cumu_delay,delay_by_car,trimmed_delay = calc_delay(d, results, queues=q,dt=args.dt)
+                    if args.by_car == True:
+                        delay += delay_by_car # q_delay #[cumu_delay[i] for i in range(in_start,in_end)]
+                    else:
+                        delay += trimmed_delay
+
+                av_delay = np.mean(delay)
+                total_traffic_in = calc_total_traffic(d,results)
+
+                if len(plot_label)==0:
+                    plot_label = '$'+label.split('$')[1]+'$'
+            total_travel_time = results['total_travel_time']
+            plot_Y[-1].append(total_travel_time/total_traffic_in)
+            plot_X[-1].append(total_traffic_in)
+        i += 1
+
+
+    i=0
+    c_i=0
+    m_i=0
+    l_i=0
+    labels=[]
+    if args.labels: labels=args.labels
+    for plot_i in range(len(plot_Y)):
+        if len(labels)>0:
+            plot_label = labels[l_i]
+        else:
+            plot_label = '$'+label.split('$')[1]+'$'
+
+        _ = ax.plot(plot_X[plot_i],plot_Y[plot_i],color=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,
+                marker=args.marker[m_i],markerfacecolor=mfc[c_i]);
+
+        if l_i+1 < len(args.linestyle): l_i += 1
+        if c_i+1 < len(args.color): c_i += 1
+        if m_i+1 < len(args.marker): m_i += 1
+        i += 1
+    plot_anotations(ax,args)
+    if args.x_limit:
+        ax.set_xlim(args.x_limit[0], args.x_limit[1])
+    if args.y_limit:
+        ax.set_ylim(args.y_limit[0], args.y_limit[1])
+    ax.grid()
+    ax.set_xlabel('Total traffic through network (vehicles)')
+    ax.set_ylabel('Average travel time through network (s)')
+    ax.legend(loc='best')
+    if args.title:
+        pl.title(args.title[0])
+    #else:
+    #    if args.plot_cpu_time:
+    #        pl.title('CPU Time vs % increase in total travel time' )
+    #    else:
+    #        pl.title('Number of time samples vs % increase in total travel time' )
+
+
+def plot_av_delay(args):
+    pl.clf()
+    fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
+    if args.figsize:
+        fig.set_size_inches(args.figsize[0], args.figsize[1])
+    else:
+        fig.set_size_inches(15, 7)
+    titles=[]
+    i=0
+    l_i=0
+    labels=[]
+    if args.labels: labels=args.labels
+
+    plot_X = []
+    plot_Y = []
+    plot_data_files = read_files(args.files)
+
+    for data in plot_data_files:
+
+        plot_X.append([])
+        plot_Y.append([])
+
+        plot_label=''
+        if len(labels)>0: plot_label = labels[l_i]
+
+        for d in data:
+
+            titles.append(d['Title'])
+            results = d['Out']
+
+            runs=1
+            if 'Run' in results:
+                runs = len(results['Run'])
+                d_out = results['Run'][0]
+                label =  d_out
+            else:
+                d_out = results
+
+            delay = []
+            for run in range(runs):
+                if 'Run' in d['Out']:
+                    results = d['Out']['Run'][run]
+                for q in args.queues:
+                    _,_,_,cumu_delay,delay_by_car,trimmed_delay = calc_delay(d, results, queues=q,dt=args.dt)
+                    if args.by_car == True:
+                        delay += delay_by_car # q_delay #[cumu_delay[i] for i in range(in_start,in_end)]
+                    else:
+                        delay += trimmed_delay
+
+                av_delay = np.mean(delay)
+                total_traffic_in = calc_total_traffic(d,results)
+
+                if len(plot_label)==0:
+                    plot_label = '$'+label.split('$')[1]+'$'
+
+            plot_Y[-1].append(av_delay)
+            plot_X[-1].append(total_traffic_in)
+        i += 1
+
+
+    i=0
+    c_i=0
+    m_i=0
+    l_i=0
+    labels=[]
+    if args.labels: labels=args.labels
+    for plot_i in range(len(plot_Y)):
+        if len(labels)>0:
+            plot_label = labels[l_i]
+        else:
+            plot_label = '$'+label.split('$')[1]+'$'
+
+        ax.plot(plot_X[plot_i],plot_Y[plot_i],color=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,marker=args.marker[m_i],markerfacecolor='None')
+
+        if l_i+1 < len(args.linestyle): l_i += 1
+        if c_i+1 < len(args.color): c_i += 1
+        if m_i+1 < len(args.marker): m_i += 1
+        i += 1
+
+    if args.x_limit:
+        ax.set_xlim(args.x_limit[0], args.x_limit[1])
+    if args.y_limit:
+        ax.set_ylim(args.y_limit[0], args.y_limit[1])
+    ax.grid()
+    ax.set_xlabel('Total traffic through network')
+    ax.set_ylabel('Average delay')
+    ax.legend(loc='best')
+    if args.title:
+        pl.title(args.title[0])
+    #else:
+    #    if args.plot_cpu_time:
+    #        pl.title('CPU Time vs % increase in total travel time' )
+    #    else:
+    #        pl.title('Number of time samples vs % increase in total travel time' )
+
+
+def plot_av_travel_time_N(args):
     pl.clf()
     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
     if args.figsize:
@@ -1407,15 +1664,7 @@ def plot_av_travel_time(args):
         if m_i+1 < len(args.marker): m_i += 1
         i += 1
 
-    if args.annotate_labels is not None and args.annotate_x is not None and args.annotate_y is not None:
-        assert len(args.annotate_labels) == len(args.annotate_x) == len(args.annotate_y)
-        for i,_ in enumerate(args.annotate_labels):
-            if args.annotate_size is not None:
-                size = args.annotate_size[i]
-            else:
-                size = 8
-            ax.text(args.annotate_x[i],args.annotate_y[i],args.annotate_labels[i],size=size)
-
+    plot_annotations(ax,args)
     if args.x_limit:
         ax.set_xlim(args.x_limit[0], args.x_limit[1])
     if args.y_limit:
@@ -1428,7 +1677,7 @@ def plot_av_travel_time(args):
     ax.set_ylabel('% increase in total travel time') #ax.set_ylabel('Total Travel Time')
     ax.legend(loc='best')
     if args.title:
-        pl.title(args.title)
+        pl.title(args.title[0])
     #else:
     #    if args.plot_cpu_time:
     #        pl.title('CPU Time vs % increase in total travel time' )
@@ -1555,7 +1804,7 @@ def plot_travel_time(args):
     ax.set_ylabel('% increase in total travel time') #ax.set_ylabel('Total Travel Time')
     ax.legend(loc='best')
     if args.title:
-        pl.title(args.title)
+        pl.title(args.title[0])
     else:
         pl.title('Number of time samples vs % increase in total travel time' )
 
@@ -1659,7 +1908,7 @@ def plot_cpu_time(args):
     ax.set_ylabel('Total travel time')
     ax.legend(loc='best')
     if args.title:
-        pl.title(args.title)
+        pl.title(args.title[0])
     else:
         pl.title('CPU time vs Total Travel Time for Network' )
 
@@ -1775,14 +2024,17 @@ def plot_phase_offset(args):
     ax.set_ylabel('Total travel time')
     ax.legend(loc='best')
     if args.title:
-        pl.title(args.title)
+        pl.title(args.title[0])
     else:
         pl.title('Phase Offset vs Total Travel Time for Network' )
 
 def plot_vars(args): #data_sets,params,colors,line_styles,steps):
     pl.clf()
     fig, axes = pl.subplots(nrows=len(args.plot_vars), ncols=1, sharex=True, sharey=False)
-    fig.set_size_inches(15, 4*len(args.plot_vars))
+    if args.figsize is None:
+        fig.set_size_inches(15, 4*len(args.plot_vars))
+    else:
+        fig.set_size_inches(args.figsize[0], args.figsize[1]*len(args.plot_vars))
     ax=axes
     if not isinstance(ax, np.ndarray): ax=[axes]
 
@@ -1937,7 +2189,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                 ax[i].set_xlim(args.x_limit[0],args.x_limit[1])
             ax[i].grid(True)
     if args.title:
-        pl.title(args.title)
+        pl.title(args.title[0])
 
 
 def dump_stats(args):
@@ -2040,7 +2292,7 @@ def dump_stats(args):
                                                                   (total_travel_time-min_travel_time) / total_q_in,
                                                                   total_stops,N,accuracy,status,obj,objval)
 
-def dump_vars(args): #data_sets,params,colors,line_styles,steps):
+def dump_sample_vars(args): #data_sets,params,colors,line_styles,steps):
 
     data_sets = []
     files=[]
@@ -2079,15 +2331,58 @@ def dump_vars(args): #data_sets,params,colors,line_styles,steps):
         #    for i,var in enumerate(args.dump_vars):
         #        if var in results.keys(): print '%5.2f' % results[var][k],
         #    print
-        table = np.zeros((len(args.dump_vars),len(t)))
-        for i,var in enumerate(args.dump_vars):
+        table = np.zeros((len(args.dump_sample_vars),len(t)))
+        for i,var in enumerate(args.dump_sample_vars):
             if var in results.keys():
                 var_data = results[var]
                 if var == 'DT':  var_data = var_data[:-1]
                 table[i:] = var_data
         #pd.set_option('display.width', 2000)
         pd.set_option('display.max_columns', 500)
-        display(pd.DataFrame(table,index=args.dump_vars))
+        display(pd.DataFrame(table,index=args.dump_sample_vars))
+
+def dump_vars(args): #data_sets,params,colors,line_styles,steps):
+
+    data_sets = []
+    files=[]
+    if args.labels: labels=args.labels
+
+    for file in args.files:
+        if file.endswith('.json'):
+            files.append(file)
+        else:
+            f = open(str(file),'r')
+            for line in f:
+                fields = line.split(' ')
+                if len(fields) > 2:
+                    files.append(fields[2])
+            f.close()
+    loaded_files=[]
+    for file in files:
+        if os.path.isfile(file):
+            loaded_files.append(file)
+            f = open(str(file),'r')
+            data_sets.append(json.load(f))
+            f.close()
+
+
+    pd.options.display.float_format = '{:20,.2f}'.format
+    table = np.zeros((len(data_sets),len(args.dump_vars)))
+
+    for j,data in enumerate(data_sets):
+
+        results = data['Out']
+        if args.step != None:
+            if 'Step' in results:
+                results = data['Out']['Step'][args.step]
+
+        for i,var in enumerate(args.dump_vars):
+            if var in results.keys():
+                var_data = results[var]
+                table[j,i] = var_data
+    #pd.set_option('display.width', 2000)
+    pd.set_option('display.max_columns', 500)
+    display(pd.DataFrame(table,index=loaded_files,columns=args.dump_vars))
 
 def dump_convergence_stats( args):
     files = [filename for filename in os.listdir('.') if filename.startswith(args.files[0])]
@@ -2134,9 +2429,11 @@ if __name__ == '__main__':
     parser.add_argument("--delay_lt", help="plot delay less than DELAY_LT", type=float)
     parser.add_argument("--delay_gt", help="plot delay greater than DELAY_GT", type=float)
     parser.add_argument("--delay_gt_plots", help="list of number of results to group in each of plots delay_gt plots",  nargs='+', type=int)
-    parser.add_argument("--plot_travel_time", help="Plots travel time for each file",action="store_true", default=False)
-    parser.add_argument("--plot_travel_time_ref", help="file for travel time reference ")
-    parser.add_argument("--plot_av_travel_time", help="Plots average travel time for each file",action="store_true", default=False)
+    parser.add_argument("--plot_travel_time", help="Plots travel time vs N or cpu time for each file",action="store_true", default=False)
+    parser.add_argument("--plot_travel_time_ref", help="file for travel time plot reference ")
+    parser.add_argument("--plot_av_travel_time_N", help="Plots average travel time vs N for each file",action="store_true", default=False)
+    parser.add_argument("--plot_av_delay", help="Plots average delay vs total traffic for each file",action="store_true", default=False)
+    parser.add_argument("--plot_av_travel_time", help="Plots total travel time vs total traffic for each file",action="store_true", default=False)
     parser.add_argument("--plot_travel_time_DT", help="Plots travel time vs DT for each file",action="store_true", default=False)
     parser.add_argument("--plot_cpu_time", help="Plots CPU time vs travel time for each file",action="store_true", default=False)
     parser.add_argument("--plot_av_cpu_time", help="Plots average CPU time vs travel time for each file",action="store_true", default=False)
@@ -2152,7 +2449,7 @@ if __name__ == '__main__':
     parser.add_argument("--x_limit", help="set the x limit of the plot",nargs='+', type=float)
     parser.add_argument("--y_limit", help="set the y limit of the plot",nargs='+', type=float)
     parser.add_argument("--y_limit2", help="set the y limit of the plot 2nd axis",nargs='+', type=float)
-    parser.add_argument("--title", help="set the title of the plot")
+    parser.add_argument("--title", help="set the title of the plot",nargs='*')
     parser.add_argument("--labels", help="list of labels to use for each plot", nargs='+')
     parser.add_argument("--x_label", help="set the x axis label of the plot",nargs='+', default=' ')
     parser.add_argument("--y_label", help="set the y axis label of the plot",nargs='+', default=' ')
@@ -2170,6 +2467,7 @@ if __name__ == '__main__':
     parser.add_argument("--by_car", help="Box plot of delay from travel time per car rather than per time step", action="store_true", default=False)
     parser.add_argument("--dt", help="sampling step per car for box plots",type=float,default=1)
     parser.add_argument("--index_label_base", help="base index of queue and light labels in network plots as INDEX_LABEL_BASE",type=int,default=0)
+    parser.add_argument("--debug_network", help="annotate network plot with q vars to help debug definition",action="store_true",default=False)
     args = parser.parse_args()
 
     linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.'}
@@ -2186,6 +2484,10 @@ if __name__ == '__main__':
     elif args.plot_travel_time or args.plot_travel_time_DT:
         plot_travel_time(args)
     elif args.plot_av_travel_time:
+        plot_av_travel_time(args)
+    elif args.plot_av_delay:
+        plot_av_delay(args)
+    elif args.plot_av_travel_time_N:
         plot_av_travel_time(args)
     elif args.plot_phase_offset:
         plot_phase_offset(args)
@@ -2226,7 +2528,7 @@ if __name__ == '__main__':
 
     if args.out:
         pl.savefig(args.out, bbox_inches='tight')
-    pl.show()
+    pl.show();
 
 
 

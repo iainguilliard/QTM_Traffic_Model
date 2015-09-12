@@ -1,0 +1,155 @@
+% should I use value functions or expected cost functions
+
+\def\year{2016}
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\frenchspacing
+%\setlength{\pdfpagewidth}{8.5in}
+%\setlength{\pdfpageheight}{11in}
+
+\usepackage{amsmath}%
+\usepackage{amsfonts}%
+\usepackage{amssymb}%
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{subfigure}
+\usepackage{color}
+
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage[capitalise,noabbrev]{cleveref}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\graphicspath{{../TRB_paper/plots/}{plots/}}
+
+\setcounter{secnumdepth}{2}
+
+\newcommand{\Omit}[1]{}
+
+
+% CITATIONS
+%------------------------------------------
+% TRB uses an Author (num) citation style. I haven't found a way to make
+% LaTeX/Bibtex do this automatically using the standard \cite macro, but
+% this modified \trbcite macro does the trick.
+
+% sort&compress option?
+\usepackage[sort,numbers]{natbib}
+	\newcommand{\trbcite}[1]{\citeauthor{#1} ({\it \citenum{#1}})}
+	\newcommand{\trbcitenum}[1]{({\it \citenum{#1}})}
+\setcitestyle{round}
+
+
+%% Toggle comments on next two lines to turn on/off editorial remarks
+\newcommand{\remark}[1]{\color{red} #1 \color{black}}
+\newcommand{\fnremark}[1]{\remark{\footnote{\remark{#1}}}}
+\newcommand{\toIain}[1]{\footnote{\textbf{To Iain}: #1}}
+\newcommand{\toFelipe}[1]{\footnote{\textbf{To Felipe}: #1}}
+\newcommand{\comment}[1]{}
+
+%% FWT: I'm using this to highlight parts of the text that might need polishing.
+\newcommand{\authorHighlight}[1]{\textcolor{red}{#1}}
+
+
+%%
+%% Final version: Uncomment the lines bellow to turn off all the high-lights and
+%% other remarks
+%%
+%\renewcommand{\remark}[1]{}
+%\renewcommand{\fnremark}[1]{}
+%\renewcommand{\toIain}[1]{}
+%\renewcommand{\toFelipe}[1]{}
+%\renewcommand{\comment}[1]{}
+%\renewcommand{\authorHighlight}[1]{#1}
+
+
+%\renewcommand{\authorHighlight}[1]{#1}
+
+% All math definitions before start document
+\input{./tex/MathDef.tex}
+
+
+%% Macros for constraints
+\newcounter{constraintcounter}
+% Use \tagconstrain{labelName} to tag the constraint as C.X and label
+% it as labelName
+\newcommand{\tagconstrain}[1]{\refstepcounter{constraintcounter}\tag{C\theconstraintcounter}\label{#1}}
+% Use the cAlign as the align environment for constraint
+\newenvironment{cAlign}{\align}{\endalign}
+% defining the name for the labels of the type cAlign
+\crefname{equation}{constraint}{constraints}
+
+
+
+
+\begin{document}
+
+\title{Mitigating the Impact of Light Rail on Traffic Networks using Mixed
+Integer Linear Programming}
+
+\author{Paper ID 2664}
+\Omit{
+\author{
+\begin{tabular}{ccc}
+Iain Guilliard, Felipe Trevizan & Scott Sanner & Brian Williams\\
+%
+{\rm Machine Learning Group, NICTA} & {\rm bla} & {\rm MERS Group}\\
+%
+{\rm Research School of Computer Science, ANU} 
+  & {\rm Oregon State University} 
+  & {\rm Computer Science and AI Laboratory, MIT}\\
+%
+{\texttt{first.last@anu.edu.au}} & {\texttt{scott.sanner@oregonstate.edu}}
+  & {\texttt{williams@mit.edu}}
+%
+\end{tabular}
+}
+}
+
+\date{}
+
+\maketitle
+
+\begin{abstract}
+\input{./tex/Abstract.tex} 
+\end{abstract}
+
+
+
+% Note: in Steve Smith's TRB article, Intro on numbered page 2, so this seems OK
+\input{./tex/Introduction.tex}
+
+\input{./tex/Model.tex}
+
+\input{./tex/Experiments.tex}
+
+%% The related work is integrated in the introduction
+%\input{./tex/RelatedWork.tex}
+
+\input{./tex/Conclusion.tex}
+
+\Omit{\input{./tex/Acknowledgment.tex}}
+
+%% Flushing everything to have the bibliography in its own page. Some of these
+%% \newpage will redundant at some point
+
+\newpage
+~
+\newpage
+~
+\newpage
+
+\bibliographystyle{aaai}
+\bibliography{Transport}
+
+
+\end{document}

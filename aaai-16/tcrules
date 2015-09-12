@@ -1,9 +1,0 @@
-### OPTIONS TO USE WITH TEXCOUNT
-
-# Ignoring the first argument of the following macros
-%macro \comment [ignore]
-%macro \remark [ignore]
-%macro \fnremark [ignore]
-%macro \toIain [ignore]
-%macro \toFelipe [ignore]
-%macro \comment [ignore]

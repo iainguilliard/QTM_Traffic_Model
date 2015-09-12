@@ -14,15 +14,15 @@
         ],
 
      "Queues": [
-        {"id": 0, "edge": [0,4], "Q_DELAY": 3, "Q_IN": 1, "Q_OUT": 0,  "Q_P": [0,0], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
-        {"id": 1, "edge": [1,4], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "Q_P": [0,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
-        {"id": 2, "edge": [4,2], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,  "q0": 0, "q0_in": 0, "q0_out": 0 },
-        {"id": 3, "edge": [4,8], "Q_DELAY": 3, "Q_IN": 0, "Q_OUT": 0,  "Q_P": [1,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 0, "edge": [0,4], "Q_DELAY": 3, "Q_IN": 2, "weights": ["b","w1","w5"], "Q_OUT": 0,  "Q_P": [0,0], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 1, "edge": [1,4], "Q_DELAY": 3, "Q_IN": 4, "weights": ["b","w1","w4"], "Q_OUT": 0,  "Q_P": [0,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 2, "edge": [4,2], "Q_DELAY": 1, "Q_IN": 0,                                            "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 3, "edge": [4,8], "Q_DELAY": 3, "Q_IN": 0,                                            "Q_OUT": 0,  "Q_P": [1,1], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
 
-        {"id": 4, "edge": [5,8], "Q_DELAY": 3, "Q_IN": 4, "Q_OUT": 0,  "Q_P": [1,0], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 4, "edge": [5,8], "Q_DELAY": 3, "Q_IN": 4, "weights": ["b","w1","w3","w5"], "Q_OUT": 0,  "Q_P": [1,0], "Q_MAX": 60,  "q0": 0, "q0_in": 0, "q0_out": 0 },
 
-        {"id": 5, "edge": [8,6], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
-        {"id": 6, "edge": [8,7], "Q_DELAY": 1, "Q_IN": 0, "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 }
+        {"id": 5, "edge": [8,6], "Q_DELAY": 1, "Q_IN": 0,                                            "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 },
+        {"id": 6, "edge": [8,7], "Q_DELAY": 1, "Q_IN": 0,                                            "Q_OUT": 30, "Q_P": null,  "Q_MAX": 20,"q0": 0, "q0_in": 0, "q0_out": 0 }
         ],
 
       "Flows": {
@@ -32,7 +32,16 @@
           "3_6": { "F_MAX": 5, "f0": 0 }
       },
 
-      "In_Flow_limit" : 22,
+      "Flow_Weights": {
+          "b": { "start": 0, "end": 60, "weight": 0.25},
+          "w1": { "start": 10, "end": 20, "weight": 0.75},
+          "w2": { "start": 20, "end": 30, "weight": 0.5},
+          "w3": { "start": 30, "end": 40, "weight": 0.75},
+          "w4": { "start": 40, "end": 50, "weight": 0.75},
+          "w5": { "start": 50, "end": 60, "weight": 0.25}
+      },
+
+      "In_Flow_limit" : 60,
 
       "Transits": [
               {"id": "West-East", "links": [1,4,8,7]}
@@ -49,7 +58,7 @@
               "p0" : [1,0],
               "c0" : [0,0],
               "d0" : [0,1],
-            "transits" : [{"id": "West-East" ,"phase": 0, "P_MAX_ext": [2,0],"offset": 10, "duration": 3, "period": 20}]
+            "transits" : [{"id": "West-East" ,"phase": 1, "P_MAX_ext": [2,0],"offset": 10, "duration": 5, "period": 20}]
           },
            {
               "id": 1,
@@ -61,7 +70,7 @@
               "p0" : [1,0],
               "c0" : [0,0],
               "d0" : [0,1],
-              "transits" : [{"id": "West-East" ,"phase": 0, "P_MAX_ext": [2,0],"offset": 20, "duration": 3, "period": 20}]
+              "transits" : [{"id": "West-East" ,"phase": 1, "P_MAX_ext": [2,0],"offset": 20, "duration": 5, "period": 20}]
           }
       ]
 }

@@ -1,0 +1,32 @@
+\section{Conclusion}
+
+In this paper, we showed how to formulate a novel queue transmission model (QTM)
+model of traffic flow with non-homogeneous time steps as a linear program.  We
+then proceeded to allow the traffic signals to become discrete variables subject
+to a delay minimizing optimization objective and standard traffic signal
+constraints leading to a final MILP formulation of traffic signal control with
+non-homogeneous time steps.  We
+experimented with this novel QTM-based MILP control in a range of traffic networks
+and demonstrated that the non-homogeneous MILP formulation
+achieved (i) substantially lower delay solutions, (ii) improved per-car delay distributions,
+and (iii) more optimal travel times over a longer horizon 
+in comparison to the homogeneous MILP formulation with the same number of binary
+and continuous variables.
+%% NOTE: what bothers me here is ``larger networks'' since we don't directly
+%%       compare scalability of the approaches as a function of network size
+%%       (i.e., on the x-axis of some graph).  -Scott
+%and demonstrated that by exploiting the non-homogeneous time steps supported
+%by the QTM, we are able to scale the model up to larger networks whilst maintaining the
+%same quality of a homogeneous solution using more binary
+%variables.
+Altogether, this work represents a
+major step forward in the scalability of MILP-based jointly optimized traffic
+signal control via the use of a non-homogeneous time traffic models and thus helps
+pave the way for fully optimized joint urban traffic signal controllers as an
+improved successor technology to existing signal control methods.
+
+%We have demonstrated that by exploiting the non-homogeneous time steps
+%supported by the QTM, we are able to scale the model up to larger
+%networks and using the same number of binary variables as a
+%homogeneous time step, and with the same quality of a homogeneous
+%solution using more binary variables.

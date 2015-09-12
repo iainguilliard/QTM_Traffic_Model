@@ -1,0 +1,409 @@
+\section{Empirical Evaluation}
+  
+In this section we compare the solutions for traffic networks modeled as a QTM
+using homogeneous and non-homogeneous time intervals w.r.t.\ to two evaluation criteria:
+%
+the quality of the solution and convergence to the optimal solution vs.\ the number
+of time steps.
+%
+% TODO \fnremark{FWT: I don't think that optimal is the best word here since
+%we arbitrarily fixed a value of \DT[]. Also, there is the technical problem that
+%Gurobi might not have found the true optimal.}
+%
+Specifically, we compare the quality of solutions based on the total travel time and we also
+consider the third quartile and maximum of the observed delay distribution.
+%
+%% TODO(fwt): maybe define what we mean by optimal here, for instance
+%
+%For our experiments, we consider as optimal solution, the MILP solution of a
+%QTM using small enough homogeneous \DT[] with unlimited computational
+%resources.
+%
+Our hypotheses are:
+%
+(i) the quality of the non-homogeneous solutions is at least as good as the
+homogeneous ones when the number of time intervals~\Nn is fixed; and 
+%
+(ii) the non-homogeneous approach requires less time intervals (i.e., smaller
+\Nn) than the homogeneous approach to converge to the optimal solution.
+%
+In the remainder of this section, we present the traffic networks considered in
+the experiments, our methodology, and the results.
+
+
+
+\subsection{Networks}
+
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:network1}
+\includegraphics[width=0.45\textwidth]{network_1.pdf}}
+\subfigure[]{
+\label{subfig:network2}
+\includegraphics[width=0.45\textwidth]{network_2.pdf}}
+\subfigure[]{
+\label{subfig:network3}
+\includegraphics[width=0.45\textwidth]{network_3.pdf}}
+\subfigure[]{
+\label{subfig:demand_plot}
+\includegraphics[width=0.45\textwidth]{demand_plot.pdf}}
+\caption{(a--c) Networks used to evaluate the QTM performance.
+%
+(d) Demand profile of the queues marked as \qLowTraf,
+\qHighTraf, and \qVarTraf for our experiments.}
+\label{fig:networks}
+\end{figure*}
+
+
+
+We consider three networks of increasing complexity (\cref{fig:networks}): an
+avenue crossed by three side streets; a 2-by-3 grid; and a 3-by-3 grid with a
+diagonal avenue.
+%
+The queues receiving cars from outside of the network are marked in
+\cref{fig:networks} and we refer to them as input queues.
+%
+The maximum queue capacity~(\QMAX{i}) is 60 cars for non-input queues and
+infinity for input queues to prevent interruption of the input demand due to
+spill back from the stop line. 
+%
+The traversal time of each queue $i$~(\QDELAY{i}) is set at 9s (a distance of
+125m with a free flow speed of 50km/h).
+%
+For each street, flows are defined from the head of each queue $i$ into the tail of the next
+queue $j$;
+%
+there is no turning traffic ($\FTURN{i}{j}=1$), and the maximum flow rate
+between queues, \FMAX{i}{j}, is set at 5 cars/s.
+%
+All traffic lights have two phases, north-south and east-west, and lights 2, 4
+and 6 of network 3 have the additional northeast-southwest phase to control the
+diagonal avenue.
+%
+For networks 1 and 2, \PTMIN{\tl}{k} is 1s, \PTMAX{\tl}{k} is 3s, \CTMIN{\tl} is
+2s, and \CTMAX{\tl} is 6s, for all traffic light \tl and phase $k$.
+%
+For network 3, \PTMIN{\tl}{k} is 1s and \PTMAX{\tl}{k} is 6s for all \tl and
+$k$; and \CTMIN{\tl} is 2s and \CTMAX{\tl} is 12s for all lights \tl except for
+lights 2, 4 and 6 (i.e., lights also used by the diagonal avenue) in which
+\CTMIN{\tl} is 3s and \CTMAX{\tl} is 18s.
+
+
+
+
+\subsection{Experimental Methodology}
+
+%\begin{table}[h]
+%\caption{Network Demand Profiles (vehicles per second)}
+%\label{tab:network_demand}
+%\centering
+%\begin{tabular}{cccccc}
+%\toprule
+%& Inflow Queues & 0 - 55 s & 55 - 70 s & 70 - 85 s & > 85 s\\
+%\midrule
+%\multirow{2}{*}{Network 1}&$q_0$ & 1 & 1 & 1 & 0 \\
+%&$q_4, q_7$ & 4 & 4 & 4 & 0 \\
+%&$q_1,q_{10}$& 2 & 4 & 2 & 0 \\
+%\midrule
+%\multirow{2}{*}{Network 2}&$q_0$ & 1 & 1 & 1 & 0 \\
+%&$q_4,q_7,q_{14}$& 4 & 4 & 4 & 0 \\
+%&$q_1, q_{10},q_{18}$ & 2 & 4 & 2 & 0 \\
+%\midrule
+%\multirow{2}{*}{Network 3}&$q_0$ & 1 & 1 & 1 & 0 \\
+%&$q_4,q_7,q_{14},q_{25},$& 4 & 4 & 4 & 0 \\
+%&$q_1, q_{10},q_{18},q_{29},q_{36},q_{40},q_{44}$ & 2 & 4 & 2 & 0 \\
+%\bottomrule\\
+%\end{tabular}
+%\end{table}
+
+
+For each network, a constant background level traffic is injected in the network
+in the first 55s to allow the solver to settle on a stable policy.
+%
+Then a spike in demand is introduced in the queues marked as \qVarTraf
+(\cref{fig:networks}) from time 55s to 70s to trigger a policy change.
+%
+%with the expectation that plans generated with longer look ahead will produce a
+%more coordinated global policy change.
+%
+From time 70s to 85s, the demand is returned to the background level, and then
+reduced to zero for all input queues.
+%
+We extend the problem horizon~\TMAX until all cars have left the network.
+%
+By clearing the network, we can easily measure the total travel time for all the
+traffic as the area between the cumulative arrival and departure curves measured
+at the boundaries of the network.
+%
+%TODO \fnremark{FWT: is this explanation of how to compute the total travel time
+%still necessary?}
+%
+%\cref{tab:network_demand} presents the demand profile of each network.
+%
+The background level for the input queues are 1, 4 and 2 cars/s for queues
+marked as \qLowTraf, \qHighTraf and \qVarTraf (\cref{subfig:demand_plot}),
+respectively; and during the high demand period, the queues \qVarTraf receive 4
+cars/s.
+
+
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\includegraphics[width=0.75\textwidth]{non_homogeneous_control.png}
+\caption{Receding horizon control. In this example, the problem
+  horizon \TMAX is 40s. The major frames for MILP optimization are
+  discretized in 12 time intervals ($\Nn = 12$) and they span 15s and
+  30s for homogeneous and non-homogeneous discretizations,
+  respectively.  The minor frames represent the prefix of the 
+  major frame MILP optimization that is executed.  The horizon
+  recedes by the minor frame duration after each execution.}
+\label{fig:multiplan}
+\end{figure*}
+
+
+% def major and minor frame tell about overlapping and fig:multiplan show
+% parameters, i.e., delta ts
+% - fairness: same delta t for minor frame
+For both homogeneous and non-homogeneous intervals, we use the MILP QTM
+formulation in a receding horizon manner: a control plan is
+computed for a pre-defined horizon (smaller than \TMAX) and only a prefix of
+this plan is executed before generating a new control plan. 
+%
+\cref{fig:multiplan} depicts our receding horizon approach and we refer to the
+planning horizon as a major frame and its executable prefix as a minor frame.
+%
+Notice that, while the plan for a minor frame is being executed, we can start
+computing the solution for the next major frame based on a forecast model.
+
+
+To perform a fair comparison between the homogeneous and non-homogeneous
+discretizations, we fix the size of all minor frames to 10s and force it to be
+discretized in homogeneous intervals of 0.25s.
+%
+For the homogeneous experiments, \DT[] is kept at 0.25s throughout the major
+frame; therefore, given \Nn, the major frame size equals $\Nn/4$ seconds for the
+homogeneous approach.
+%
+For the non-homogeneous experiments, \DT[] linearly increases from
+0.25s at the end of the minor frame to 1.0s at the end of the major frame;
+therefore, the major frame size used by the non-homogeneous approach
+is $10.375 + 0.625(\Nn-40)$ seconds for a given $\Nn > 40$.
+%
+%We analyze the effect of the major frame size by varying it from 20s through to 
+%120s.
+%
+% explain evaluation: concatenation + LP simulation Overall ``optimal'' for
+% comparison
+Once we have generated a series of minor frames, we concatenate them into a
+single plan and compute the flow through the network using the QTM LP
+formulation with a fixed (homogeneous) $\DT[]$ of 0.25s.
+%
+%TODO \fnremark{Do we need to justify why we use the QTM as the simulator over
+%say a micro simulator?}
+%
+We also compare both receding horizon approaches against the optimal solution
+obtained by computing a single control plan for the entire control horizon
+(i.e., $[0,\TMAX]$) using a fixed \DT[] of 0.25s.
+
+\newpage
+For all our experiments, we used Gurobi\textsuperscript{TM} as the MILP solver with
+12 threads on a 3.1GHz AMD Opteron\textsuperscript{TM}~4334 processor with 12
+cores.
+%
+We limit the MIP gap accuracy to 0.1\% and the time cutoff for solving a major
+frame to 3000s for the receding horizon approaches and unbounded in order to
+determine the optimal minimum travel time solution to which all other solutions are compared.
+%
+%% \toIain{Can you explain the following better and provide evidence:
+%% \textit{while we can solve non-homogeneous major frames up to convergence in
+%% real time, we extend the solve time limit to 3000s for all test points for a
+%% fair comparison with the homogeneous test points.}?
+%%
+%% Iain: Deleted as it was not strictly true. Either we re-run scaled up on AWS
+%% with 10s solver time limit. Or we perhaps explain that 3000s shows that it
+%% could be scaled up to real time}
+%
+All our results are averaged over five runs to account for Gubori's
+stochastic strategies.
+
+
+
+%\begin{table}[h]
+%\caption{Network 3 traffic parameters}
+%\label{tab:net3wave}
+%\centering
+%\begin{tabular}{cccccc}
+%\toprule
+%Queue & Background & End & Wave & Start &End\\ 
+%\midrule
+%$q_0$ & 1 & 85 & 1 & 55 & 70\\
+%$q_1$ & 2 & 85 & 4 & 55 & 70\\
+%$q_4$ & 4 & 85 & 4 & 55 & 70\\
+%$q_7$ & 4 & 85 & 4 & 55 & 70\\
+%$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{14}$ & 4 & 85 & 4 & 55 & 70\\
+%$q_{18}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{25}$ & 4 & 85 & 4 & 55 & 70\\
+%$q_{29}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{36}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{40}$ & 2 & 85 & 4 & 55 & 70\\
+%$q_{44}$ & 2 & 85 & 4 & 55 & 70\\
+%\bottomrule\\
+%\end{tabular}
+%\end{table}
+
+
+\subsection{Results}
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:travel_time_3}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_1_converge.pdf}}
+\subfigure[]{
+\label{subfig:delay_3}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_3l.pdf}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]
+{box_plot_converg_3l.pdf}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_3l.pdf}}
+
+\subfigure[]{
+\label{subfig:travel_time_6}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_2_converge.pdf}}
+\subfigure[]{
+\label{subfig:delay_6}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_6l.pdf}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]
+{box_plot_converg_6l.pdf}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_6l.pdf}}
+
+\subfigure[]{
+\label{subfig:travel_time_9}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_3_converge.pdf}}
+\subfigure[]{
+\label{subfig:delay_9}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_9l.pdf}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]
+{box_plot_converg_9l.pdf}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_9l.pdf}}
+%
+\caption{Increase in the total travel time w.r.t.~the optimal solution as a
+function of \Nn (a,c,e) and distribution of the total delay of
+each car for different values of \Nn (b,d,f).
+%
+For each row, the Roman numeral on top of the box plots corresponds to point the 
+travel time plot marked with the same numeral.
+%
+The mean of the total delay is presented as a red square in the box plots.
+%
+Plots in the $i$-th row correspond to the results for the $i$-th network in
+\cref{fig:networks}.  Non-homogeneous (NH) achieves much better solutions
+at smaller \Nn than Homogeneous (H).}
+%control and achieves }
+%smaller third quartile and maximum per-car delay for the same \Nn.}
+\label{fig:results}
+\end{figure*}
+
+
+%We compare the performance of non-homogeneous and homogeneous solutions in two
+%ways: comparing the decrease in total travel time with increasing major frame
+%time (greater look ahead), and analysing the distribution of delay in each
+%queue of the network.
+%
+\cref{subfig:travel_time_3,subfig:travel_time_6,subfig:travel_time_9} show, for
+each network, the increase in the total travel time w.r.t.~the optimal solution
+as a function of \Nn.
+%
+As we hypothesized, the non-homogeneous discretization requires less time
+intervals (i.e., smaller \Nn) to obtain a solution with the same total travel
+time.
+%
+This is important because the size of the MILP, including the number of binary
+variables, scales linearly with \Nn; therefore, the non-homogeneous approach can
+scale up better than the homogeneous one (e.g., \cref{subfig:travel_time_9}).
+%
+Also, for homogeneous and non-homogeneous discretizations, finding the optimal
+solution of major frames with large \Nn might require more time than our imposed
+3000s time cutoff and, in this case, Gurobi returns a feasible control plan that
+is far from optimal.
+%
+The effect in the total travel time of these poor solutions can be seen in
+\cref{subfig:travel_time_9} for $\Nn > 120$.
+
+
+
+The distribution of the total delay observed by each car while traversing the
+network is shown in \cref{subfig:delay_3,subfig:delay_6,subfig:delay_9}.
+%
+Each group of box plots represents a different value of~\Nn: when the
+non-homogeneous $\DT[]$ first converges; when the homogeneous~$\DT[]$ first
+converges; and the optimum solution itself.
+%
+In all networks, the quality of the solution obtained using non-homogeneous
+$\DT[]$ is better or equal than using homogeneous $\DT[]$ for fixed \Nn in both
+the total travel time and \emph{fairness}, i.e., smaller third quartile and
+maximum delay.
+
+%\remark{FWT: In the paragraphs above, we need to address network 2 because it is
+%the exception in both cases: in the end of \cref{subfig:travel_time_6},
+%homogeneous is better, and the homogeneous delay in \cref{subfig:delay_6} is
+%also better.}
+
+
+\begin{figure*}[t!]
+\centering
+
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:cumu1}
+\includegraphics[width=0.32\textwidth]{network_2_cum_plot_early.pdf}}
+\subfigure[]{
+\label{subfig:cumu2}
+\includegraphics[width=0.32\textwidth]{network_2_cum_plot_converg.pdf}}
+\subfigure[]{
+\label{subfig:cumu3}
+\includegraphics[width=0.32\textwidth]{network_2_cum_plot_final.pdf}}
+%
+\caption{Cumulative arrival and departure curves and delay for queue 1 in the
+2-by-3 network (\cref{subfig:network2}).
+%
+The labels on top of each plot match the labels in
+\cref{subfig:travel_time_6,subfig:delay_6}.
+%
+(c)~presents the same curves for the optimal solution.  Non-homogeneous~(NH)
+provides near-optimal signal plans over a longer time horizon than
+Homogeneous~(H) when the number of time intervals \Nn is small.}
+%
+\label{fig:cumu}
+\end{figure*}
+
+
+To further illustrate the differences between homogeneous and non-homogeneous
+discretizations, \cref{fig:cumu} shows the cumulative arrival and departure
+curves and the how delay evolves over time for $q_1$ of network 2
+(\cref{subfig:network2}).
+%
+In \cref{subfig:cumu1}, the comparison is done when non-homogeneous $\DT[]$
+first converges (i.e., point I in \cref{subfig:travel_time_6}) and for this
+value of \Nn, the major frame size in seconds of the non-homogeneous approach is
+19.125s longer than the homogeneous one.
+%
+This allows the MILP solver to ``see'' 19s further in the future when using
+non-homogeneous discretization and find a coordinated signal policy along the
+avenue to dissipate the extra traffic that arrives at time 55s.
+%
+The shorter major frame of the homogeneous discretization does not allow the
+solver to adapt this far in advance and its delay observed after 55s is much
+larger than the non-homogeneous one.
+%
+Once the homogeneous $\DT[]$ has converged (\cref{subfig:cumu2}), it is also
+able to anticipate the increased demand and adapt well in advance and both
+approaches generate solutions close to optimum (\cref{subfig:cumu3}).

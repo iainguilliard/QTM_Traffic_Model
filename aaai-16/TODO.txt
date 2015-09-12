@@ -1,0 +1,30 @@
+[Felipe]
+
+* Improve Results text: talk about network 2
+  and remark about CPU limit
+
+
+[Iain]:
+
+* Add somewhere a draft of the remark about CPU time limit
+  in the plots of Fig 6
+* In discussion of O1, could provide a forward reference
+  to Figure 7 to explain what is being computed
+* Add marks in Fig 5
+* Fix Figure 2: link to text or merge
+* Fix Figure 6: update (e) and the size of the 1st row plots
+* Fix labels in Figure 3 and little comments about when the
+  constraints are on
+* Add annotations to Fig 6
+* Add justification of f^in in obj func as pushing traffic
+  when traffic light is red
+* Check if submission is double blinded
+* Check footnote 10 (about  Figure 1)
+
+[Scott]
+* Link Canberra overlay and non-homogenous time step in the
+  introduction
+
+
+[Other]
+* Optimal issue: milp doesn't guarantee + a better solution could be obtained with a even smaller d_t

@@ -1,0 +1,77 @@
+Notes for writing introduction
+==============================
+
+- Strongly push on non-homogenoeus motivation
+- Defend omission of nonlinear control
+- Precedent for propagation time without nonlinear flow
+- QTM: Hybrid of Gartner of Lin and Wang
+- Don't motivate too much from Lin and Wang
+- Major / minor frame just for experiments
+
+- Related work (purpose is to say why our work is novel)
+  (Combine with Intro?  See Steve's article.)
+... MILP-based control: no one is non-homogenoeus
+... CTM / Link: no one is non-homogenoeus, can change time but need to reallocate traffic for new cell lengths and next to impossible -- don't claim has not been done, but difficult to combine with MILP control
+
+
+Notes for background work discussion
+====================================
+
+CTM
+===
+
+daganzo1994cell - original CTM development
+
+daganzo1995cell - original CTM development
+
+alecsandru2011assessment - general CTM survey noting wide use in many areas
+
+xiaojian2010urban - variable CTM, adjustable cell length
+
+jabari2012stochastic - alternative to CTM for modeling random headways
+
+sumalee2011stochastic - stochastic CTM for modeling mean and standard deviation of traffic flow accurately
+
+muralidharan2009freeway - link-node-CTM, better for arteries+freeway
+
+lu2011discrete - lagged CTM, some sort of improvement
+
+kim2002online - situational CTM, defines more cell types to better model boundary conditions of CTM simulation
+
+huang2011traffic - CTM-Urban, claims CTM was for freeways, and defines extensions to better model urban traffic
+
+gomes2006optimal - assymetric CTM (merge imbalance), freeway ramp metering
+
+MISSING: Knoop et al, Network Transmission Model, more macroscopic variation on CTM, reduces under certain conditions
+
+
+Control
+===
+
+canepa2012exact - not control, but traffic density estimation
+
+gartner1974optimization - green wave coordination MILP?
+
+gartner2002arterial - green wave coordination MILP?  (OPAC?)
+
+han2012link - link-based MILP (road not divided into cells, criticizes CTM as having too many cells, still approximates shockwaves somehow)
+
+el2013multiagent - MARLIN, pairwise Qlearning
+
+lo1998novel - CTM, MILP introduction
+
+lo1999dynamic - CTM, genetic algorithm solution to MILP
+
+lin2004enhanced - CTM-based MILP
+
+he2011pamscod - optimized solutions to MILP signal coordination (travel-time oriented)
+
+he2014multi - multimodal extensions to MILP signal coordination
+
+he2010heuristic - heuristic solutions to MILP signal coordination
+
+smith2013surtrac - SURTRAC, scheduling for green waves
+
+MISSING other optimized control: Also, PRODYN, RHODES... should ideally include these.
+
+

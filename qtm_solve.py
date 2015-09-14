@@ -214,6 +214,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 for transit in light['transits']:
                     if args.no_transit is None or (len(args.no_transit) > 0 and transit['id'] not in args.no_transit):
                         print 'adding transit: %s at light %d ' % (transit['id'],i)
+                        j = transit['phase']
                         for n in range(N):
 
                             # for j in range(len(transit['P_MAX_ext'])):
@@ -222,17 +223,18 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                             #             and (time[n] - transit['offset'] ) % transit['period'] < transit['duration']:
                             #         P_MAX_ext[i][j][n] = transit['P_MAX_ext'][j]
 
-                            j = transit['phase']
+
                             #if P_MAX[i][j] < transit['duration'] \
                             #            and time[n] >= transit['offset']\
                             #            and (time[n] - transit['offset'] ) % transit['period'] < transit['duration']:
                             #        p_transit[i][j][n] = True
                             if time[n] >= transit['offset'] and (time[n] - transit['offset'] ) % transit['period'] < transit['duration']: # if time[n] >= transit['offset'] and
                                     p_transit[i][j][n] = True
+                        print ''.join(['1' if x is True else '_' for x in p_transit[i][j]])
                     else:
-                        print 'transit %s light %d turned off' % (transit['id'],i)
+                        print 'removing transit: %s at light %d' % (transit['id'],i)
 
-                #print p_transit[i][j]
+
         #print 'P_MAX_ext=', P_MAX_ext
 
 
@@ -682,7 +684,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                 m.addConstr(p[i][j][n] == 0)
                             m.addConstr(d[i][j][n] == d[i][j][n-1])
                         else:
-                            if time[n] > C_MAX[i] and args.fixed_phase:
+                            if time[n] > time[0] + C_MAX[i] and args.fixed_phase:
                                 m.addConstr(d[i][j][n] <= dp_fixed[i][j] + P_MAX[i][j] * (p[i][j][n]), name='fixed_phase_lb_%d_%d_%d' % (i,j,n))
                                 m.addConstr(d[i][j][n] >= dp_fixed[i][j] - P_MAX[i][j] * (p[i][j][n]), name='fixed_phase_ub_%d_%d_%d' % (i,j,n))
                             else:
@@ -1236,7 +1238,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     if args.debug: DEBUG = True
-
+    print 'CPU:', get_processor_name()
     f = open(args.file,'r')
     data = json.load(f)
     f.close()

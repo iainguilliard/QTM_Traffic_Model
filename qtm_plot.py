@@ -42,20 +42,29 @@ def calc_total_travel_time(data,results):
                 sum_out+=(t*results['q_{%d,out}' %i ][n])
     return sum_out-sum_in
 
-def calc_total_traffic(data,results):
-    Queues = data['Queues']
-    time=results['t']
-    sum_in=0
-    sum_out=0
-    for i,q in enumerate(Queues):
-        #print i,sum(results['q_{%d,in}' %i ])
-        sum_in += sum(results['q_{%d,in}' %i ])
-        #for n,t in enumerate(time):
-        #    if Queues[i]['Q_IN'] > 0:
-        #        sum_in+=(results['q_{%d,in}' %i ][n])
-        #    if Queues[i]['Q_OUT'] > 0:
-        #        sum_out+=(results['q_{%d,out}' %i ][n])
-    return sum_in
+def calc_total_traffic(data,results,lanes):
+
+    total_in_flow = 0
+    for lane in lanes:
+        in_flow = sum(results['q_{%d,in}' % lane[0]])
+        total_in_flow+=in_flow
+
+    return total_in_flow
+
+def calc_free_flow_travel_time(data,results,lanes):
+    queue = data['Queues']
+    lane_free_flow_travel_time = []
+    total_in_flow = 0
+    for lane in lanes:
+        q_delay = 0
+        in_flow = sum(results['q_{%d,in}' % lane[0]])
+        #print '%d in_flow' % lane[0],in_flow
+        total_in_flow+=in_flow
+        for i in lane:
+            q_delay += queue[i]['Q_DELAY']
+        lane_free_flow_travel_time.append(q_delay*in_flow)
+    #print total_in_flow
+    return sum(lane_free_flow_travel_time)
 
 def calc_delay(data, results, queues=[], dp=6, dt=1):
 
@@ -357,14 +366,14 @@ def label_distance(theta,i):
     dx = 0
     dy = 0
     if theta > 155 or theta < -155: # Vertical down
-        if i>9: dx = -15
-        else: dx = -4
+        if i>9: dx = -3
+        else: dx = 3
     elif theta > -25 and theta < 25: # Vertical up
-        dx = -22
-    elif theta > -115 and theta < -65: # Vertical up
-        dy = 16
-    elif theta > 65 and theta < 115: # Vertical up
-        dy = -8
+        dx = -13
+    elif theta > -115 and theta < -65: # horizontal left
+        dy = 10
+    elif theta > 65 and theta < 115: # horzontal right
+        dy = -6
     else: # Default
         dx =  -7
     return dx,dy
@@ -1373,66 +1382,87 @@ def plot_av_travel_time(args):
     #    else:
     #        pl.title('Number of time samples vs % increase in total travel time' )
 
+def get_av_delay(data,args):
+    results = data['Out']
 
-def plot_av_delay(args):
+    runs=1
+    if 'Run' in results:
+        runs = len(results['Run'])
+
+    for run in range(runs):
+        if 'Run' in data['Out']:
+            results = data['Out']['Run'][run]
+        total_traffic_in = calc_total_traffic(data,results,args.queues)
+        total_travel_time = calc_total_travel_time(data,results)
+        free_flow_travel_time = calc_free_flow_travel_time(data,results,args.queues)
+    return (total_travel_time - free_flow_travel_time) / total_traffic_in, total_traffic_in
+
+def plot_delay_diff( plot_data_files, args):
+    plot_X = []
+    plot_Y = []
+
+    xpoint1 = args.plot_delay_diff[0]
+    xpoints = np.linspace(args.plot_delay_diff[1] / 100.0 ,args.plot_delay_diff[2] / 100.0,num=100,endpoint=True)
+    traffic_points = []
+    for x in list((xpoints)):
+        traffic_points.append(xpoint1 - (xpoint1 * x))
+
+    for j in range(0,len(plot_data_files),2):
+        av_delay0 = []
+        total_traffic_in0 = []
+        av_delay1 = []
+        total_traffic_in1 = []
+
+        for data in plot_data_files[j]:
+            av_delay, total_traffic_in = get_av_delay(data,args)
+            av_delay0.append(av_delay)
+            total_traffic_in0.append(total_traffic_in)
+
+        for data in plot_data_files[j+1]:
+            av_delay, total_traffic_in = get_av_delay(data,args)
+            av_delay1.append(av_delay)
+            total_traffic_in1.append(total_traffic_in)
+
+
+        f_av_delay0 = interp.interp1d(total_traffic_in0, av_delay0, kind='linear')
+        f_av_delay1 = interp.interp1d(total_traffic_in1, av_delay1, kind='linear')
+
+        plot_X.append(xpoints * 100)
+        plot_Y.append((f_av_delay0(xpoint1) - f_av_delay1(traffic_points)))
+
+    return plot_X,plot_Y,'% traffic reduction (moving to transit)','Improvement in average delay per vehicle'
+
+
+def plot_av_delay( plot_data_files, args):
+    plot_X = []
+    plot_Y = []
+
+    for i,data in enumerate(plot_data_files):
+
+        plot_X.append([])
+        plot_Y.append([])
+
+
+        for d in data:
+            av_delay, total_traffic_in = get_av_delay(d,args)
+            plot_Y[-1].append(av_delay)
+            plot_X[-1].append(total_traffic_in)
+    return plot_X,plot_Y,'Total traffic through network','Average delay per vehicle'
+
+
+def plot_parameter(plot,args):
+
     pl.clf()
     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
     if args.figsize:
         fig.set_size_inches(args.figsize[0], args.figsize[1])
     else:
         fig.set_size_inches(15, 7)
-    titles=[]
-    i=0
-    l_i=0
-    labels=[]
-    if args.labels: labels=args.labels
 
-    plot_X = []
-    plot_Y = []
     plot_data_files = read_files(args.files)
+    titles = []
 
-    for data in plot_data_files:
-
-        plot_X.append([])
-        plot_Y.append([])
-
-        plot_label=''
-        if len(labels)>0: plot_label = labels[l_i]
-
-        for d in data:
-
-            titles.append(d['Title'])
-            results = d['Out']
-
-            runs=1
-            if 'Run' in results:
-                runs = len(results['Run'])
-                d_out = results['Run'][0]
-                label =  d_out
-            else:
-                d_out = results
-
-            delay = []
-            for run in range(runs):
-                if 'Run' in d['Out']:
-                    results = d['Out']['Run'][run]
-                for q in args.queues:
-                    _,_,_,cumu_delay,delay_by_car,trimmed_delay = calc_delay(d, results, queues=q,dt=args.dt)
-                    if args.by_car == True:
-                        delay += delay_by_car # q_delay #[cumu_delay[i] for i in range(in_start,in_end)]
-                    else:
-                        delay += trimmed_delay
-
-                av_delay = np.mean(delay)
-                total_traffic_in = calc_total_traffic(d,results)
-
-                if len(plot_label)==0:
-                    plot_label = '$'+label.split('$')[1]+'$'
-
-            plot_Y[-1].append(av_delay)
-            plot_X[-1].append(total_traffic_in)
-        i += 1
-
+    plot_X,plot_Y,xlabel,ylabel = plot( plot_data_files, args)
 
     i=0
     c_i=0
@@ -1440,34 +1470,33 @@ def plot_av_delay(args):
     l_i=0
     labels=[]
     if args.labels: labels=args.labels
+    mevery = args.markevery
+    if len(mevery) < len(args.marker):
+        mevery = mevery + [mevery[-1]] * (len(args.marker) - len(mevery))
     for plot_i in range(len(plot_Y)):
         if len(labels)>0:
             plot_label = labels[l_i]
         else:
-            plot_label = '$'+label.split('$')[1]+'$'
+            plot_label = 'plot %d' % i
 
-        ax.plot(plot_X[plot_i],plot_Y[plot_i],color=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,marker=args.marker[m_i],markerfacecolor='None')
+        ax.plot(plot_X[plot_i],plot_Y[plot_i],color=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,
+                marker=args.marker[m_i],markerfacecolor='None',markevery=mevery[m_i])
 
         if l_i+1 < len(args.linestyle): l_i += 1
         if c_i+1 < len(args.color): c_i += 1
         if m_i+1 < len(args.marker): m_i += 1
         i += 1
-
+    plot_anotations(ax,args)
     if args.x_limit:
         ax.set_xlim(args.x_limit[0], args.x_limit[1])
     if args.y_limit:
         ax.set_ylim(args.y_limit[0], args.y_limit[1])
     ax.grid()
-    ax.set_xlabel('Total traffic through network')
-    ax.set_ylabel('Average delay')
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
     ax.legend(loc='best')
     if args.title:
         pl.title(args.title[0])
-    #else:
-    #    if args.plot_cpu_time:
-    #        pl.title('CPU Time vs % increase in total travel time' )
-    #    else:
-    #        pl.title('Number of time samples vs % increase in total travel time' )
 
 
 def plot_av_travel_time_N(args):
@@ -2046,12 +2075,13 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
     for file in args.files:
         data_sets.append(open_data_file(file))
 
+    xl_i=0
+    yl_i=0
+
     for i,var in enumerate(args.plot_vars):
         k_step=0
         c_i=0
         l_i=0
-        xl_i=0
-        yl_i=0
         ls_i=0
         m_i=0
         for j,data in enumerate(data_sets):
@@ -2154,12 +2184,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                 ax[i].set_xlabel('time')
             else:
                 ax[i].set_xlabel(xlabel)
-            if ls_i+1 < len(args.linestyle): ls_i += 1
-            if c_i+1 < len(args.color): c_i += 1
-            if l_i+1 < len(labels): l_i += 1
-            if xl_i+1 < len(args.x_label): xl_i += 1
-            if yl_i+1 < len(args.y_label): yl_i += 1
-            if m_i+1 < len(args.marker): m_i += 1
+
             if var in results.keys():
 
                 if var[0] == 'q' or var[0] == 'f':
@@ -2188,6 +2213,13 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
             if args.x_limit != None:
                 ax[i].set_xlim(args.x_limit[0],args.x_limit[1])
             ax[i].grid(True)
+            if ls_i+1 < len(args.linestyle): ls_i += 1
+            if c_i+1 < len(args.color): c_i += 1
+            if l_i+1 < len(labels): l_i += 1
+            if m_i+1 < len(args.marker): m_i += 1
+        if xl_i+1 < len(args.x_label): xl_i += 1
+        if yl_i+1 < len(args.y_label): yl_i += 1
+
     if args.title:
         pl.title(args.title[0])
 
@@ -2398,6 +2430,62 @@ def dump_convergence_stats( args):
         if 'Out' in d:
                 print d['Out']['label'],d['Out']['solve_time'],travel_time,d['Out']['objval']
 
+def dump_phases(args): #data_sets,params,colors,line_styles,steps):
+
+    data_sets = []
+    files=[]
+    if args.labels: labels=args.labels
+
+    for file in args.files:
+        if file.endswith('.json'):
+            files.append(file)
+        else:
+            f = open(str(file),'r')
+            for line in f:
+                fields = line.split(' ')
+                if len(fields) > 2:
+                    files.append(fields[2])
+            f.close()
+    loaded_files=[]
+    for file in files:
+        if os.path.isfile(file):
+            loaded_files.append(file)
+            f = open(str(file),'r')
+            data_sets.append(json.load(f))
+            f.close()
+
+
+    for data in data_sets:
+
+        results = data['Out']
+        if args.step != None:
+            if 'Step' in results:
+                results = data['Out']['Step'][args.step]
+        time = results['t']
+        for i,light in enumerate(data['Lights']):
+            print 'l_%d' % i
+            p_transit = [[False] * len(time) for j in range(len(light['P_MAX']))]
+
+            if 'transits' in light:
+                for transit in light['transits']:
+                    j = transit['phase']
+                    #for k in range(len(light['P_MAX'])):
+                    #    print '       ' + ''.join(['1' if x is True else '_' for x in p_transit[k]])
+
+                    for n in range(len(time)):
+                        if time[n] >= transit['offset'] and (time[n] - transit['offset'] ) % transit['period'] < transit['duration']:
+                            p_transit[j][n] = True
+
+
+                for k in range(len(light['P_MAX'])):
+                    print 'p%d tran' % k + ''.join(['#' if x is True else '_' for x in p_transit[k]])
+
+            for k in range(len(light['P_MAX'])):
+                p = 'p_{%d,%d}' % (i,k)
+                #print p + ''.join(['#' if p_transit[k][n] == True else '1' if x==1 else '_' for n,x in enumerate(results[p])])
+                print p + ''.join([ '1' if x==1 else '_' for n,x in enumerate(results[p])])
+            print
+
 
 DEBUG = False
 
@@ -2433,6 +2521,7 @@ if __name__ == '__main__':
     parser.add_argument("--plot_travel_time_ref", help="file for travel time plot reference ")
     parser.add_argument("--plot_av_travel_time_N", help="Plots average travel time vs N for each file",action="store_true", default=False)
     parser.add_argument("--plot_av_delay", help="Plots average delay vs total traffic for each file",action="store_true", default=False)
+    parser.add_argument("--plot_delay_diff", help="Plots average delay vs total traffic for each file",nargs=3, type=float)
     parser.add_argument("--plot_av_travel_time", help="Plots total travel time vs total traffic for each file",action="store_true", default=False)
     parser.add_argument("--plot_travel_time_DT", help="Plots travel time vs DT for each file",action="store_true", default=False)
     parser.add_argument("--plot_cpu_time", help="Plots CPU time vs travel time for each file",action="store_true", default=False)
@@ -2459,6 +2548,7 @@ if __name__ == '__main__':
     parser.add_argument("--markevery", help="maker every MARKEVERY points",nargs='+',type=int,default=[1])
     parser.add_argument("--debug", help="output debug messages", action="store_true", default=False)
     parser.add_argument("--dump_vars", help="Dump raw data for each var in the list",nargs='*')
+    parser.add_argument("--dump_phases", help="Dump phases in each file as a list of strings",action="store_true")
     parser.add_argument("--annotate", help="List of y|n whether to annotate the points of each plot with the major frame time", default='n')
     parser.add_argument("--annotate_x", help="List of x points to plot each label in annotate_labels", nargs='*', type=float)
     parser.add_argument("--annotate_y", help="List of y points to plot each label in annotate_labels", nargs='*', type=float)
@@ -2486,7 +2576,9 @@ if __name__ == '__main__':
     elif args.plot_av_travel_time:
         plot_av_travel_time(args)
     elif args.plot_av_delay:
-        plot_av_delay(args)
+        plot_parameter(plot_av_delay,args)
+    elif args.plot_delay_diff is not None:
+        plot_parameter(plot_delay_diff,args)
     elif args.plot_av_travel_time_N:
         plot_av_travel_time(args)
     elif args.plot_phase_offset:
@@ -2506,6 +2598,8 @@ if __name__ == '__main__':
             dump_stats(args)
     elif args.dump_vars != None:
         dump_vars(args)
+    elif args.dump_phases != None:
+        dump_phases(args)
     else:
         #files=[]
         #data=[]

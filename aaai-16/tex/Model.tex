@@ -265,17 +265,6 @@ possible.
 \end{equation}
 
 
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\includegraphics[width=0.55\textwidth,trim={0cm 0cm 0cm 0cm},clip]{cumu_plot_final_6l.pdf}
-\caption{Cumulative arrival (blue) and departure (green) curves, and the
-resulting delay curve (red). The departure curve is maximized by the objective
-function \eqref{eq:objFunc}, which has the same effect as minimizing the area
-under the delay curve.}
-\label{fig:cumu_delay_plot}
-\end{figure*}
-
 
 The objective \eqref{eq:objFunc} corresponds to minimizing delay in CTM models,
 e.g., \eqref{eq:objFunc} is equivalent to the objective function (O3) in
@@ -302,28 +291,6 @@ minimized, which in turn minimizes the delay.
 %control plan \p{\tl}{k} is given as an input parameter.
 
 
-
-
-\begin{figure*}[t!]
-\centering
-\subfigure[]{
-\label{subfig:converg_a}
-\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence.pdf}
-}
-\subfigure[]{
-\label{subfig:converg_b}
-\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_vari.pdf}
-}
-\label{fig:conv}
-%
-\caption{Approximations of a queue volume obtained using homogeneous
-\DT[] = 1s using: (a) homogeneous \DT[] = 2.5s and 5s; and (b) non-homogeneous
-$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.  Here we see
-that (b) achieves accuracy in the near-term that somewhat degrades over
-the long-term, where accuracy will be less critical for receding horizon control.}
-%% Note: would actually be nice to say something about
-%
-\end{figure*}
 
 
 To illustrate the representation tradeoff offered by non-homogeneous time
@@ -383,39 +350,6 @@ phase~$k+1$ must be active in interval~$n$.
 \p[n-1]{\ell}{k} &\le \p{\ell}{k} + \p{\ell}{k+1}\tagconstrain{c:seqPhases}
 %
 \end{cAlign}
-
-
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{fig:pd:inc}
-\includegraphics[width=0.45\textwidth]{phase_plot_fig_1.pdf}}
-\subfigure[]{
-\label{fig:pd:inactive}
-\includegraphics[width=0.45\textwidth]{phase_plot_fig_2.pdf}}
-\subfigure[]{
-\label{fig:pd:resetAndLB}
-\includegraphics[width=0.45\textwidth]{phase_plot_fig_3.pdf}}
-\subfigure[]{
-\label{fig:cycleTimeC}
-\includegraphics[width=0.45\textwidth]{phase_plot_fig_4.pdf}}
-%
-\caption{Visualization of constraints (\ref{c:pd:incUB}--\ref{c:cycleUB})
-for a traffic light \tl as a function of time.
-%
-(a--c) present, pairwise, the constraints (\ref{c:pd:incUB}--\ref{c:minPhase})
-for phase $k$ (\pd{\ell}{k} as the black line) and the activation variable
-\p[n]{\ell}{k} in the small plot.
-%
-(d) presents the constraints for the cycle time of \tl (\ref{c:cycleLB} and
-\ref{c:cycleUB}), where T.C.T. is the total cycle time and is the left hand side
-of both constraints.
-%
-For this example, $\PTMIN{\ell}{k}=1$, $\PTMAX{\ell}{k}=3$, $\CTMIN{\ell}=7$, and
-$\CTMAX{\ell}=8$.}
-\label{fig:phase_plots}
-\end{figure*}
 
 
 

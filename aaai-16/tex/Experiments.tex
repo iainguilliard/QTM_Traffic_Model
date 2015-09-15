@@ -1,10 +1,20 @@
+\subsection{Transit Constraints}
+
+Transit crossing times and phase states at each traffic light are defined by a fixed schedule $S_{\ell}(k,n) \in [0,1]$ for each phase $k \in \Pset_\tl$ and $n \in \{1,\dots,\Nn\}$. During time intervals where the transit is crossing at light $\ell$ (where $S_{\ell}(k,n)=1$ for at least one $k \in \Pset_\tl$, we interrupt the optimized control by suspending constraints (\ref{c:pd:incUB}--\ref{c:minPhase}) and use \eqref{c:forceTransit} to force the state of $\p[n]{\ell}{k}$ to be green or red as defined by $S_{\ell}(k,n)$ . We hold $\pd{\ell}{k}$ constant through the transit crossing with \eqref{c:pd:holdTransit} until (\ref{c:pd:incUB}--\ref{c:minPhase}) are resumed at the end of the corssing.
+\begin{cAlign}
+%
+\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
+%
+\pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
+\end{cAlign}
+ 
 \section{Empirical Evaluation}
   
 In this section we compare the solutions for traffic networks modeled as a QTM
-using homogeneous and non-homogeneous time intervals w.r.t.\ to two evaluation criteria:
+before and after the introduction of a public transit network, and with both fixed control
+and optimized control, w.r.t. to two evaluation criteria:
+the quality of solutions and the amount of delay introduced by the transit.
 %
-the quality of the solution and convergence to the optimal solution vs.\ the number
-of time steps.
 %
 % TODO \fnremark{FWT: I don't think that optimal is the best word here since
 %we arbitrarily fixed a value of \DT[]. Also, there is the technical problem that
@@ -19,13 +29,9 @@ consider the third quartile and maximum of the observed delay distribution.
 %QTM using small enough homogeneous \DT[] with unlimited computational
 %resources.
 %
-Our hypotheses are:
-%
-(i) the quality of the non-homogeneous solutions is at least as good as the
-homogeneous ones when the number of time intervals~\Nn is fixed; and 
-%
-(ii) the non-homogeneous approach requires less time intervals (i.e., smaller
-\Nn) than the homogeneous approach to converge to the optimal solution.
+Our hypothesis is that that by applying optimized signal control to the traffic,
+we are able to nullify the impact of introducing a public transit, and with a quality 
+and delay comparable to that before the transit was introduced.
 %
 In the remainder of this section, we present the traffic networks considered in
 the experiments, our methodology, and the results.
@@ -41,16 +47,10 @@ the experiments, our methodology, and the results.
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
 \label{subfig:network1}
-\includegraphics[width=0.45\textwidth]{network_1.pdf}}
+\includegraphics[width=0.45\textwidth]{network1.pdf}}
 \subfigure[]{
 \label{subfig:network2}
-\includegraphics[width=0.45\textwidth]{network_2.pdf}}
-\subfigure[]{
-\label{subfig:network3}
-\includegraphics[width=0.45\textwidth]{network_3.pdf}}
-\subfigure[]{
-\label{subfig:demand_plot}
-\includegraphics[width=0.45\textwidth]{demand_plot.pdf}}
+\includegraphics[width=0.45\textwidth]{network2.pdf}}
 \caption{(a--c) Networks used to evaluate the QTM performance.
 %
 (d) Demand profile of the queues marked as \qLowTraf,
@@ -60,80 +60,59 @@ the experiments, our methodology, and the results.
 
 
 
-We consider three networks of increasing complexity (\cref{fig:networks}): an
-avenue crossed by three side streets; a 2-by-3 grid; and a 3-by-3 grid with a
-diagonal avenue.
+We consider two networks of differing complexity (\cref{fig:networks}): an
+arterial crossed by four side streets; and a 3-by-3 grid.
 %
 The queues receiving cars from outside of the network are marked in
 \cref{fig:networks} and we refer to them as input queues.
 %
-The maximum queue capacity~(\QMAX{i}) is 60 cars for non-input queues and
+The maximum queue capacity~(\QMAX{i}) is 60 vehicles for non-input queues and
 infinity for input queues to prevent interruption of the input demand due to
 spill back from the stop line. 
 %
-The traversal time of each queue $i$~(\QDELAY{i}) is set at 9s (a distance of
-125m with a free flow speed of 50km/h).
+The traversal time of each queue $i$~(\QDELAY{i}) is set at 30s, except for the output queues
+on Network 2 where the traversal time is 10s.
 %
 For each street, flows are defined from the head of each queue $i$ into the tail of the next
 queue $j$;
 %
 there is no turning traffic ($\FTURN{i}{j}=1$), and the maximum flow rate
-between queues, \FMAX{i}{j}, is set at 5 cars/s.
+between queues, \FMAX{i}{j}, is set at 0.5 vehicles/s.
 %
-All traffic lights have two phases, north-south and east-west, and lights 2, 4
-and 6 of network 3 have the additional northeast-southwest phase to control the
-diagonal avenue.
+All traffic lights have two phases, north-south and east-west, %
+and for all traffic light \tl and phase $k$, \PTMIN{\tl}{k}  is 10s, \PTMAX{\tl}{k} is 30s, 
+\CTMIN{\tl} is 20s, and \CTMAX{\tl} is 60s.
 %
-For networks 1 and 2, \PTMIN{\tl}{k} is 1s, \PTMAX{\tl}{k} is 3s, \CTMIN{\tl} is
-2s, and \CTMAX{\tl} is 6s, for all traffic light \tl and phase $k$.
-%
-For network 3, \PTMIN{\tl}{k} is 1s and \PTMAX{\tl}{k} is 6s for all \tl and
-$k$; and \CTMIN{\tl} is 2s and \CTMAX{\tl} is 12s for all lights \tl except for
-lights 2, 4 and 6 (i.e., lights also used by the diagonal avenue) in which
-\CTMIN{\tl} is 3s and \CTMAX{\tl} is 18s.
+\subsection{Fixed Phase Control Constraints}
 
+We implement a fixed phase traffic light controller by replacing $\pd[n]{\ell}{k} \le
+\PTMAX{\ell}{k}$  and \ref{c:minPhase}, with fixed duration constraints employing the \textit{big-M}
+method to apply the constraints only while the phase is inactive. The optimizer is free to choose a value for $d^{fixed}_{\ell,k}$ within the bounds $\PTMIN{\ell}{k} \le d^{fixed}_{\ell,k} \le \PTMAX{\ell}{k}$.
 
+\begin{cAlign}
+\pd{\ell}{k} &\le d^{fixed}_{\ell,k} + \PTMAX{\ell}{k} \p[n]{\ell}{k}
+  \tagconstrain{c:pd:fixedUB}\\
+%
+\pd{\ell}{k} &\ge d^{fixed}_{\ell,k} - \PTMAX{\ell}{k} \p[n]{\ell}{k}
+  \tagconstrain{c:pd:fixedLB}
+\end{cAlign}
+ 
+Constraints \ref{c:pd:fixedLB} and \ref{c:pd:fixedUB} are only applied for time intervals $n$ where $\tn[n] > \CTMAX{\tl}$, to allow the controller to select an optimized phase offset at the start of each plan.
+%TODO talk about how the fixed phase times fit around transit crossings.
 
 
 \subsection{Experimental Methodology}
 
-%\begin{table}[h]
-%\caption{Network Demand Profiles (vehicles per second)}
-%\label{tab:network_demand}
-%\centering
-%\begin{tabular}{cccccc}
-%\toprule
-%& Inflow Queues & 0 - 55 s & 55 - 70 s & 70 - 85 s & > 85 s\\
-%\midrule
-%\multirow{2}{*}{Network 1}&$q_0$ & 1 & 1 & 1 & 0 \\
-%&$q_4, q_7$ & 4 & 4 & 4 & 0 \\
-%&$q_1,q_{10}$& 2 & 4 & 2 & 0 \\
-%\midrule
-%\multirow{2}{*}{Network 2}&$q_0$ & 1 & 1 & 1 & 0 \\
-%&$q_4,q_7,q_{14}$& 4 & 4 & 4 & 0 \\
-%&$q_1, q_{10},q_{18}$ & 2 & 4 & 2 & 0 \\
-%\midrule
-%\multirow{2}{*}{Network 3}&$q_0$ & 1 & 1 & 1 & 0 \\
-%&$q_4,q_7,q_{14},q_{25},$& 4 & 4 & 4 & 0 \\
-%&$q_1, q_{10},q_{18},q_{29},q_{36},q_{40},q_{44}$ & 2 & 4 & 2 & 0 \\
-%\bottomrule\\
-%\end{tabular}
-%\end{table}
 
+Each network is evaluated at increasing demand levels up to the level where for each queue $i$, 
+$\inq{i}$ becomes saturated at $\QIN{i}{n}$.
 
-For each network, a constant background level traffic is injected in the network
-in the first 55s to allow the solver to settle on a stable policy.
-%
-Then a spike in demand is introduced in the queues marked as \qVarTraf
-(\cref{fig:networks}) from time 55s to 70s to trigger a policy change.
-%
-%with the expectation that plans generated with longer look ahead will produce a
-%more coordinated global policy change.
-%
-From time 70s to 85s, the demand is returned to the background level, and then
-reduced to zero for all input queues.
-%
-We extend the problem horizon~\TMAX until all cars have left the network.
+For each demand level, traffic is injected into the network
+in bursts over 600s, and \TMAX is set sufficiently high to allow all traffic to
+clear the network, typically in the range 1000s to 1500s.
+% \TODO {check horizons}
+The pattern of the bursts and the value of 
+$\QIN{i}{n}$ is marked on each input queue in \cref{fig:networks}.
 %
 By clearing the network, we can easily measure the total travel time for all the
 traffic as the area between the cumulative arrival and departure curves measured
@@ -144,119 +123,17 @@ at the boundaries of the network.
 %
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
-The background level for the input queues are 1, 4 and 2 cars/s for queues
-marked as \qLowTraf, \qHighTraf and \qVarTraf (\cref{subfig:demand_plot}),
-respectively; and during the high demand period, the queues \qVarTraf receive 4
-cars/s.
 
+We evaluate each network using both fixed control and optimized control,
+and both before the introduction of the transit and after, using a \DT[] of
+10s.
 
+For all our experiments, we used Gurobi\textsuperscript{TM} as the MILP solver running on a heterogenous cluster
+ with 2.8GHz AMD Opteron\textsuperscript{TM}~4184 and 3.1GHz AMD Opteron\textsuperscript{TM}~4334 processor nodes with 12 cores, and 2Ghz Intel\textsuperscript{TM} Zeon E5405 nodes with 4 cores. We use 4 cores for each run of the solver.
 
-
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\includegraphics[width=0.75\textwidth]{non_homogeneous_control.png}
-\caption{Receding horizon control. In this example, the problem
-  horizon \TMAX is 40s. The major frames for MILP optimization are
-  discretized in 12 time intervals ($\Nn = 12$) and they span 15s and
-  30s for homogeneous and non-homogeneous discretizations,
-  respectively.  The minor frames represent the prefix of the 
-  major frame MILP optimization that is executed.  The horizon
-  recedes by the minor frame duration after each execution.}
-\label{fig:multiplan}
-\end{figure*}
-
-
-% def major and minor frame tell about overlapping and fig:multiplan show
-% parameters, i.e., delta ts
-% - fairness: same delta t for minor frame
-For both homogeneous and non-homogeneous intervals, we use the MILP QTM
-formulation in a receding horizon manner: a control plan is
-computed for a pre-defined horizon (smaller than \TMAX) and only a prefix of
-this plan is executed before generating a new control plan. 
+For Network 1, we limit the MIP gap accuracy to 0.02\% and for Network 2 we limit the MIP gap accuracy to 0.1\%.
 %
-\cref{fig:multiplan} depicts our receding horizon approach and we refer to the
-planning horizon as a major frame and its executable prefix as a minor frame.
-%
-Notice that, while the plan for a minor frame is being executed, we can start
-computing the solution for the next major frame based on a forecast model.
-
-
-To perform a fair comparison between the homogeneous and non-homogeneous
-discretizations, we fix the size of all minor frames to 10s and force it to be
-discretized in homogeneous intervals of 0.25s.
-%
-For the homogeneous experiments, \DT[] is kept at 0.25s throughout the major
-frame; therefore, given \Nn, the major frame size equals $\Nn/4$ seconds for the
-homogeneous approach.
-%
-For the non-homogeneous experiments, \DT[] linearly increases from
-0.25s at the end of the minor frame to 1.0s at the end of the major frame;
-therefore, the major frame size used by the non-homogeneous approach
-is $10.375 + 0.625(\Nn-40)$ seconds for a given $\Nn > 40$.
-%
-%We analyze the effect of the major frame size by varying it from 20s through to 
-%120s.
-%
-% explain evaluation: concatenation + LP simulation Overall ``optimal'' for
-% comparison
-Once we have generated a series of minor frames, we concatenate them into a
-single plan and compute the flow through the network using the QTM LP
-formulation with a fixed (homogeneous) $\DT[]$ of 0.25s.
-%
-%TODO \fnremark{Do we need to justify why we use the QTM as the simulator over
-%say a micro simulator?}
-%
-We also compare both receding horizon approaches against the optimal solution
-obtained by computing a single control plan for the entire control horizon
-(i.e., $[0,\TMAX]$) using a fixed \DT[] of 0.25s.
-
-For all our experiments, we used Gurobi\textsuperscript{TM} as the MILP solver with
-12 threads on a 3.1GHz AMD Opteron\textsuperscript{TM}~4334 processor with 12
-cores.
-%
-We limit the MIP gap accuracy to 0.1\% and the time cutoff for solving a major
-frame to 3000s for the receding horizon approaches and unbounded in order to
-determine the optimal minimum travel time solution to which all other solutions are compared.
-%
-%% \toIain{Can you explain the following better and provide evidence:
-%% \textit{while we can solve non-homogeneous major frames up to convergence in
-%% real time, we extend the solve time limit to 3000s for all test points for a
-%% fair comparison with the homogeneous test points.}?
-%%
-%% Iain: Deleted as it was not strictly true. Either we re-run scaled up on AWS
-%% with 10s solver time limit. Or we perhaps explain that 3000s shows that it
-%% could be scaled up to real time}
-%
-All our results are averaged over five runs to account for Gubori's
-stochastic strategies.
-
-
-
-%\begin{table}[h]
-%\caption{Network 3 traffic parameters}
-%\label{tab:net3wave}
-%\centering
-%\begin{tabular}{cccccc}
-%\toprule
-%Queue & Background & End & Wave & Start &End\\ 
-%\midrule
-%$q_0$ & 1 & 85 & 1 & 55 & 70\\
-%$q_1$ & 2 & 85 & 4 & 55 & 70\\
-%$q_4$ & 4 & 85 & 4 & 55 & 70\\
-%$q_7$ & 4 & 85 & 4 & 55 & 70\\
-%$q_{10}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{14}$ & 4 & 85 & 4 & 55 & 70\\
-%$q_{18}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{25}$ & 4 & 85 & 4 & 55 & 70\\
-%$q_{29}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{36}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{40}$ & 2 & 85 & 4 & 55 & 70\\
-%$q_{44}$ & 2 & 85 & 4 & 55 & 70\\
-%\bottomrule\\
-%\end{tabular}
-%\end{table}
-
+Due to Gurobi's stochastic strategies, runtimes for the solver can vary widely, and we do not set a time limit. For the optimized controller, solutions are typlically found in real time, while fixed control plans can take significantly longer. However, typically a fixed control plan is calculated once based on historical averages and then applied to the network over many months or years.
 
 \subsection{Results}
 
@@ -266,39 +143,15 @@ stochastic strategies.
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
 \label{subfig:travel_time_3}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_1_converge.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network1_delay.pdf}}
 \subfigure[]{
 \label{subfig:delay_3}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_3l.pdf}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]
-{box_plot_converg_3l.pdf}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_3l.pdf}}
-
-\subfigure[]{
-\label{subfig:travel_time_6}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_2_converge.pdf}}
-\subfigure[]{
-\label{subfig:delay_6}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_6l.pdf}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]
-{box_plot_converg_6l.pdf}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_6l.pdf}}
-
-\subfigure[]{
-\label{subfig:travel_time_9}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_3_converge.pdf}}
-\subfigure[]{
-\label{subfig:delay_9}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_9l.pdf}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]
-{box_plot_converg_9l.pdf}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_final_9l.pdf}}
-%
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network1_boxplots.pdf}}
 \caption{Increase in the total travel time w.r.t.~the optimal solution as a
 function of \Nn (a,c,e) and distribution of the total delay of
 each car for different values of \Nn (b,d,f).
 %
-For each row, the Roman numeral on top of the box plots corresponds to point the 
+For each row, the Roman numeral on top of the box plots corresponds to point the
 travel time plot marked with the same numeral.
 %
 The mean of the total delay is presented as a red square in the box plots.
@@ -310,6 +163,89 @@ at smaller \Nn than Homogeneous (H).}
 %smaller third quartile and maximum per-car delay for the same \Nn.}
 \label{fig:results}
 \end{figure*}
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:travel_time_6}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network1_t1_reduction.pdf}}
+\subfigure[]{
+\label{subfig:delay_6}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network1_t2_reduction.pdf}}
+\caption{Increase in the total travel time w.r.t.~the optimal solution as a
+function of \Nn (a,c,e) and distribution of the total delay of
+each car for different values of \Nn (b,d,f).
+%
+For each row, the Roman numeral on top of the box plots corresponds to point the
+travel time plot marked with the same numeral.
+%
+The mean of the total delay is presented as a red square in the box plots.
+%
+Plots in the $i$-th row correspond to the results for the $i$-th network in
+\cref{fig:networks}.  Non-homogeneous (NH) achieves much better solutions
+at smaller \Nn than Homogeneous (H).}
+%control and achieves }
+%smaller third quartile and maximum per-car delay for the same \Nn.}
+\label{fig:results}
+\end{figure*}
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:travel_time_9}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_delay.pdf}}
+\subfigure[]{
+\label{subfig:delay_9}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_boxplots.pdf}}
+\caption{Increase in the total travel time w.r.t.~the optimal solution as a
+function of \Nn (a,c,e) and distribution of the total delay of
+each car for different values of \Nn (b,d,f).
+%
+For each row, the Roman numeral on top of the box plots corresponds to point the
+travel time plot marked with the same numeral.
+%
+The mean of the total delay is presented as a red square in the box plots.
+%
+Plots in the $i$-th row correspond to the results for the $i$-th network in
+\cref{fig:networks}.  Non-homogeneous (NH) achieves much better solutions
+at smaller \Nn than Homogeneous (H).}
+%control and achieves }
+%smaller third quartile and maximum per-car delay for the same \Nn.}
+\label{fig:results}
+\end{figure*}
+
+
+
+\begin{figure*}[t!]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:travel_time_6}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_t1_reduction.pdf}}
+\subfigure[]{
+\label{subfig:delay_6}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_t2_reduction.pdf}}
+\caption{Increase in the total travel time w.r.t.~the optimal solution as a
+function of \Nn (a,c,e) and distribution of the total delay of
+each car for different values of \Nn (b,d,f).
+%
+For each row, the Roman numeral on top of the box plots corresponds to point the
+travel time plot marked with the same numeral.
+%
+The mean of the total delay is presented as a red square in the box plots.
+%
+Plots in the $i$-th row correspond to the results for the $i$-th network in
+\cref{fig:networks}.  Non-homogeneous (NH) achieves much better solutions
+at smaller \Nn than Homogeneous (H).}
+%control and achieves }
+%smaller third quartile and maximum per-car delay for the same \Nn.}
+\label{fig:results}
+\end{figure*}
+
+
+%
 
 
 %We compare the performance of non-homogeneous and homogeneous solutions in two
@@ -357,32 +293,7 @@ maximum delay.
 %also better.}
 
 
-\begin{figure*}[t!]
-\centering
 
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{subfig:cumu1}
-\includegraphics[width=0.32\textwidth]{network_2_cum_plot_early.pdf}}
-\subfigure[]{
-\label{subfig:cumu2}
-\includegraphics[width=0.32\textwidth]{network_2_cum_plot_converg.pdf}}
-\subfigure[]{
-\label{subfig:cumu3}
-\includegraphics[width=0.32\textwidth]{network_2_cum_plot_final.pdf}}
-%
-\caption{Cumulative arrival and departure curves and delay for queue 1 in the
-2-by-3 network (\cref{subfig:network2}).
-%
-The labels on top of each plot match the labels in
-\cref{subfig:travel_time_6,subfig:delay_6}.
-%
-(c)~presents the same curves for the optimal solution.  Non-homogeneous~(NH)
-provides near-optimal signal plans over a longer time horizon than
-Homogeneous~(H) when the number of time intervals \Nn is small.}
-%
-\label{fig:cumu}
-\end{figure*}
 
 
 To further illustrate the differences between homogeneous and non-homogeneous

@@ -66,6 +66,18 @@ def calc_free_flow_travel_time(data,results,lanes):
     #print total_in_flow
     return sum(lane_free_flow_travel_time)
 
+def calc_in_flow_duration(data,results):
+    Queues = data['Queues']
+    time=results['t']
+    max_time = 0
+    EPSILON = 1e-6
+    for i,queue in enumerate(Queues):
+        if queue['Q_IN'] > 0:
+            for n,q_in in enumerate(results['q_{%d,in}' % i]):
+                if q_in > EPSILON and time[n] > max_time:
+                    max_time = time[n]
+    return max_time
+
 def calc_delay(data, results, queues=[], dp=6, dt=1):
 
     Queues = data['Queues']
@@ -1052,6 +1064,18 @@ def calc_min_travel_time(data,args):
             total_q_in+=q_in
     return min_travel_time,total_q_in
 
+def plot_anotations(ax,args):
+    if args.annotate_labels is not None and args.annotate_x is not None and args.annotate_y is not None:
+        assert len(args.annotate_labels) == len(args.annotate_x) == len(args.annotate_y)
+        for i,_ in enumerate(args.annotate_labels):
+            if args.annotate_size is not None:
+                size = args.annotate_size[i]
+            else:
+                size = 8
+            ax.text(args.annotate_x[i],args.annotate_y[i],args.annotate_labels[i],size=size)
+            if args.annotate_vline is not None and args.annotate_vline[i]:
+                ax.axvline(args.annotate_x[i],color='k',linestyle = args.annotate_vline_style[i])
+
 def plot_box_plot(args):
 
     plot_data_files = read_files(args.files)
@@ -1059,6 +1083,8 @@ def plot_box_plot(args):
     pl.clf()
     nplots=len(plot_data_files)
     fig, ax = pl.subplots(nrows=1, ncols=nplots, sharex=False, sharey=True)
+    #gs1 = mp.gridspec.GridSpec(4, 4)
+    #gs1.update(wspace=0.025, hspace=0.05)
 
     if not isinstance(ax,np.ndarray): ax=[ax]
 
@@ -1151,7 +1177,7 @@ def plot_box_plot(args):
             if args.plot_cpu_time:
                 box_data=solve_time
             else:
-                box_data = delay
+                box_data = [delay_n  * args.time_factor for delay_n in delay]
             Ni = N - 0.25 + plot_i
             #if Ni in plot_data:
 
@@ -1175,7 +1201,7 @@ def plot_box_plot(args):
                       #medianprops=props, meanprops=props3)#,flierprops=props3,positions=X)
         #Y = [plot_data[x][1] for x in X]
         #ax.plot(X,Y,c=args.color[c_i], label=plot_label,marker='x')
-
+        ax[plot_i].axvline(3.5,color='k')
 
         if args.x_limit:
             ax[plot_i].set_xlim(args.x_limit[0], args.x_limit[1])
@@ -1189,12 +1215,13 @@ def plot_box_plot(args):
         if i+1 < len(args.linestyle): i += 1
         if c_i+1 < len(args.color): c_i += 1
         if l_i+1 < len(args.linestyle): l_i += 1
+        plot_anotations(ax[plot_i],args)
 
     if args.plot_cpu_time:
-        ax[0].set_ylabel('Solve Time')
+        ax[0].set_ylabel('Solve Time (s)')
     else:
-        ax[0].set_ylabel('Delay')
-    pl.tight_layout()
+        ax[0].set_ylabel('Delay (s)')
+    #pl.tight_layout()
     #ax.set_ylabel('Total Travel Time')
     #ax.legend(loc='best')
     #if args.title:
@@ -1269,16 +1296,6 @@ def read_files(plot_files):
                 #     f.close()
         plots.append(data)
     return plots
-
-def plot_anotations(ax,args):
-    if args.annotate_labels is not None and args.annotate_x is not None and args.annotate_y is not None:
-        assert len(args.annotate_labels) == len(args.annotate_x) == len(args.annotate_y)
-        for i,_ in enumerate(args.annotate_labels):
-            if args.annotate_size is not None:
-                size = args.annotate_size[i]
-            else:
-                size = 8
-            ax.text(args.annotate_x[i],args.annotate_y[i],args.annotate_labels[i],size=size)
 
 
 
@@ -1393,15 +1410,21 @@ def get_av_delay(data,args):
         if 'Run' in data['Out']:
             results = data['Out']['Run'][run]
         total_traffic_in = calc_total_traffic(data,results,args.queues)
-        total_travel_time = calc_total_travel_time(data,results)
-        free_flow_travel_time = calc_free_flow_travel_time(data,results,args.queues)
+        total_travel_time = calc_total_travel_time(data,results) * args.time_factor
+        free_flow_travel_time = calc_free_flow_travel_time(data,results,args.queues) * args.time_factor
     return (total_travel_time - free_flow_travel_time) / total_traffic_in, total_traffic_in
 
 def plot_delay_diff( plot_data_files, args):
     plot_X = []
     plot_Y = []
-
-    xpoint1 = args.plot_delay_diff[0]
+    data = plot_data_files[0][0]
+    results = data['Out']
+    if 'Run' in results:
+        results = results['Run'][0]
+    Q_IN_duration = calc_in_flow_duration(data,results) * args.time_factor
+    #print args.plot_delay_diff[0] / (Q_IN_duration / 3600.0)
+    #print (args.plot_delay_diff[0] / (Q_IN_duration / 3600.0)) * (Q_IN_duration / 3600.0)
+    xpoint1 = args.plot_delay_diff[0] * (Q_IN_duration / 3600.0)
     xpoints = np.linspace(args.plot_delay_diff[1] / 100.0 ,args.plot_delay_diff[2] / 100.0,num=100,endpoint=True)
     traffic_points = []
     for x in list((xpoints)):
@@ -1430,7 +1453,7 @@ def plot_delay_diff( plot_data_files, args):
         plot_X.append(xpoints * 100)
         plot_Y.append((f_av_delay0(xpoint1) - f_av_delay1(traffic_points)))
 
-    return plot_X,plot_Y,'% traffic reduction (moving to transit)','Improvement in average delay per vehicle'
+    return plot_X,plot_Y,'% traffic reduction','$\Delta$ in average delay per vehicle (s)'
 
 
 def plot_av_delay( plot_data_files, args):
@@ -1444,10 +1467,15 @@ def plot_av_delay( plot_data_files, args):
 
 
         for d in data:
+            results = d['Out']
+            if 'Run' in results:
+                results = results['Run'][0]
             av_delay, total_traffic_in = get_av_delay(d,args)
+            Q_IN_duration = calc_in_flow_duration(d,results) * args.time_factor
+            #print total_traffic_in,Q_IN_duration,(Q_IN_duration / 3600.0),total_traffic_in / (Q_IN_duration / 3600.0)
             plot_Y[-1].append(av_delay)
-            plot_X[-1].append(total_traffic_in)
-    return plot_X,plot_Y,'Total traffic through network','Average delay per vehicle'
+            plot_X[-1].append(total_traffic_in / (Q_IN_duration / 3600.0))
+    return plot_X,plot_Y,'Network traffic demand (vehicles/hour)','Average delay per vehicle (s)'
 
 
 def plot_parameter(plot,args):
@@ -1478,9 +1506,16 @@ def plot_parameter(plot,args):
             plot_label = labels[l_i]
         else:
             plot_label = 'plot %d' % i
-
+        if args.marker_fill:
+            mfc = args.color[c_i]
+        else:
+            mfc = 'none'
+        if args.marker_color:
+            mec = args.color[c_i]
+        else:
+            mec = 'k'
         ax.plot(plot_X[plot_i],plot_Y[plot_i],color=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,
-                marker=args.marker[m_i],markerfacecolor='None',markevery=mevery[m_i])
+                marker=args.marker[m_i],markeredgecolor=mec,markerfacecolor=mfc,markevery=mevery[m_i])
 
         if l_i+1 < len(args.linestyle): l_i += 1
         if c_i+1 < len(args.color): c_i += 1
@@ -2545,6 +2580,8 @@ if __name__ == '__main__':
     parser.add_argument("--figsize", help="width and height of the plot", nargs='+',type=float)
     parser.add_argument("--marker", help="line maker for the plot",default=' ')
     parser.add_argument("--markerfill", help="List of y|n whether to fill maker",default='n')
+    parser.add_argument("--marker_color", help="apply line color to maker",action="store_true",default=False)
+    parser.add_argument("--marker_fill", help="fill markers",action="store_true",default=False)
     parser.add_argument("--markevery", help="maker every MARKEVERY points",nargs='+',type=int,default=[1])
     parser.add_argument("--debug", help="output debug messages", action="store_true", default=False)
     parser.add_argument("--dump_vars", help="Dump raw data for each var in the list",nargs='*')
@@ -2554,8 +2591,11 @@ if __name__ == '__main__':
     parser.add_argument("--annotate_y", help="List of y points to plot each label in annotate_labels", nargs='*', type=float)
     parser.add_argument("--annotate_labels", help="List of labels to annotate on plot", nargs='*')
     parser.add_argument("--annotate_size", help="List of label font sizes for each label in annotate_label", nargs='*', type=int)
+    parser.add_argument("--annotate_vline", help="List of y|n to draw vline at annotate_x", nargs='*')
+    parser.add_argument("--annotate_vline_style", help="List of line syles sizes for annotate_vline", nargs='*',default=['_','_','_','_'])
     parser.add_argument("--by_car", help="Box plot of delay from travel time per car rather than per time step", action="store_true", default=False)
     parser.add_argument("--dt", help="sampling step per car for box plots",type=float,default=1)
+    parser.add_argument("--time_factor", help="time factor to apply to all plots",type=float,default=1)
     parser.add_argument("--index_label_base", help="base index of queue and light labels in network plots as INDEX_LABEL_BASE",type=int,default=0)
     parser.add_argument("--debug_network", help="annotate network plot with q vars to help debug definition",action="store_true",default=False)
     args = parser.parse_args()
@@ -2567,6 +2607,9 @@ if __name__ == '__main__':
     for i,style in enumerate(args.linestyle):
         if style in linestyle_map:
             args.linestyle[i]=linestyle_map[style]
+    for i,style in enumerate(args.annotate_vline_style):
+        if style in linestyle_map:
+            args.annotate_vline_style[i]=linestyle_map[style]
 
 
     if args.plot_vars != None:

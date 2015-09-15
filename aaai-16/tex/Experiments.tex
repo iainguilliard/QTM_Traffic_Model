@@ -1,13 +1,5 @@
-\subsection{Transit Constraints}
+% Moved transit constraints to Model.tex  -Scott
 
-Transit crossing times and phase states at each traffic light are defined by a fixed schedule $S_{\ell}(k,n) \in [0,1]$ for each phase $k \in \Pset_\tl$ and $n \in \{1,\dots,\Nn\}$. During time intervals where the transit is crossing at light $\ell$ (where $S_{\ell}(k,n)=1$ for at least one $k \in \Pset_\tl$, we interrupt the optimized control by suspending constraints (\ref{c:pd:incUB}--\ref{c:minPhase}) and use \eqref{c:forceTransit} to force the state of $\p[n]{\ell}{k}$ to be green or red as defined by $S_{\ell}(k,n)$ . We hold $\pd{\ell}{k}$ constant through the transit crossing with \eqref{c:pd:holdTransit} until (\ref{c:pd:incUB}--\ref{c:minPhase}) are resumed at the end of the corssing.
-\begin{cAlign}
-%
-\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
-%
-\pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
-\end{cAlign}
- 
 \section{Empirical Evaluation}
   
 In this section we compare the solutions for traffic networks modeled as a QTM
@@ -42,21 +34,24 @@ the experiments, our methodology, and the results.
 
 
 
-\begin{figure*}[t!]
+\begin{figure}[t!]
 \centering
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
 \label{subfig:network1}
-\includegraphics[width=0.45\textwidth]{network1.pdf}}
+\includegraphics[width=0.47\textwidth]{network1.pdf}}
 \subfigure[]{
 \label{subfig:network2}
-\includegraphics[width=0.45\textwidth]{network2.pdf}}
-\caption{(a--c) Networks used to evaluate the QTM performance.
+\includegraphics[width=0.40\textwidth]{network2.pdf}}
+\caption{Networks used to evaluate the performance:
+  (a) an arterial road with parallel light rail;
+  (b) an urban grid with crisscrossing streets and light rail.
 %
-(d) Demand profile of the queues marked as \qLowTraf,
-\qHighTraf, and \qVarTraf for our experiments.}
+%(d) Demand profile of the queues marked as \qLowTraf,
+  %\qHighTraf, and \qVarTraf for our experiments.
+}
 \label{fig:networks}
-\end{figure*}
+\end{figure}
 
 
 

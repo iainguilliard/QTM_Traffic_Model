@@ -42,11 +42,15 @@
 % LaTeX/Bibtex do this automatically using the standard \cite macro, but
 % this modified \trbcite macro does the trick.
 
-% sort&compress option?
-\usepackage[sort,numbers]{natbib}
-	\newcommand{\trbcite}[1]{\citeauthor{#1} ({\it \citenum{#1}})}
-	\newcommand{\trbcitenum}[1]{({\it \citenum{#1}})}
-\setcitestyle{round}
+% SCOTT CHANGED MACROS TO USE AAAI CITATIONS
+
+%% sort&compress option?
+%%\usepackage[sort,numbers]{natbib}
+%%	\newcommand{\trbcite}[1]{\citeauthor{#1} ({\it \citenum{#1}})}
+%%	\newcommand{\trbcitenum}[1]{({\it \citenum{#1}})}
+%%\setcitestyle{round}
+\newcommand{\trbcite}[1]{\citeauthor{#1} \cite{#1}}
+\newcommand{\trbcitenum}[1]{\cite{#1}}
 
 
 %% Toggle comments on next two lines to turn on/off editorial remarks
@@ -93,7 +97,7 @@
 
 \begin{document}
 
-\title{Mitigating the Impact of Light Rail on Traffic Networks using Mixed
+\title{Mitigating the Impact of Light Rail on Conventional Traffic Networks\\ using Mixed
 Integer Linear Programming}
 
 \author{Paper ID 2664}
@@ -142,10 +146,10 @@ Iain Guilliard, Felipe Trevizan & Scott Sanner & Brian Williams\\
 %% Flushing everything to have the bibliography in its own page. Some of these
 %% \newpage will redundant at some point
 
-~
-\newpage
-~
-\newpage
+%~
+%\newpage
+%~
+%\newpage
 
 \bibliographystyle{aaai}
 \bibliography{Transport}

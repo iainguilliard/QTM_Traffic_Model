@@ -73,7 +73,7 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 
 Differently than the CTM \cite{daganzo1994cell,lin2004enhanced}, the QTM does not assume
 that $\DT[n] = \QDELAY{i}$ for all $n$, that is, the QTM can represent
-non-homogeneous time intervals (\cref{subfig:example}).
+non-homogeneous time intervals. % (\cref{subfig:example}).
 %
 The only requirement over \DT[n] is that no traffic light maximum phase time is
 smaller than any \DT[n] since phase changes occur only between time intervals;
@@ -213,10 +213,10 @@ exceed the capacity of the queue, we apply~\eqref{c:10}.
 %
 \begin{cAlign}
 %
-\q{i} &= \q[n-1]{i} - \qout[n-1]{i} +
-\Vol_i(\tn[n-1]-\QDELAY{i},\tn[n]-\QDELAY{i}) \tagconstrain{c:qUpdate}\\
+& \q{i} = \q[n\!-\!1]{i} \! - \! \qout[n\!-\!1]{i} \! + \!
+\Vol_i(\tn[n\!-\!1] \! - \! \QDELAY{i},\tn[n] \! - \! \QDELAY{i}) \tagconstrain{c:qUpdate}\\
 %
-\Vol_i(\tn[n] - \QDELAY{i}, \tn[n]) + \q{i} &\le \QMAX{i}
+& \Vol_i(\tn[n] - \QDELAY{i}, \tn[n]) + \q{i} \le \QMAX{i}
 \tagconstrain{c:10}
 %
 \end{cAlign}
@@ -292,7 +292,7 @@ minimized, which in turn minimizes the delay.
 
 
 
-
+\Omit{
 To illustrate the representation tradeoff offered by non-homogeneous time
 intervals, we computed flows and queue volumes for a fixed signal control plan
 derived for homogeneous \mbox{\DT[n] = 1s} (ground truth) using different
@@ -309,13 +309,13 @@ of the ground truth.
 Non-homogeneous discretization (\cref{subfig:converg_b}) exploit this fact to
 provide a good approximation in the initial time steps and progressively
 decrease precision for points far in the future.
+}
 
 
 
 
 
-
-\section{Traffic Control with QTM encoded as a MILP}
+\section{Traffic Control with MILP-encoded QTM}
 
 In this section, we remove the assumption that a valid control plan for all
 traffic lights is given and extend the LP
@@ -381,10 +381,11 @@ We use~\PTMAX{\ell}{k} as our large constant since $\pd[n]{\ell}{k} \le
 Similarly, \cref{c:minPhase} ensures the minimum phase time of $k$ and is
 not enforced while $k$ is still active.
 %
+\Omit{
 \cref{fig:pd:inc,fig:pd:inactive,fig:pd:resetAndLB} present an example of how
 (\ref{c:pd:incUB}--\ref{c:minPhase}) work together as a function of the time $n$ 
 for $\pd[n]{\ell}{k}$; the domain constraint $0 \le \pd[n]{\ell}{k} \le
-\PTMAX{\ell}{k}$ for all $n \in \{1,\dots,\Nn\}$ is omitted for clarity.
+\PTMAX{\ell}{k}$ for all $n \in \{1,\dots,\Nn\}$ is omitted for clarity.}
 %
 %% FWT: I think the mathematical definition of \pd is redundant now.
 %\begin{equation}
@@ -451,8 +452,10 @@ the correct elapse time of phase 1.
 Additionally, \eqref{c:cycleLB} is enforced right after the end of the each
 cycle, i.e., when its first phase is changed from inactive to active.
 %
+\Omit{
 The value \eqref{c:cycleLB} and \eqref{c:cycleUB} over time for a traffic light
 \tl is illustrated in \cref{fig:cycleTimeC}.
+}
 %
 \begin{cAlign}
 %
@@ -470,3 +473,13 @@ by~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cycleUB}).
 
 
 
+\paragraph{Transit Constraints}
+
+Transit crossing times and phase states at each traffic light are defined by a fixed schedule $S_{\ell}(k,n) \in [0,1]$ for each phase $k \in \Pset_\tl$ and $n \in \{1,\dots,\Nn\}$. During time intervals where the transit is crossing at light $\ell$ (where $S_{\ell}(k,n)=1$ for at least one $k \in \Pset_\tl$, we interrupt the optimized control by suspending constraints (\ref{c:pd:incUB}--\ref{c:minPhase}) and use \eqref{c:forceTransit} to force the state of $\p[n]{\ell}{k}$ to be green or red as defined by $S_{\ell}(k,n)$ . We hold $\pd{\ell}{k}$ constant through the transit crossing with \eqref{c:pd:holdTransit} until (\ref{c:pd:incUB}--\ref{c:minPhase}) are resumed at the end of the corssing.
+\begin{cAlign}
+%
+\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
+%
+\pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
+\end{cAlign}
+ 

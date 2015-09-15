@@ -29,12 +29,24 @@
 As urban traffic congestion is on the increase worldwide with
 estimated productivity losses in the hundreds of billions of dollars
 in the U.S. alone and immeasurable environmental
-impact~\cite{bazzan2013intro}, it is critical to maximize capacity and
-throughput of existing road infrastructure through optimized traffic
-signal control.  Unfortunately, many large cities still use some
+impact~\cite{bazzan2013intro}, many cities are increasingly looking to
+inexpensive public transit options such as light rail in order to
+reduce the number of conventional traffic commuters.  Since light rail
+often operates at street-level and requires coordination with
+conventional traffic networks and signal control, a major concern in
+light rail installation is whether enough commuters will switch to it
+to offset the additional constraints it places on traffic signal
+control.
+
+Unfortunately, many large cities still use some
 degree of \emph{fixed-time} control~\trbcitenum{el2013multiagent} even
 if they also use \emph{actuated} or \emph{adaptive} control methods
 such as SCATS~\trbcitenum{scats80} or SCOOT~\trbcitenum{scoot81}.
+As we show in this paper, conventional fixed-time control methods
+poses significant challenge for the integration of light
+rail even when their timings are optimized to sychronize with
+the light rail schedule.
+
 However, there is further opportunity to improve traffic signal
 control even beyond adaptive methods through the use of
 \emph{optimized} controllers as evidenced in a variety of approaches
@@ -47,6 +59,31 @@ controllers hold the promise of maximizing existing infrastructure
 capacity by finding more complex (and potentially closer to optimal)
 jointly coordinated intersection policies in comparison to
 heuristically-adaptive policies such as SCATS and SCOOT. 
+
+%it is critical to mitigate the impact
+%of light rail on existing traffic congestion.
+
+%it is critical to maximize capacity and
+%throughput of existing road infrastructure through optimized traffic
+%signal control.
+
+In this paper, we study traffic signal control for integrated light
+rail and conventional traffic networks and ways to mitigate delay
+through the use of a novel method of optimized traffic signal control
+based on a novel Mixed Integer Linear Programming (MILP) model of
+traffic flow and signal control that we term the {\it Queue
+  Transmission Model (QTM)}.  Our key results show that while there is
+a substantial impact of light rail on conventional vehicle traffic
+delay using popular fixed-time signal control, our novel optimized
+signal control virtually nullifies this impact. Ultimately this leads
+to a win-win situation where both conventional vehicle traffic and
+light rail commuters benefit through the application of MILP-based
+optimization to jointly manage public transit and conventional traffic
+networks.
+
+
+
+\Omit{
 %master-slave approaches such as SCATS and SCOOT, such optimized methods
 However, optimized methods are computationally demanding 
 %compared to adpative control methods such as SCOOT and SCATS
@@ -103,7 +140,6 @@ applications~\trbcitenum{alecsandru2011assessment}, there seems to be
 no extension that permits \emph{non-homogeneous} time steps as proposed in
 our novel MILP-based control approach.
 
-
 \begin{figure*}[t!]
 \centering
 %  trim={<left> <lower> <right> <upper>}
@@ -136,7 +172,8 @@ our novel MILP-based control approach.
   precise notation and technical definitions.}
 \label{fig:qtm}
 %
-\end{figure*}
+\end{figure*}}
+
 \Omit{
 For this reason, as a major contribution of this work to enable our
 non-homogeneous time MILP-based model of joint intersection control, we
@@ -181,6 +218,7 @@ improved per-car delay distributions, and (iii) more optimal travel
 times over a longer horizon in comparison to the homogeneous MILP
 formulation with the same number of binary and continuous variables.
 }
+
 %demonstrating that using non-homogeneous time steps, we can
 %optimally solve large networks with a fraction of the MILP binary
 %variables required to achieve the same solution quality with a

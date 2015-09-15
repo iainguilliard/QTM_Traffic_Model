@@ -147,111 +147,23 @@ average?}
 
 \subsection{Results}
 
-\begin{figure*}[t!]
-\centering
+\begin{figure*}[t!] \centering
 %  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{subfig:travel_time_3}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network1_delay.pdf}}
-\subfigure[]{
-\label{subfig:delay_3}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network1_boxplots.pdf}}
-\caption{Increase in the total travel time w.r.t.~the optimal solution as a
-function of \Nn (a,c,e) and distribution of the total delay of
-each car for different values of \Nn (b,d,f).
+\subfigure[]{\label{fig:arterial:delayCurve}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_delay.pdf}}
+\subfigure[]{\label{fig:grid:delayCurve}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_delay.pdf}}
+\subfigure[]{\label{fig:arterial:boxplot}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_boxplots.pdf}}
+\subfigure[]{\label{fig:grid:boxplot}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_boxplots.pdf}}
 %
-For each row, the Roman numeral on top of the box plots corresponds to point the
-travel time plot marked with the same numeral.
+\caption{Average delay by the network demand for the arterial (a) and grid (b)
+networks. Box plots representing the observed distribution of delay for 3
+different values of demand for each network (c,d). The mean is presented as a
+red square in the box plots.}
 %
-The mean of the total delay is presented as a red square in the box plots.
-%
-Plots in the $i$-th row correspond to the results for the $i$-th network in
-\cref{fig:networks}.  Non-homogeneous (NH) achieves much better solutions
-at smaller \Nn than Homogeneous (H).}
-%control and achieves }
-%smaller third quartile and maximum per-car delay for the same \Nn.}
-\label{fig:results1}
-\end{figure*}
-
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{subfig:travel_time_6}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network1_t1_reduction.pdf}}
-\subfigure[]{
-\label{subfig:delay_6}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network1_t2_reduction.pdf}}
-\caption{Increase in the total travel time w.r.t.~the optimal solution as a
-function of \Nn (a,c,e) and distribution of the total delay of
-each car for different values of \Nn (b,d,f).
-%
-For each row, the Roman numeral on top of the box plots corresponds to point the
-travel time plot marked with the same numeral.
-%
-The mean of the total delay is presented as a red square in the box plots.
-%
-Plots in the $i$-th row correspond to the results for the $i$-th network in
-\cref{fig:networks}.  Non-homogeneous (NH) achieves much better solutions
-at smaller \Nn than Homogeneous (H).}
-%control and achieves }
-%smaller third quartile and maximum per-car delay for the same \Nn.}
-\label{fig:results2}
-\end{figure*}
-
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{subfig:travel_time_9}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_delay.pdf}}
-\subfigure[]{
-\label{subfig:delay_9}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_boxplots.pdf}}
-\caption{Increase in the total travel time w.r.t.~the optimal solution as a
-function of \Nn (a,c,e) and distribution of the total delay of
-each car for different values of \Nn (b,d,f).
-%
-For each row, the Roman numeral on top of the box plots corresponds to point the
-travel time plot marked with the same numeral.
-%
-The mean of the total delay is presented as a red square in the box plots.
-%
-Plots in the $i$-th row correspond to the results for the $i$-th network in
-\cref{fig:networks}.  Non-homogeneous (NH) achieves much better solutions
-at smaller \Nn than Homogeneous (H).}
-%control and achieves }
-%smaller third quartile and maximum per-car delay for the same \Nn.}
-\label{fig:results3}
-\end{figure*}
-
-
-
-\begin{figure*}[t!]
-\centering
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
-\label{subfig:travel_time_12}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_t1_reduction.pdf}}
-\subfigure[]{
-\label{subfig:delay_12}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_t2_reduction.pdf}}
-\caption{Increase in the total travel time w.r.t.~the optimal solution as a
-function of \Nn (a,c,e) and distribution of the total delay of
-each car for different values of \Nn (b,d,f).
-%
-For each row, the Roman numeral on top of the box plots corresponds to point the
-travel time plot marked with the same numeral.
-%
-The mean of the total delay is presented as a red square in the box plots.
-%
-Plots in the $i$-th row correspond to the results for the $i$-th network in
-\cref{fig:networks}.  Non-homogeneous (NH) achieves much better solutions
-at smaller \Nn than Homogeneous (H).}
-%control and achieves }
-%smaller third quartile and maximum per-car delay for the same \Nn.}
-\label{fig:results4}
-\end{figure*}
+\label{fig:delayCurveAndBoxplot} \end{figure*}
 
 
 %
@@ -262,67 +174,79 @@ at smaller \Nn than Homogeneous (H).}
 %time (greater look ahead), and analysing the distribution of delay in each
 %queue of the network.
 %
-\cref{subfig:travel_time_3,subfig:travel_time_6,subfig:travel_time_9} show, for
-each network, the increase in the total travel time w.r.t.~the optimal solution
-as a function of \Nn.
+\cref{fig:arterial:delayCurve,fig:grid:delayCurve} show, for each network, the
+average delay per vehicle as a function of demand for both fixed and adaptive
+control approached in three scenarios: before the light rail and after the
+installation of a light rain using schedules 1 and 2.
 %
-As we hypothesized, the non-homogeneous discretization requires less time
-intervals (i.e., smaller \Nn) to obtain a solution with the same total travel
-time.
+As we hypothesized, optimal adaptive control is able to mitigate the impact of
+the introduction of light rail and it marginally increases the average delay
+when compared with the average delay produced by fixed phase controller
+\textbf{before} the light rail.
 %
-This is important because the size of the MILP, including the number of binary
-variables, scales linearly with \Nn; therefore, the non-homogeneous approach can
-scale up better than the homogeneous one (e.g., \cref{subfig:travel_time_9}).
+Moreover, as shown in \cref{fig:arterial:boxplot,fig:grid:boxplot}, the optimal
+adaptive controller also produces better quality policies than the fixed phased
+controller, i.e., policies with smaller median, third quartile, and maximum
+delay.
 %
-Also, for homogeneous and non-homogeneous discretizations, finding the optimal
-solution of major frames with large \Nn might require more time than our imposed
-3000s time cutoff and, in this case, Gurobi returns a feasible control plan that
-is far from optimal.
-%
-The effect in the total travel time of these poor solutions can be seen in
-\cref{subfig:travel_time_9} for $\Nn > 120$.
+In our experiments, the maximum observed delay after the transit for the optimal
+adaptive policies is no more than the double of the maximum delay before the
+transit (for both fixed and adaptive approaches).\toIain{Can you double check
+this in the data?}
 
 
 
-The distribution of the total delay observed by each car while traversing the
-network is shown in \cref{subfig:delay_3,subfig:delay_6,subfig:delay_9}.
+\begin{figure*}[t!] \centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{\label{fig:arterial:impact:t1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_t1_reduction.pdf}}
+\subfigure[]{\label{fig:grid:impact:t1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_t1_reduction.pdf}}
+\subfigure[]{\label{fig:arterial:impact:t2}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_t2_reduction.pdf}}
+\subfigure[]{\label{fig:grid:impact:t2}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_t2_reduction.pdf}}
 %
-Each group of box plots represents a different value of~\Nn: when the
-non-homogeneous $\DT[]$ first converges; when the homogeneous~$\DT[]$ first
-converges; and the optimum solution itself.
+\caption{Impact on average delay for the arterial (first column) and grid
+(second column) networks for both transit schedules (rows) in different
+scenarios (curves) of traffic control system before and after installation of
+transit.
 %
-In all networks, the quality of the solution obtained using non-homogeneous
-$\DT[]$ is better or equal than using homogeneous $\DT[]$ for fixed \Nn in both
-the total travel time and \emph{fairness}, i.e., smaller third quartile and
-maximum delay.
-
-%\remark{FWT: In the paragraphs above, we need to address network 2 because it is
-%the exception in both cases: in the end of \cref{subfig:travel_time_6},
-%homogeneous is better, and the homogeneous delay in \cref{subfig:delay_6} is
-%also better.}
-
-
-
-
-
-To further illustrate the differences between homogeneous and non-homogeneous
-discretizations, Figure (fig:cumu) shows the cumulative arrival and departure
-curves and the how delay evolves over time for $q_1$ of network 2
-(\cref{fig:net:grid}).
+The x-axis is the percentage of cars that switching to the public transportation
+and the y-axis is the impact after the transit is installed.
 %
-In Figure (subfig:cumu1), the comparison is done when non-homogeneous $\DT[]$
-first converges (i.e., point I in \cref{subfig:travel_time_6}) and for this
-value of \Nn, the major frame size in seconds of the non-homogeneous approach is
-19.125s longer than the homogeneous one.
+Negative impact represents increase in average delay.}
 %
-This allows the MILP solver to ``see'' 19s further in the future when using
-non-homogeneous discretization and find a coordinated signal policy along the
-avenue to dissipate the extra traffic that arrives at time 55s.
+\label{fig:impact} \end{figure*}
+
+
+
+To further illustrate the benefits of using optimal adaptive control to minimize
+the impact adding a light rail to traffic network, \cref{fig:impact} shows the
+impact on average delay as a function of the percentage of cars that switching
+to the light rail.\fnremark{FWT: say that we are look at a fixed demand and that
+this value is depicted by $\clubsuit$ in \cref{fig:delayCurveAndBoxplot}}.
 %
-The shorter major frame of the homogeneous discretization does not allow the
-solver to adapt this far in advance and its delay observed after 55s is much
-larger than the non-homogeneous one.
+In these plots, higher numbers are better (i.e., there is a decrease in the
+average delay) and zero means that there is no change after installing the light
+rail.
 %
-Once the homogeneous $\DT[]$ has converged (Figure (cumu)), it is also
-able to anticipate the increased demand and adapt well in advance and both
-approaches generate solutions close to optimum (Figure (cumu)).
+For the three combinations of before and after policies presented,
+%
+%(we omit the case of using optimal adaptive before the light rail and fixed
+%phase after the light rail),
+%
+we can see that, while keeping the fixed phase controller requires from 25\% to
+45\% of the drives to switch to light rail in order to obtain the same average
+delay as before the transit, the optimal adaptive approach requires only from
+2.5\% to 10\% of the drivers to switch when already using optimal adaptive
+control \textbf{before} the light rail.
+%
+When compared fixed phase before the light rail and optimal adaptive after, the
+average delay stays the same if only the 2\% and 5\% of the drives switch to the
+transit when considering first schedule in the arterial and grid networks,
+respectively;
+%
+moreover, the average delay \textbf{decreases} for both networks using the
+second light rail schedule even if no driver switches to the newly installed
+public transportation.

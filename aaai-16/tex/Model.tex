@@ -8,8 +8,8 @@ A Queue Transmission Model (QTM) is the tuple $(\Qset, \Lset, \vecDT, \MatQIN)$,
 where \Qset and \Lset are, respectively, the set of queues and lights;
 %
 \vecDT is a vector of size \Nn representing the discretization of the problem
-horizon $[0,\TMAX]$ and the duration in seconds of the $n$-th time interval is
-denoted as \DT[n];
+horizon $[0,\TMAX]$ and \authorHighlight{the duration in seconds of the $n$-th
+time interval is denoted as \DT[n];}
 %
 %%
 %% TODO(fwt): Maybe mention that car that are denied entry could be stored in a
@@ -27,19 +27,19 @@ at time $n$.
 
 A \textbf{traffic light} $\tl \in \Lset$ is defined as the tuple~$(\CTMIN{\tl},
 \CTMAX{\tl}, \Pset_\tl, \VecPTMIN{\tl}, \VecPTMAX{\tl})$, where:
-
-\begin{itemize}
+%
+\begin{itemize*}[label={}]
 %
 \item $\Pset_\tl$ is the set of phases of $\tl$;
 %
 \item \CTMIN{\tl} (\CTMAX{\tl}) is the minimum (maximum) allowed cycle time for
-  \tl; and
+\tl; and
 %
 \item \VecPTMIN{\tl} (\VecPTMAX{\tl}) is a vector of size $|\Pset_\tl|$ and
   \PTMIN{\tl}{k} (\PTMAX{\tl}{k}) is the minimum (maximum) allowed time for
   phase $k \in \Pset_\tl$. 
 %
-\end{itemize}
+\end{itemize*}
 
 
 A \textbf{queue} $i \in \Qset$ represents a segment of road that vehicles
@@ -49,8 +49,8 @@ in a stop line queue.
 %
 Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 \Fvec_i, \Prvec_i, \QPset{i})$ where:
-
-\begin{itemize}
+%
+\begin{itemize*}[label={}]
 %
 %% TODO(fwt): clarify that this is the capacity of stop line queue
 \item \QMAX{i} is the maximum capacity of $i$;
@@ -68,17 +68,19 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 \item \QPset{i} denotes the set of traffic light phases controlling the outflow
   of queue $i$.
 %
-\end{itemize}
+\end{itemize*}
 
 
-Differently than the CTM \cite{daganzo1994cell,lin2004enhanced}, the QTM does not assume
-that $\DT[n] = \QDELAY{i}$ for all $n$, that is, the QTM can represent
-non-homogeneous time intervals. % (\cref{subfig:example}).
+Differently than the CTM \cite{daganzo1994cell,lin2004enhanced}, the
+\authorHighlight{QTM does not assume that $\DT[n] = \QDELAY{i}$ for all $n$,
+that is, the QTM can represent non-homogeneous time intervals.
+%
+%%(\cref{subfig:example}).
 %
 The only requirement over \DT[n] is that no traffic light maximum phase time is
 smaller than any \DT[n] since phase changes occur only between time intervals;
 formally, $\DT[n] \le \min_{\tl \in \Lset, k \in \Pset_\tl} \PTMAX{\tl}{k}$ for
-all $n \in \{1,\dots,\Nn\}$.
+all $n \in \{1,\dots,\Nn\}$.}
 %
 % TODO \toIain{Maybe bring forward a small network and any other figure that
 % would help illustrate the model and comment about it.}
@@ -88,7 +90,7 @@ all $n \in \{1,\dots,\Nn\}$.
 \subsection{Computing Traffic Flows with QTM}
 
 In this section, we present how to compute traffic flows using QTM and
-non-homogeneous time intervals \DT[].
+\authorHighlight{non-homogeneous time intervals \DT[]}.
 %
 We assume for the remainder of this section that a \emph{valid} control plan for
 all traffic lights is fixed and given as parameter;
@@ -99,12 +101,12 @@ if phase $k$ of light \tl is active~(i.e., $\p{\tl}{k} = 1$) or not on interval
 $n$.
 
 
-We represent the problem of finding the maximal flow between capacity-constrained 
-queues as a Linear Program
-(LP) over the following variables defined for all interval $n \in
-\{1,\dots,\Nn\}$ and queues $i$ and $j$:
-
-\begin{itemize}
+We represent the problem of finding the maximal flow between
+capacity-constrained queues as a Linear Program~(LP) over the following
+variables defined for all interval $n \in \{1,\dots,\Nn\}$ and queues $i$ and
+$j$:
+%
+\begin{itemize*}[label={}]
 %
 \item $\q{i} \in [0,\QMAX{i}]$: traffic volume waiting in the stop line of queue
   $i$ at the beginning of interval~$n$;
@@ -118,7 +120,7 @@ queues as a Linear Program
 \item $\f{i}{j} \in [0,\FMAX{i}{j}]$: flow from queue $i$ into queue $j$ during
   interval $n$.
 %
-\end{itemize}
+\end{itemize*}
 
 
 
@@ -132,20 +134,26 @@ queues as a Linear Program
 
 
 The maximum traffic flow from queue $i$ to queue $j$ is enforced by
-\cref{c:turnProb,c:maxFlow}.
+\cref{c:turnProbAndMaxFlow}.
 %
-\eqref{c:turnProb} ensures that only the fraction $\FTURN{i}{j}$ of the total
-internal outflow of $i$ goes to $j$, and \eqref{c:maxFlow} forces the flow from
-$i$ to $j$ to be zero if all phases controlling $i$ are inactive (i.e.,
-$\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
+The inner inequality of \eqref{c:turnProbAndMaxFlow} ensures that only the
+fraction $\FTURN{i}{j}$ of the total internal outflow of $i$ goes to $j$, and
+the outer inequality forces the flow from $i$ to $j$ to be zero if all phases
+controlling $i$ are inactive (i.e., $\p{\ell}{k} = 0$ for all $k \in
+\QPset{i}$).
 %
-If more than one phase $\p{\ell}{k}$ is active, then \eqref{c:maxFlow} is
-subsumed by the domain upper bound of $\f{i}{j}$.
+%If more than one phase $\p{\ell}{k}$ is active, then
+%\eqref{c:turnProbAndMaxFlow} is subsumed by the domain upper bound of
+%$\f{i}{j}$.
 %
-\begin{cAlign}
-\f{i}{j} &\le \FTURN{i}{j} \sum_{k=1}^{\Qn}  \f{i}{k} \tagconstrain{c:turnProb}\\
-\f{i}{j} &\le \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}}
-\tagconstrain{c:maxFlow}
+\begin{cAlign} 
+%
+\f{i}{j} \le \FTURN{i}{j} \sum_{k=1}^{\Qn} \f{i}{k}
+%\tagconstrain{c:turnProb}\\ \f{i}{j}
+\le \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}}
+%\tagconstrain{c:maxFlow}
+\tagconstrain{c:turnProbAndMaxFlow}
+%
 \end{cAlign}
 
 
@@ -154,30 +162,35 @@ subsumed by the domain upper bound of $\f{i}{j}$.
 %% TODO(fwt): improve the beginning of this paragraph
 
 To simplify the presentation of remainder of the LP, we define the helper
-variables \qin{i}~\eqref{def:qin}, \qout{i}~\eqref{def:qout}, and
-\tn[n]~\eqref{def:tn} to represent the volume of traffic to enter and leave
-queue $i$ during interval~$n$, and the time elapsed since the beginning of the
-problem until the end of interval \DT[n], respectively.
+variables \qin{i}~\eqref{def:qin} and \qout{i}~\eqref{def:qout} to,
+respectively, represent the volume of traffic to enter and leave queue $i$
+during interval~$n$, and  $\tn[n] = \sum_{x=1}^{n} \DT[x]$ to represent the time
+elapsed since the beginning of the problem until the end of interval \DT[n].
+%
+%
+%\tn[n]~\eqref{def:tn}
+%
 %
 \begin{cAlign}
 %
-\qin{i} &= \DT (\inq{i} + \sum_{j=1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
+\qin{i} &= \DT (\inq{i} + \textstyle \sum_{j=1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
 %
-\qout{i} &= \DT (\outq{i} +  \sum_{j=1}^{\Qn} \f{i}{j})
-\tagconstrain{def:qout}\\
+\qout{i} &= \DT (\outq{i} + \textstyle  \sum_{j=1}^{\Qn} \f{i}{j})
+\tagconstrain{def:qout}
+%\\
 %
-\tn[n] &= \sum_{x=1}^{n} \DT[x] \tagconstrain{def:tn}
+%\tn[n] &= \sum_{x=1}^{n} \DT[x] \tagconstrain{def:tn}
 %
 \end{cAlign}
 
 
 
 % Introduce the idea of V_i
-In order to account for the misalignment of the different \DT[] and \QDELAY{i},
-we need to find the volume of traffic that entered queue $i$ between two
-arbitrary points in time $x$ and $y$ ($x \in [0,\TMAX]$, $y \in [0,\TMAX]$, and $x
-< y$), i.e., $x$ and $y$ might not coincide with any $t_n$ for $n \in
-\{1,\dots,N\}$.
+\authorHighlight{In order to account for the misalignment of the different \DT[]
+and \QDELAY{i}, we need to find the volume of traffic that entered queue $i$
+between two arbitrary points in time $x$ and $y$ ($x \in [0,\TMAX]$, $y \in
+[0,\TMAX]$, and $x < y$), i.e., $x$ and $y$ might not coincide with any $t_n$
+for $n \in \{1,\dots,N\}$.
 %
 This volume of traffic, denoted as $\Vol_i(x,y)$, is obtained by integrating
 \qin{i} over $[x,y]$ and is defined in~\eqref{eq:vol} where $m$ and $w$ are the
@@ -189,13 +202,15 @@ w.r.t.~time and this integral reduces to the sum of \qin{i} over the intervals
 contained in $[x,y]$ and the appropriate fraction of \qin[m]{i} and \qin[w]{i}
 representing the misaligned beginning and end of $[x,y]$.
 %
+{\small
 \begin{equation}
-\Vol_{i}(x,y) =
-  (\tn[m+1] - x) \frac{\qin[m]{i}}{\DT[m]}
-  + \left( \sum_{k=m+1}^{w-1} \qin[k]{i} \right)
-  + (y - \tn[w]) \frac{\qin[w]{i}}{\DT[w]}
-\label{eq:vol}
-\end{equation}
+\Vol_{i}(x,y)\! =\!
+  (\tn[m+1]\!-\! x) \frac{\qin[m]{i}}{\DT[m]}\!+\!\left(
+  \sum_{k=m+1}^{w-1} \qin[k]{i} \right)\!+\! (y\!-\! \tn[w])
+  \frac{\qin[w]{i}}{\DT[w]}
+  \label{eq:vol}
+\end{equation}}
+}
 
 
 Using these helper variables, \eqref{c:qUpdate} represents the flow conservation
@@ -244,7 +259,10 @@ to minimize delay in the long-term even though it leads to unintuitive traffic
 flow behavior.
 %
 We address this well-known issue through our objective function~\eqref{eq:objFunc} by
-maximizing the total outflow~\qout{i}~(i.e., both internal and external outflow)
+maximizing the total outflow~\qout{i}
+%
+%(i.e., both internal and external outflow)
+%
 of~$i$ plus the inflow~\inq{i} from the outside of the network to~$i$.
 %
 This quantity is weighted by the remaining time until the end of the problem
@@ -265,23 +283,35 @@ possible.
 \end{equation}
 
 
+%\begin{figure*}[t!]
+%\centering
+%%  trim={<left> <lower> <right> <upper>}
+%\includegraphics[width=0.55\textwidth,trim={0cm 0cm 0cm 0cm},clip]{cumu_plot_final_6l.pdf}
+%\caption{Cumulative arrival (blue) and departure (green) curves, and the
+%resulting delay curve (red). The departure curve is maximized by the objective
+%function \eqref{eq:objFunc}, which has the same effect as minimizing the area
+%under the delay curve.}
+%\label{fig:cumu_delay_plot}
+%\end{figure*}
+
 
 The objective \eqref{eq:objFunc} corresponds to minimizing delay in CTM models,
 e.g., \eqref{eq:objFunc} is equivalent to the objective function (O3) in
 \trbcite{lin2004enhanced} for their parameters $\alpha = \beta = 1$.
 %
-\cref{fig:cumu_delay_plot} depicts this equivalence using the cumulative number
-of cars entering and leaving a network as a function of time.
 %
-The delay experienced by the vehicles travelling through this network (red curve
-in \cref{fig:cumu_delay_plot}) equals the horizontal difference at each point
-between the cumulative departure and arrival curves (less the free flow travel
-time through the network).
-%
-Maximizing \qout{i} weighted by $(\TMAX - \tn +1)$ in \eqref{eq:objFunc} is the
-same as forcing the departure curve to be as close as possible to the arrival
-curve as early as possible; therefore, the area between arrival and departure is
-minimized, which in turn minimizes the delay.
+%Figure (fig:cumu-delay-plot) depicts this equivalence using the cumulative
+%number of cars entering and leaving a network as a function of time.
+%%
+%The delay experienced by the vehicles travelling through this network (red curve
+%in Figure (fig-cumu-delay-plot) equals the horizontal difference at each point
+%between the cumulative departure and arrival curves (less the free flow travel
+%time through the network).
+%%
+%Maximizing \qout{i} weighted by $(\TMAX - \tn +1)$ in \eqref{eq:objFunc} is the
+%same as forcing the departure curve to be as close as possible to the arrival
+%curve as early as possible; therefore, the area between arrival and departure is
+%minimized, which in turn minimizes the delay.
 
 
 
@@ -292,35 +322,52 @@ minimized, which in turn minimizes the delay.
 
 
 
-\Omit{
-To illustrate the representation tradeoff offered by non-homogeneous time
-intervals, we computed flows and queue volumes for a fixed signal control plan
-derived for homogeneous \mbox{\DT[n] = 1s} (ground truth) using different
-discretizations.
-%
-\cref{subfig:converg_a} shows the approximation of the ground truth using
-homogeneous \DT[] = 2.5 and \DT[] = 5.0, and \cref{subfig:converg_b} using
-non-homogeneous time intervals that linearly increases from 1s to 2.5s, i.e.,
-$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.
-%
-As \cref{subfig:converg_a} shows, large time steps can be rough approximations
-of the ground truth.
-%
-Non-homogeneous discretization (\cref{subfig:converg_b}) exploit this fact to
-provide a good approximation in the initial time steps and progressively
-decrease precision for points far in the future.
-}
+%\begin{figure*}[t!]
+%\centering
+%\subfigure[]{
+%\label{subfig:converg_a}
+%\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence.pdf}
+%}
+%\subfigure[]{
+%\label{subfig:converg_b}
+%\includegraphics[width=1.0\textwidth,trim={0cm 0cm 0cm 0cm},clip]{convergence_vari.pdf}
+%}
+%\label{fig:conv}
+%%
+%\caption{Approximations of a queue volume obtained using homogeneous
+%\DT[] = 1s using: (a) homogeneous \DT[] = 2.5s and 5s; and (b) non-homogeneous
+%$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.  Here we see
+%that (b) achieves accuracy in the near-term that somewhat degrades over
+%the long-term, where accuracy will be less critical for receding horizon control.}
+%%% Note: would actually be nice to say something about
+%%
+%\end{figure*}
 
 
+%To illustrate the representation tradeoff offered by non-homogeneous time
+%intervals, we computed flows and queue volumes for a fixed signal control plan
+%derived for homogeneous \mbox{\DT[n] = 1s} (ground truth) using different
+%discretizations.
+%%
+%Figure (subfig:converg-a) shows the approximation of the ground truth using
+%homogeneous \DT[] = 2.5 and \DT[] = 5.0, and Figure (subfig:converg-b) using
+%non-homogeneous time intervals that linearly increases from 1s to 2.5s, i.e.,
+%$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.
+%%
+%As Figure (subfig:converg-a) shows, large time steps can be rough approximations
+%of the ground truth.
+%%
+%Non-homogeneous discretization (Figure (subfig:converg-b)) exploit this fact to
+%provide a good approximation in the initial time steps and progressively
+%decrease precision for points far in the future.
 
 
 
 \section{Traffic Control with MILP-encoded QTM}
 
-In this section, we remove the assumption that a valid control plan for all
-traffic lights is given and extend the LP
-(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:10}) to an Mixed-Integer LP (MILP)
-that also computes the optimal control plan.
+In this section, we show how to compute the optimal control plan by extending
+the LP (\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:10}) into an
+Mixed-Integer LP (MILP).
 %
 Formally, for all~$\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
 \{1,\dots,N\}$, the phase activation parameter~$\p{\tl}{k} \in \{0,1\}$ becomes
@@ -328,11 +375,13 @@ a free variable to be optimized.
 %
 In order to obtain a valid control plan, we enforce that one phase of traffic
 light \tl is always active at any interval~$n$~\eqref{c:onlyOnePhaseOn} and that
-phase changes happen sequentially~\eqref{c:seqPhases}, i.e., if phase~$k$ was
-active during interval~$n-1$ and has become inactive in interval~$n$, then
-phase~$k+1$ must be active in interval~$n$.
+phase changes happen sequentially~\eqref{c:seqPhases}
 %
-\eqref{c:seqPhases} assumes that $k+1$ equals 1 if $k = \Pn{}$.
+%, i.e., if phase~$k$ was
+%active during interval~$n-1$ and has become inactive in interval~$n$, then
+%phase~$k+1$ must be active in interval~$n$.
+%
+(\eqref{c:seqPhases} assumes that $k+1$ equals 1 if $k = \Pn{}$).
 %
 %% TODO: We need to understand this issue better:
 % \toIain{I removed the constraint $\p{\ell}{k} + \p{\ell}{k+1} \le 1$ because it
@@ -345,11 +394,44 @@ phase~$k+1$ must be active in interval~$n$.
 %
 \begin{cAlign}
 %
-\sum\limits_{k=1}^{\Pn} \p{\ell}{k} &= 1\tagconstrain{c:onlyOnePhaseOn}\\
+\textstyle \sum_{k=1}^{\Pn} \p{\ell}{k} &= 1\tagconstrain{c:onlyOnePhaseOn}\\
 %
 \p[n-1]{\ell}{k} &\le \p{\ell}{k} + \p{\ell}{k+1}\tagconstrain{c:seqPhases}
 %
 \end{cAlign}
+
+
+%\begin{figure*}[t!]
+%\centering
+%%  trim={<left> <lower> <right> <upper>}
+%\subfigure[]{
+%\label{fig:pd:inc}
+%\includegraphics[width=0.45\textwidth]{phase_plot_fig_1.pdf}}
+%\subfigure[]{
+%\label{fig:pd:inactive}
+%\includegraphics[width=0.45\textwidth]{phase_plot_fig_2.pdf}}
+%\subfigure[]{
+%\label{fig:pd:resetAndLB}
+%\includegraphics[width=0.45\textwidth]{phase_plot_fig_3.pdf}}
+%\subfigure[]{
+%\label{fig:cycleTimeC}
+%\includegraphics[width=0.45\textwidth]{phase_plot_fig_4.pdf}}
+%%
+%\caption{Visualization of constraints (\ref{c:pd:incUB}--\ref{c:cycleUB})
+%for a traffic light \tl as a function of time.
+%%
+%(a--c) present, pairwise, the constraints (\ref{c:pd:incUB}--\ref{c:minPhase})
+%for phase $k$ (\pd{\ell}{k} as the black line) and the activation variable
+%\p[n]{\ell}{k} in the small plot.
+%%
+%(d) presents the constraints for the cycle time of \tl (\ref{c:cycleLB} and
+%\ref{c:cycleUB}), where T.C.T. is the total cycle time and is the left hand side
+%of both constraints.
+%%
+%For this example, $\PTMIN{\ell}{k}=1$, $\PTMAX{\ell}{k}=3$, $\CTMIN{\ell}=7$, and
+%$\CTMAX{\ell}=8$.}
+%\label{fig:phase_plots}
+%\end{figure*}
 
 
 
@@ -381,11 +463,10 @@ We use~\PTMAX{\ell}{k} as our large constant since $\pd[n]{\ell}{k} \le
 Similarly, \cref{c:minPhase} ensures the minimum phase time of $k$ and is
 not enforced while $k$ is still active.
 %
-\Omit{
-\cref{fig:pd:inc,fig:pd:inactive,fig:pd:resetAndLB} present an example of how
-(\ref{c:pd:incUB}--\ref{c:minPhase}) work together as a function of the time $n$ 
-for $\pd[n]{\ell}{k}$; the domain constraint $0 \le \pd[n]{\ell}{k} \le
-\PTMAX{\ell}{k}$ for all $n \in \{1,\dots,\Nn\}$ is omitted for clarity.}
+%Figures (fig:pd:inc,fig:pd:inactive,fig:pd:resetAndLB) present an example of how
+%(\ref{c:pd:incUB}--\ref{c:minPhase}) work together as a function of the time $n$ 
+%for $\pd[n]{\ell}{k}$; the domain constraint $0 \le \pd[n]{\ell}{k} \le
+%\PTMAX{\ell}{k}$ for all $n \in \{1,\dots,\Nn\}$ is omitted for clarity.
 %
 %% FWT: I think the mathematical definition of \pd is redundant now.
 %\begin{equation}
@@ -421,20 +502,19 @@ for $\pd[n]{\ell}{k}$; the domain constraint $0 \le \pd[n]{\ell}{k} \le
 %
 \pd{\ell}{k} &\le \pd[n-1]{\ell}{k} + \PTMAX{\ell}{k} \p[n-1]{\ell}{k}
   \tagconstrain{c:pd:inactiveUB}\\
-%
-%% TODO understand this issue:  
-%  \fnremark{check the n-1 in \eqref{c:pd:inactiveUB}}\\
-%
-%
 \pd{\ell}{k} &\ge \pd[n-1]{\ell}{k} - \PTMAX{\ell}{k} \p{\ell}{k}
   \tagconstrain{c:pd:inactiveLB}\\
-%
+%\end{cAlign}
+%%
+%\begin{cAlign}
+%%
 \pd{\ell}{k} &\le \PTMAX{\ell}{k}(1 - \p{\ell}{k} + \p[n-1]{\ell}{k})
   \tagconstrain{c:pd:reset}\\
 %
 \pd{\ell}{k} &\ge \PTMIN{\ell}{k}(1 - \p{\ell}{k}) \tagconstrain{c:minPhase}
+%
 \end{cAlign}
-
+%
 
 
 Lastly, we constrain the sum of all the phase durations for light \tl to be
@@ -452,10 +532,8 @@ the correct elapse time of phase 1.
 Additionally, \eqref{c:cycleLB} is enforced right after the end of the each
 cycle, i.e., when its first phase is changed from inactive to active.
 %
-\Omit{
-The value \eqref{c:cycleLB} and \eqref{c:cycleUB} over time for a traffic light
-\tl is illustrated in \cref{fig:cycleTimeC}.
-}
+%%The value \eqref{c:cycleLB} and \eqref{c:cycleUB} over time for a traffic light
+%%\tl is illustrated in Figure (fig:cycleTimeC).
 %
 \begin{cAlign}
 %
@@ -466,20 +544,39 @@ The value \eqref{c:cycleLB} and \eqref{c:cycleUB} over time for a traffic light
 \tagconstrain{c:cycleUB}
 %
 \end{cAlign}
-The MILP that encodes the problem of finding the optimal traffic control plan in
-a QTM network is defined
-by~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cycleUB}).
-%\fnremark{Extend the conclusion of this section}
-
-
+%
+The MILP~(\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:cycleUB}) encodes
+the problem of finding the optimal traffic control plan in a QTM network without
+\authorHighlight{transit}.
 
 \paragraph{Transit Constraints}
-
-Transit crossing times and phase states at each traffic light are defined by a fixed schedule $S_{\ell}(k,n) \in [0,1]$ for each phase $k \in \Pset_\tl$ and $n \in \{1,\dots,\Nn\}$. During time intervals where the transit is crossing at light $\ell$ (where $S_{\ell}(k,n)=1$ for at least one $k \in \Pset_\tl$, we interrupt the optimized control by suspending constraints (\ref{c:pd:incUB}--\ref{c:minPhase}) and use \eqref{c:forceTransit} to force the state of $\p[n]{\ell}{k}$ to be green or red as defined by $S_{\ell}(k,n)$ . We hold $\pd{\ell}{k}$ constant through the transit crossing with \eqref{c:pd:holdTransit} until (\ref{c:pd:incUB}--\ref{c:minPhase}) are resumed at the end of the corssing.
+%
+To incorporate a fixed-schedule transit in our model, we post-process our MILP
+model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ s.t.\ the transit
+uses phase $k$ of \tl at time $n$.
+%
+Formally, given a transit schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$
+represents that a transit is using phase $k$ of \tl at time $n$, we replace
+(\ref{c:pd:incUB}--\ref{c:minPhase}) by \eqref{c:forceTransit} and
+\eqref{c:pd:holdTransit} when $\sum_{k} S_{\tl}(k,n) > 0$.
+%
 \begin{cAlign}
 %
 \p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
 %
 \pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
+%
 \end{cAlign}
- 
+
+
+%To incorporate a fixed-schedule transit in our model, we enforce phase $k$ used
+%by the transit is always on when the transit crosses at light \tl, i.e., we add
+%the constraint $\p[n]{\ell}{k} = 1$ for all $n$ s.t.\ the transit uses phase $k$
+%of \tl at time $n$.
+%%
+%%
+%We also hold $\pd{\ell}{k}$ constant while the transit crosses \tl, i.e., 
+%$\pd{\ell}{k} = \pd[n-1]{\ell}{k}$.
+%%
+%Since the transit schedule is fixed and known a priori, adding these extra
+%constraints are done in a preprocessing phase before the MILP is solved.

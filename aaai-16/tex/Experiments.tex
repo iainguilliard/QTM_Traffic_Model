@@ -1,51 +1,43 @@
-% Moved transit constraints to Model.tex  -Scott
-
 \section{Empirical Evaluation}
   
 In this section we compare the solutions for traffic networks modeled as a QTM
-before and after the introduction of a public transit network, and with both fixed control
-and optimized control, w.r.t. to two evaluation criteria:
-the quality of solutions and the amount of delay introduced by the transit.
+before and after the introduction of a public transit network.
 %
+We consider both fixed control, i.e., a non-adaptive control plan, and optimal
+adaptive control obtained by solving the
+MILP~(\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:pd:holdTransit}).
 %
-% TODO \fnremark{FWT: I don't think that optimal is the best word here since
-%we arbitrarily fixed a value of \DT[]. Also, there is the technical problem that
-%Gurobi might not have found the true optimal.}
+The obtained solutions are simulated using the
+LP~(\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:10}) and their total
+travel time and observed delay distribution are used as comparison metrics.
 %
-Specifically, we compare the quality of solutions based on the total travel time and we also
-consider the third quartile and maximum of the observed delay distribution.
+Our hypothesis is that the optimal adaptive approach is able to mitigate the
+impact of introducing a public transit w.r.t.\ both metrics.
 %
-%% TODO(fwt): maybe define what we mean by optimal here, for instance
-%
-%For our experiments, we consider as optimal solution, the MILP solution of a
-%QTM using small enough homogeneous \DT[] with unlimited computational
-%resources.
-%
-Our hypothesis is that that by applying optimized signal control to the traffic,
-we are able to nullify the impact of introducing a public transit, and with a quality 
-and delay comparable to that before the transit was introduced.
-%
-In the remainder of this section, we present the traffic networks considered in
-the experiments, our methodology, and the results.
+In the remainder of this section, we present how we compute fixed control plans
+using CTM, the traffic networks considered in the experiments, our methodology,
+and the results.
+
+
+
 
 
 
 \subsection{Networks}
 
-
-
 \begin{figure}[t!]
 \centering
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
-\label{subfig:network1}
+\label{fig:net:arterial}
 \includegraphics[width=0.47\textwidth]{network1.pdf}}
 \subfigure[]{
-\label{subfig:network2}
+\label{fig:net:grid}
 \includegraphics[width=0.40\textwidth]{network2.pdf}}
 \caption{Networks used to evaluate the performance:
   (a) an arterial road with parallel light rail;
-  (b) an urban grid with crisscrossing streets and light rail.
+  (b) an urban grid with crisscrossing streets and light
+  rail.
 %
 %(d) Demand profile of the queues marked as \qLowTraf,
   %\qHighTraf, and \qVarTraf for our experiments.
@@ -55,34 +47,39 @@ the experiments, our methodology, and the results.
 
 
 
-We consider two networks of differing complexity (\cref{fig:networks}): an
-arterial crossed by four side streets; and a 3-by-3 grid.
+We consider two networks of differing complexity: an arterial crossed by four
+side streets (\cref{fig:net:arterial}) and a 3-by-3 grid (\cref{fig:net:grid}).
 %
-The queues receiving cars from outside of the network are marked in
-\cref{fig:networks} and we refer to them as input queues.
+\authorHighlight{The queues receiving cars from outside of the network are
+marked in \cref{fig:networks} and we refer to them as input queues.}\toIain{Make
+sure to mark the new figure}
 %
 The maximum queue capacity~(\QMAX{i}) is 60 vehicles for non-input queues and
 infinity for input queues to prevent interruption of the input demand due to
 spill back from the stop line. 
 %
-The traversal time of each queue $i$~(\QDELAY{i}) is set at 30s, except for the output queues
-on Network 2 where the traversal time is 10s.
+The traversal time of each queue $i$~(\QDELAY{i}) is set at 30s,
+\authorHighlight{except for the output queues on the grid where the traversal
+time is 10s.}\toIain{Is this still true?}
 %
-For each street, flows are defined from the head of each queue $i$ into the tail of the next
-queue $j$;
+For each street, flows are defined from the head of each queue $i$ into the tail
+of the next queue $j$;
 %
 there is no turning traffic ($\FTURN{i}{j}=1$), and the maximum flow rate
 between queues, \FMAX{i}{j}, is set at 0.5 vehicles/s.
 %
-All traffic lights have two phases, north-south and east-west, %
-and for all traffic light \tl and phase $k$, \PTMIN{\tl}{k}  is 10s, \PTMAX{\tl}{k} is 30s, 
+All traffic lights have two phases, north-south and east-west, and for all
+traffic light \tl and phase $k$, \PTMIN{\tl}{k} is 10s, \PTMAX{\tl}{k} is 30s,
 \CTMIN{\tl} is 20s, and \CTMAX{\tl} is 60s.
-%
+
 \subsection{Fixed Phase Control Constraints}
 
-We implement a fixed phase traffic light controller by replacing $\pd[n]{\ell}{k} \le
-\PTMAX{\ell}{k}$  and \ref{c:minPhase}, with fixed duration constraints employing the \textit{big-M}
-method to apply the constraints only while the phase is inactive. The optimizer is free to choose a value for $d^{fixed}_{\ell,k}$ within the bounds $\PTMIN{\ell}{k} \le d^{fixed}_{\ell,k} \le \PTMAX{\ell}{k}$.
+We implement a fixed phase traffic light controller by replacing
+$\pd[n]{\ell}{k} \le \PTMAX{\ell}{k}$  and \ref{c:minPhase}, with fixed duration
+constraints employing the \textit{big-M} method to apply the constraints only
+while the phase is inactive. The optimizer is free to choose a value for
+$d^{fixed}_{\ell,k}$ within the bounds $\PTMIN{\ell}{k} \le d^{fixed}_{\ell,k}
+\le \PTMAX{\ell}{k}$.
 
 \begin{cAlign}
 \pd{\ell}{k} &\le d^{fixed}_{\ell,k} + \PTMAX{\ell}{k} \p[n]{\ell}{k}
@@ -92,22 +89,26 @@ method to apply the constraints only while the phase is inactive. The optimizer 
   \tagconstrain{c:pd:fixedLB}
 \end{cAlign}
  
-Constraints \ref{c:pd:fixedLB} and \ref{c:pd:fixedUB} are only applied for time intervals $n$ where $\tn[n] > \CTMAX{\tl}$, to allow the controller to select an optimized phase offset at the start of each plan.
+Constraints \ref{c:pd:fixedLB} and \ref{c:pd:fixedUB} are only applied for time
+intervals $n$ where $\tn[n] > \CTMAX{\tl}$, to allow the controller to select an
+optimized phase offset at the start of each plan.
 %TODO talk about how the fixed phase times fit around transit crossings.
 
 
 \subsection{Experimental Methodology}
 
-
-Each network is evaluated at increasing demand levels up to the level where for each queue $i$, 
-$\inq{i}$ becomes saturated at $\QIN{i}{n}$.
-
-For each demand level, traffic is injected into the network
-in bursts over 600s, and \TMAX is set sufficiently high to allow all traffic to
-clear the network, typically in the range 1000s to 1500s.
-% \TODO {check horizons}
-The pattern of the bursts and the value of 
-$\QIN{i}{n}$ is marked on each input queue in \cref{fig:networks}.
+Each network is evaluated at increasing demand levels up to the level where for
+each queue $i$, $\inq{i}$ becomes saturated at $\QIN{i}{n}$.
+%
+\fnremark{FWT: we need to clarify that both approaches have access to the whole
+``future'', i.e., perfect information about the incoming cars.}
+%
+For each demand level, traffic is injected into the network in bursts over 600s,
+and \TMAX is set sufficiently high to allow all traffic to clear the network,
+typically in the range 1000s to 1500s.\toIain{check horizons}
+%
+The pattern of the bursts and the value of $\QIN{i}{n}$ is marked on each input
+queue in \cref{fig:networks}.\toIain{Add the new picture}
 %
 By clearing the network, we can easily measure the total travel time for all the
 traffic as the area between the cumulative arrival and departure curves measured
@@ -119,19 +120,32 @@ at the boundaries of the network.
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
 
-We evaluate each network using both fixed control and optimized control,
-and both before the introduction of the transit and after, using a \DT[] of
-10s.
+We evaluate each network using the fixed control and the optimized control in
+two scenarios: before the introduction of the introduction of the transit and
+after its introduction. In both cases, we use \DT[] equal to 10s for all $n$.
 
-For all our experiments, we used Gurobi\textsuperscript{TM} as the MILP solver running on a heterogenous cluster
- with 2.8GHz AMD Opteron\textsuperscript{TM}~4184 and 3.1GHz AMD Opteron\textsuperscript{TM}~4334 processor nodes with 12 cores, and 2Ghz Intel\textsuperscript{TM} Zeon E5405 nodes with 4 cores. We use 4 cores for each run of the solver.
+For all experiments, we used Gurobi as the MILP solver running on a
+heterogeneous cluster \authorHighlight{with 2.8GHz AMD Opteron~4184, 3.1GHz AMD
+Opteron~4334 (12 cores each), and 2Ghz Intel Zeon E5405 (4 cores). We use 4
+cores for each run of the solver.}\footnote{\authorHighlight{FWT: we can easily
+cut this description in case we're 1 or 2 lines short.}}
 
-For Network 1, we limit the MIP gap accuracy to 0.02\% and for Network 2 we limit the MIP gap accuracy to 0.1\%.
+We limit the MIP gap accuracy to 0.02\% and 0.1\% for the arterial and grid
+networks, respectively.
 %
-Due to Gurobi's stochastic strategies, runtimes for the solver can vary widely, and we do not set a time limit. For the optimized controller, solutions are typlically found in real time, while fixed control plans can take significantly longer. However, typically a fixed control plan is calculated once based on historical averages and then applied to the network over many months or years.
+Due to Gurobi's stochastic strategies, runtimes for the solver can vary,
+and we do not set a time limit.
+%
+The optimal adaptive solution are typically found in real time, while fixed
+control plans can take significantly longer; however, once the fixed control
+solution is found, it can be deployed indefinitely.\toIain{Do you have the
+cputimes by any chance in your log files so that we could say what is the
+average?}
+
+
+
 
 \subsection{Results}
-
 
 \begin{figure*}[t!]
 \centering
@@ -156,7 +170,7 @@ Plots in the $i$-th row correspond to the results for the $i$-th network in
 at smaller \Nn than Homogeneous (H).}
 %control and achieves }
 %smaller third quartile and maximum per-car delay for the same \Nn.}
-\label{fig:results}
+\label{fig:results1}
 \end{figure*}
 
 \begin{figure*}[t!]
@@ -182,7 +196,7 @@ Plots in the $i$-th row correspond to the results for the $i$-th network in
 at smaller \Nn than Homogeneous (H).}
 %control and achieves }
 %smaller third quartile and maximum per-car delay for the same \Nn.}
-\label{fig:results}
+\label{fig:results2}
 \end{figure*}
 
 \begin{figure*}[t!]
@@ -208,7 +222,7 @@ Plots in the $i$-th row correspond to the results for the $i$-th network in
 at smaller \Nn than Homogeneous (H).}
 %control and achieves }
 %smaller third quartile and maximum per-car delay for the same \Nn.}
-\label{fig:results}
+\label{fig:results3}
 \end{figure*}
 
 
@@ -217,10 +231,10 @@ at smaller \Nn than Homogeneous (H).}
 \centering
 %  trim={<left> <lower> <right> <upper>}
 \subfigure[]{
-\label{subfig:travel_time_6}
+\label{subfig:travel_time_12}
 \includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_t1_reduction.pdf}}
 \subfigure[]{
-\label{subfig:delay_6}
+\label{subfig:delay_12}
 \includegraphics[keepaspectratio,height=0.3225\textwidth]{network2_t2_reduction.pdf}}
 \caption{Increase in the total travel time w.r.t.~the optimal solution as a
 function of \Nn (a,c,e) and distribution of the total delay of
@@ -236,7 +250,7 @@ Plots in the $i$-th row correspond to the results for the $i$-th network in
 at smaller \Nn than Homogeneous (H).}
 %control and achieves }
 %smaller third quartile and maximum per-car delay for the same \Nn.}
-\label{fig:results}
+\label{fig:results4}
 \end{figure*}
 
 
@@ -292,11 +306,11 @@ maximum delay.
 
 
 To further illustrate the differences between homogeneous and non-homogeneous
-discretizations, \cref{fig:cumu} shows the cumulative arrival and departure
+discretizations, Figure (fig:cumu) shows the cumulative arrival and departure
 curves and the how delay evolves over time for $q_1$ of network 2
-(\cref{subfig:network2}).
+(\cref{fig:net:grid}).
 %
-In \cref{subfig:cumu1}, the comparison is done when non-homogeneous $\DT[]$
+In Figure (subfig:cumu1), the comparison is done when non-homogeneous $\DT[]$
 first converges (i.e., point I in \cref{subfig:travel_time_6}) and for this
 value of \Nn, the major frame size in seconds of the non-homogeneous approach is
 19.125s longer than the homogeneous one.
@@ -309,6 +323,6 @@ The shorter major frame of the homogeneous discretization does not allow the
 solver to adapt this far in advance and its delay observed after 55s is much
 larger than the non-homogeneous one.
 %
-Once the homogeneous $\DT[]$ has converged (\cref{subfig:cumu2}), it is also
+Once the homogeneous $\DT[]$ has converged (Figure (cumu)), it is also
 able to anticipate the increased demand and adapt well in advance and both
-approaches generate solutions close to optimum (\cref{subfig:cumu3}).
+approaches generate solutions close to optimum (Figure (cumu)).

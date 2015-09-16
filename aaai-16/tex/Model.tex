@@ -264,8 +264,8 @@ principle for queue $i$ where $\Vol_i(\tn[n-1]-\QDELAY{i},\tn[n]-\QDELAY{i})$ is
 the volume of cars that reached the stop line during \DT[n].
 %
 Notice that \eqref{c:qUpdate} represents a non-first order Markovian update
-because the update considers the previous $n - T^{-1}(t_{n-1}-\QDELAY{i})$ time
-steps.
+because the update considers the previous $n - T^{-1}(t_{n}-\QDELAY{i})$ time
+steps, i.e., the number of $\DT[n]$ spanned in \QDELAY[n].
 %
 To ensure that the total volume of traffic traversing $i$ (i.e.,
 $\Vol_i(\tn[n] - \QDELAY{i}, \tn[n])$) and waiting at the stop line does not

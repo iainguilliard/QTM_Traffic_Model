@@ -107,23 +107,20 @@ optimized phase offset at the start of each plan.
 
 \subsection{Experimental Methodology}
 
-Each network is evaluated at increasing demand levels up to the level where for $\inq{i}$
+Each network is evaluated at increasing demand levels up to the point where $\inq{i}$
 becomes saturated.
 %
 \fnremark{FWT: we need to clarify that both approaches have access to the whole
 ``future'', i.e., perfect information about the incoming cars.}
 %
-For each demand level, traffic is injected into the network in bursts over 600s,
-using the weight functions in \cref{fig:demand_profiles}, where 
-$\QIN{i}{n} = \mathrm{max}(\alpha \beta \mathrm{w}_i(\tn[n]),\beta)$, and $\mathrm{w}_i$
-is the weight function in \cref{fig:demand_profiles} corresponding to the letter label in 
-\cref{fig:networks}, $\beta$ is the saturation flow rate in vehicles per \DT, and $\alpha \in [0,2]$, is the
-the weight for the demand level being evaluated.
-and \TMAX is set sufficiently high to allow all traffic to clear the network,
+For each demand level, traffic is injected into the network in bursts over 600s.
+By setting each 
+$\QIN{i}{n} = \mathrm{max}(\alpha \beta \mathrm{w}_i(\tn[n]),\beta)$, where $\mathrm{w}_i$
+is a weight function in \cref{fig:demand_profiles} corresponding to the letter label in 
+\cref{fig:networks}, $\beta$ is the maximum inflow rate in vehicles per \DT, as annotated at the queue input in \cref{fig:networks}, and $\alpha \in [0,2]$, is the
+the scaling factor for the demand level being evaluated.
+\TMAX is set sufficiently high to allow all traffic to clear the network,
 typically in the range 1000s to 1500s.\toIain{check horizons}
-%
-The pattern of the bursts and the value of $\QIN{i}{n}$ is marked on each input
-queue in \cref{fig:networks}.\toIain{Add the new picture}
 %
 By clearing the network, we can easily measure the total travel time for all the
 traffic as the area between the cumulative arrival and departure curves measured
@@ -135,9 +132,9 @@ at the boundaries of the network.
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
 
-We evaluate each network using the fixed control and the optimized control in
-two scenarios: before the introduction of the introduction of the transit and
-after its introduction. In both cases, we use \DT[] equal to 10s for all $n$.
+We evaluate each network using fixed time control and the optimized control in
+two scenarios: before the introduction of the transit and
+after. In both cases, we use \DT[] equal to 10s for all $n$.
 
 For all experiments, we used Gurobi as the MILP solver running on a
 heterogeneous cluster \authorHighlight{with 2.8GHz AMD Opteron~4184, 3.1GHz AMD

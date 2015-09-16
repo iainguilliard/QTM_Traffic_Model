@@ -7,11 +7,11 @@
         "line_width" : 1,
         "head_width" : 5,
         "tail_width" : 2,
-        "line_color" : "0.45",
-        "edge_color" : "0.45",
+        "line_color" : "0.2",
+        "edge_color" : "0.2",
         "light_color" : "y",
         "r_light" : 21,
-        "text_color" : "0.45",
+        "text_color" : "0.2",
         "font_size" : 20,
         "label_space": 30, "d_edges": 7, "lx": 11, "ly" : 5
     },
@@ -40,6 +40,10 @@
         {"id": 20, "p": [160,-210]},
         {"id": 21, "p": [-410,-170]}
         ],
+
+      "Transits": [
+              {"id": "West-East", "links": [7,8,9,10,11]}
+      ],
 
      "Queues": [
         {"edge": [7,8], "Q_DELAY": 3, "Q_IN": 1, "Q_OUT": 0,  "Q_P": [0,0], "Q_MAX": 20,  "q0": 0, "q0_in": 2, "q0_out": 0, "text_color": "k", "font_weight": "bold", "outline": "w", "font_size": 24, "edge_color": "w", "line_color": "k", "line_width" : 1, "head_width" : 11, "tail_width" : 6  },

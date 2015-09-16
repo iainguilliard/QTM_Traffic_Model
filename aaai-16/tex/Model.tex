@@ -46,8 +46,8 @@ at time $n$.
 
 
 
-A \textbf{traffic light} $\tl \in \Lset$ is defined as the tuple~$(\CTMIN{\tl},
-\CTMAX{\tl}, \Pset_\tl, \VecPTMIN{\tl}, \VecPTMAX{\tl})$, where:
+A \textbf{traffic light} $\tl \in \Lset$ is defined as the tuple $(\CTMIN{\tl},
+\CTMAX{\tl},$ $\Pset_\tl, \VecPTMIN{\tl}, \VecPTMAX{\tl})$, where:
 %
 \begin{itemize*}[label={}]
 %
@@ -92,16 +92,23 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 \end{itemize*}
 
 
-Differently than the CTM \cite{daganzo1994cell,lin2004enhanced}, the
-\authorHighlight{QTM does not assume that $\DT[n] = \QDELAY{i}$ for all $n$,
-that is, the QTM can represent non-homogeneous time intervals.
+Differently than the CTM \cite{daganzo1994cell,lin2004enhanced}, the QTM does
+not assume that $\DT[n] = \QDELAY{i}$ for all $n$ and $i$.
 %
-%%(\cref{subfig:example}).
+\authorHighlight{Instead, QTM assumes that \QDELAY{i} is divisible by every
+different value of $\DT[n]$.
 %
-The only requirement over \DT[n] is that no traffic light maximum phase time is
-smaller than any \DT[n] since phase changes occur only between time intervals;
-formally, $\DT[n] \le \min_{\tl \in \Lset, k \in \Pset_\tl} \PTMAX{\tl}{k}$ for
-all $n \in \{1,\dots,\Nn\}$.}
+This allow us to have queues with different travel time at free flow speed
+resulting in a non-first order Markovian model as explained in next section.}
+
+%that is, the QTM can represent non-homogeneous time intervals.
+%%
+%%%(\cref{subfig:example}).
+%%
+%The only requirement over \DT[n] is that no traffic light maximum phase time is
+%smaller than any \DT[n] since phase changes occur only between time intervals;
+%formally, $\DT[n] \le \min_{\tl \in \Lset, k \in \Pset_\tl} \PTMAX{\tl}{k}$ for
+%all $n \in \{1,\dots,\Nn\}$.
 %
 % TODO \toIain{Maybe bring forward a small network and any other figure that
 % would help illustrate the model and comment about it.}
@@ -110,8 +117,8 @@ all $n \in \{1,\dots,\Nn\}$.}
 
 \subsection{Computing Traffic Flows with QTM}
 
-In this section, we present how to compute traffic flows using QTM and
-\authorHighlight{non-homogeneous time intervals \DT[]}.
+In this section, we present how to compute traffic flows using QTM.
+%and \authorHighlight{non-homogeneous time intervals \DT[]}.
 %
 We assume for the remainder of this section that a \emph{valid} control plan for
 all traffic lights is fixed and given as parameter;
@@ -129,16 +136,16 @@ $j$:
 %
 \begin{itemize*}[label={}]
 %
-\item $\q{i} \in [0,\QMAX{i}]$: traffic volume waiting in the stop line of queue
+\item $\q{i} \in [0,\QMAX{i}]$, traffic volume waiting in the stop line of queue
   $i$ at the beginning of interval~$n$;
 %
-\item $\inq{i} \in [0,\QIN{i}{n}]$: inflow to the network via queue $i$ during
+\item $\inq{i} \in [0,\QIN{i}{n}]$, inflow to the network via queue $i$ during
   interval $n$;
 %
-\item $\outq{i} \in [0,\QOUT{i}]$: outflow from the network via queue $i$ during
+\item $\outq{i} \in [0,\QOUT{i}]$, outflow from the network via queue $i$ during
   interval $n$; and
 %
-\item $\f{i}{j} \in [0,\FMAX{i}{j}]$: flow from queue $i$ into queue $j$ during
+\item $\f{i}{j} \in [0,\FMAX{i}{j}]$, flow from queue $i$ into queue $j$ during
   interval $n$.
 %
 \end{itemize*}
@@ -198,7 +205,7 @@ $\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 
 %% TODO(fwt): improve the beginning of this paragraph
 
-To simplify the presentation of remainder of the LP, we define the helper
+To simplify the presentation of the remainder of the LP, we define the helper
 variables \qin{i}~\eqref{def:qin} and \qout{i}~\eqref{def:qout} to,
 respectively, represent the volume of traffic to enter and leave queue $i$
 during interval~$n$, and  $\tn[n] = \sum_{x=1}^{n} \DT[x]$ to represent the time
@@ -223,41 +230,37 @@ elapsed since the beginning of the problem until the end of interval \DT[n].
 
 
 % Introduce the idea of V_i
-\authorHighlight{In order to account for the misalignment of the different \DT[]
-and \QDELAY{i}, we need to find the volume of traffic that entered queue $i$
-between two arbitrary points in time $x$ and $y$ ($x \in [0,\TMAX]$, $y \in
-[0,\TMAX]$, and $x < y$), i.e., $x$ and $y$ might not coincide with any $t_n$
-for $n \in \{1,\dots,N\}$.
+In order to account for the case where \QDELAY{i} is larger than \DT[], we need to
+find the volume of traffic that entered queue $i$ between two points
+in time $x$ and $y$.
 %
 This volume of traffic, denoted as $\Vol_i(x,y)$, is obtained by integrating
-\qin{i} over $[x,y]$ and is defined in~\eqref{eq:vol} where $m$ and $w$ are the
-index of the time intervals s.t. $\tn[m] \le x < \tn[m+1]$ and $\tn[w] \le y <
-\tn[w+1]$.
+\qin{i} over $[x,y]$ and is defined in~\eqref{eq:vol} where $T^{-1}(x)$ is the
+function that returns $j \in \{0,\dots,N\}$ such that $x$ equals $t_j$ (i.e.,
+the $j$-th time step).
+%
+Since we assumed that \QDELAY{i} is divisible by the different \QDELAY{i},
+$T^{-1}(x)$ is always well-defined, i.e., there always exists $j$ such that $x$
+equals $t_j$.
 %
 Because the QTM dynamics are \emph{piecewise linear}, \qin{i} is a step function
 w.r.t.~time and this integral reduces to the sum of \qin{i} over the intervals
-contained in $[x,y]$ and the appropriate fraction of \qin[m]{i} and \qin[w]{i}
-representing the misaligned beginning and end of $[x,y]$.
+between $T^{-1}(x)$ and $T^{-1}(y)$.
 %
-{\small
-\begin{equation}
-\Vol_{i}(x,y)\! =\!
-  (\tn[m+1]\!-\! x) \frac{\qin[m]{i}}{\DT[m]}\!+\!\left(
-  \sum_{k=m+1}^{w-1} \qin[k]{i} \right)\!+\! (y\!-\! \tn[w])
-  \frac{\qin[w]{i}}{\DT[w]}
-  \label{eq:vol}
-\end{equation}}
-}
+\begin{equation} \label{eq:vol}
+%
+\Vol_{i}(x,y) = \textstyle \sum_{k=T^{-1}(x)}^{T^{-1}(y)} \qin[k]{i}
+%
+\end{equation}
 
 
 Using these helper variables, \eqref{c:qUpdate} represents the flow conservation
 principle for queue $i$ where $\Vol_i(\tn[n-1]-\QDELAY{i},\tn[n]-\QDELAY{i})$ is
 the volume of cars that reached the stop line during \DT[n].
 %
-Since \vecDT and \QDELAY{i} for all queues are known a priori, the indexes $m$
-and $w$ used by $V_i$ can be pre-computed in order to encode \eqref{eq:vol};
-moreover, \eqref{c:qUpdate} represents a non-first order Markovian update
-because the update considers the previous $w-m$ time steps.
+Notice that \eqref{c:qUpdate} represents a non-first order Markovian update
+because the update considers the previous $n - T^{-1}(t_{n-1}-\QDELAY{i})$ time
+steps.
 %
 To ensure that the total volume of traffic traversing $i$ (i.e.,
 $\Vol_i(\tn[n] - \QDELAY{i}, \tn[n])$) and waiting at the stop line does not

@@ -1,6 +1,27 @@
 \section{The Queue Transmission Model (QTM)}
 
 
+\begin{figure}[t]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:overlay}
+\includegraphics[width=0.45\textwidth,trim={1.3cm 1.1cm 3cm 0.5cm},clip]{map_overlay.pdf}}
+\subfigure[]{
+\label{subfig:example}
+%\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{map_example.png}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{pw_queues.pdf}
+}
+% NOTE: Reviewers like to skim a paper by reading captions so I intentionally
+\caption{(a) Example of a real traffic network modeled using the
+  QTM. (b) A preview of different QTM model parameters as a function
+  of \emph{non-homogeneous} discretized time intervals indexed by $n$.
+  \authorHighlight{FWT: this figure is not being referenced yet}.}
+\label{fig:qtm}
+%
+\end{figure}
+
+
 %% TODO(fwt): We need to say that we handle expected number of cars instead of
 %% physical cars, so its fine to have fractions of cars.
 

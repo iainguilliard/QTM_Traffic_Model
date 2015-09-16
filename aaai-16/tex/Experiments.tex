@@ -3,7 +3,7 @@
 In this section we compare the solutions for traffic networks modeled as a QTM
 before and after the introduction of a light rail.
 %
-We consider both fixed control, i.e., a non-adaptive control plan, and optimized
+We consider both fixed-time control, i.e., a non-adaptive control plan, and optimized
 adaptive control obtained by solving the
 MILP~(\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:pd:holdTransit}).
 %
@@ -14,7 +14,7 @@ travel time and observed delay distribution are used as comparison metrics.
 Our hypothesis is that the optimized adaptive approach is able to mitigate the
 impact of introducing light rail w.r.t.\ both metrics.
 %
-In the remainder of this section, we present how we compute fixed control plans
+In the remainder of this section, we present how we compute fixed-time control plans
 using CTM, the traffic networks considered in the experiments, our methodology,
 and the results.
 
@@ -71,9 +71,11 @@ All traffic lights have two phases, north-south and east-west, and for all
 traffic light \tl and phase $k$, \PTMIN{\tl}{k} is 10s, \PTMAX{\tl}{k} is 30s,
 \CTMIN{\tl} is 20s, and \CTMAX{\tl} is 60s.
 
-\subsection{Fixed Phase Control Constraints}
 
-We implement a fixed phase traffic light controller by replacing
+
+\subsection{Fixed-Time Control Constraints}
+
+We implement a fixed-time traffic light controller by replacing
 $\pd[n]{\ell}{k} \le \PTMAX{\ell}{k}$  and \ref{c:minPhase}, with fixed duration
 constraints employing the \textit{big-M} method to apply the constraints only
 while the phase is inactive. The optimizer is free to choose a value for
@@ -119,7 +121,7 @@ at the boundaries of the network.
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
 
-We evaluate each network using the fixed control and the optimized adaptive
+We evaluate each network using the fixed-time and the optimized adaptive
 control in two scenarios: before the introduction of the introduction of light
 rail and after its introduction. In both cases, we use \DT[] equal to 10s for
 all $n$.
@@ -136,8 +138,8 @@ networks, respectively.
 Due to Gurobi's stochastic strategies, runtimes for the solver can vary,
 and we do not set a time limit.
 %
-The optimized adaptive solution are typically found in real time, while fixed
-control plans can take significantly longer; however, once the fixed control
+The optimized adaptive solution are typically found in real time, while
+fixed-time plans can take significantly longer; however, once the fixed-time
 solution is found, it can be deployed indefinitely.\toIain{Do you have the
 cputimes by any chance in your log files so that we could say what is the
 average?}
@@ -175,17 +177,17 @@ red square in the box plots.}
 %queue of the network.
 %
 \cref{fig:arterial:delayCurve,fig:grid:delayCurve} show, for each network, the
-average delay per vehicle as a function of demand for both fixed and adaptive
+average delay per vehicle as a function of demand for both fixed-time and adaptive
 control approached in three scenarios: before the light rail and after the
 installation of a light rail using schedules 1 and 2.
 %
 As we hypothesized, optimized adaptive control is able to mitigate the impact of
 the introduction of light rail and it marginally increases the average delay
-when compared with the average delay produced by fixed phase controller
+when compared with the average delay produced by fixed-time controller
 \textbf{before} the light rail.
 %
 Moreover, as shown in \cref{fig:arterial:boxplot,fig:grid:boxplot}, the optimized
-adaptive controller also produces better quality policies than the fixed phased
+adaptive controller also produces better quality policies than the fixed-time
 controller, i.e., policies with smaller median, third quartile, and maximum
 delay.
 %
@@ -233,16 +235,16 @@ rail.
 %
 For the three combinations of before and after policies presented,
 %
-%(we omit the case of using optimized adaptive before the light rail and fixed
-%phase after the light rail),
+%(we omit the case of using optimized adaptive before the light rail and
+%fixed-time after the light rail),
 %
-we can see that, while keeping the fixed phase controller requires from 25\% to
+we can see that, while keeping the fixed-time controller requires from 25\% to
 45\% of the drives to switch to light rail in order to obtain the same average
 delay as before its installation, the optimized adaptive approach requires only from
 2.5\% to 10\% of the drivers to switch when already using optimized adaptive
 control \textbf{before} the light rail.
 %
-When compared fixed phase before the light rail and optimized adaptive after, the
+When compared fixed-time before the light rail and optimized adaptive after, the
 average delay stays the same if only the 2\% and 5\% of the drives switch to the
 light rail when considering first schedule in the arterial and grid networks,
 respectively;

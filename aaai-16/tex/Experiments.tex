@@ -176,14 +176,14 @@ cut this description in case we're 1 or 2 lines short.}}
 We limit the MIP gap accuracy to 0.02\% and 0.1\% for the arterial and grid
 networks, respectively.
 %
-Due to Gurobi's stochastic strategies, runtimes for the solver can vary,
-and we do not set a time limit.
+Due to Gurobi's stochastic strategies, runtimes for the solver can vary, and we
+do not set a time limit.
 %
-The optimized adaptive solution are typically found in real time, while
-fixed-time plans can take significantly longer; however, once the fixed-time
-solution is found, it can be deployed indefinitely.\toIain{Do you have the
-cputimes by any chance in your log files so that we could say what is the
-average?}
+The optimized adaptive solution are typically found in real time (less than
+200s), while fixed-time plans can take significantly longer (on average 4000s
+for a 1000s horizon); however, once the fixed-time solution is found, it can be
+deployed indefinitely.\toIain{Do you have the cputimes by any chance in your log
+files so that we could say what is the average?}
 
 
 
@@ -233,11 +233,14 @@ double check this in the data?}
 (second column) networks for both light rail schedules (rows) in different
 scenarios (curves) of traffic control system before and after installation of
 light rail.
-%
+%%
 The x-axis is the percentage of cars that switching to the public transportation
 and the y-axis is the impact after the light rail is installed.
 %
-Negative impact represents increase in average delay.}
+Negative impact represents increase in average delay.
+%
+The vehicle demand for all plots (a-d) are mark as $\clubsuit$ in their
+respective plots in \cref{fig:delayCurveAndBoxplot}.}
 %
 \label{fig:impact} \end{figure*}
 

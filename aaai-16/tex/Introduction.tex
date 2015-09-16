@@ -1,66 +1,36 @@
 \section{Introduction}
 
-%{\bf Previous content:}
-%
-%This report describes a new model for optimised traffic signal
-%planning using a MILP formulation. Previously,
-%\trbcite{lin2004enhanced} describe a MILP formulation for optimised
-%traffic signal planning based on the Cell Transmission Model of
-%\trbcite{daganzo1995cell}. However a CTM based model is limited in
-%scalability by the requirement that each road way in the network must
-%be partitioned up into segments that take exactly $\DT[]=1$ to
-%traverse at the free flow speed. We get around this limitation by
-%using a queue based model that supports non-homogeneous time steps,
-%and we will show how we can exploit this property to scale a network
-%without significant increase in the number of variables or loss of
-%quality.
-%
-%{\bf Scott's suggested argument structure:}
-%
-%\remark{I say we drop the issue of many segments and simply criticize
-%  the CTM by saying that it is not easy to make non-homogeneous and
-%  that is what we need?  In general, the Intro probably has to push on
-%  the non-homogeneous motivation a little earlier and forcefully since
-%  we're claiming *this* is the reason for the paper, the QTM and
-%  ultimately our evaluation comparing homogeneous vs. non-homogeneous.
-%  We may have broader (not fully validated) motivations but we need a
-%  watertight argument and paper.}
-
 As urban traffic congestion is on the increase worldwide with
 estimated productivity losses in the hundreds of billions of dollars
 in the U.S. alone and immeasurable environmental
 impact~\cite{bazzan2013intro}, many cities are increasingly looking to
-inexpensive public transit options such as light rail in order to
-reduce the number of conventional traffic commuters.  Since light rail
-often operates at street-level and requires coordination with
-conventional traffic networks and signal control, a major concern in
-light rail installation is whether enough commuters will switch to it
-to offset the additional constraints it places on traffic signal
+inexpensive public transit options such as light rail in
+order to reduce the number of conventional traffic commuters.  Since
+light rail often operates at street-level and requires coordination
+with conventional traffic networks and signal control, a major concern
+in light rail installation is whether enough commuters will switch to
+it to offset the additional constraints it places on traffic signal
 control.  Unfortunately, many large cities still use some degree of
-\emph{fixed-time} control~\trbcitenum{el2013multiagent} rather than
-\emph{actuated} or \emph{adaptive} control methods such as
-SCATS~\trbcitenum{scats80} or SCOOT~\trbcitenum{scoot81}.  As we show
+\emph{fixed-time} control~\trbcitenum{el2013multiagent}.  As we show
 in this paper, conventional fixed-time control methods pose
 significant challenges for the integration of light rail even when
 their timings are optimized to synchronize with the light rail
 schedule.
 
 However, there is further opportunity to improve traffic signal
-control even beyond adaptive methods through the use of
-\emph{optimized} adaptive controllers as evidenced in a variety of
-approaches ranging from mixed integer (linear)
-programming~\trbcitenum{gartner1974optimization,gartner2002arterial,lo1998novel,he2011pamscod,lin2004enhanced,han2012link}
-to heuristic search~\trbcitenum{lo1999dynamic,he2010heuristic} to
-scheduling~\trbcitenum{smith2013surtrac} to reinforcement
-learning~\trbcitenum{el2013multiagent}.  To this end, we develop a
-linear programming model of traffic flow termed the {\it Queue
-  Transmission Model (QTM)} where traffic signals can be represented
-as discrete variables and optimized for adaptive control via Mixed
-Integer Linear Programming (MILP).  As we show in this paper, such
-controllers hold the promise of maximizing existing infrastructure
-capacity by finding optimized traffic signal control policies that are
-tightly integrated with light rail transit constraints to mitigate
-their impact on conventional traffic delays.
+control through the use of \emph{optimized adaptive} controllers based
+on mixed integer (linear)
+programming~\trbcitenum{gartner1974optimization,gartner2002arterial,lo1998novel,he2011pamscod,lin2004enhanced,han2012link}.
+To this end, we develop a linear programming model of traffic flow
+termed the {\it Queue Transmission Model (QTM)} where traffic signals
+can be represented as discrete variables, light rail schedules can be
+represented as traffic signal constraints, and Mixed Integer Linear
+Programming (MILP) can be used to optimize the traffic signals to
+minimize delay subject to the light rail constraints.  As we show in
+this paper, such controllers hold the promise of maximizing existing
+infrastructure capacity by finding optimized traffic signal control
+policies that are tightly integrated with light rail transit schedules
+to mitigate the impact of the latter on conventional traffic delays.
 
 Overall, our key results in this paper show that while there is a
 substantial impact of light rail on conventional vehicle traffic delay

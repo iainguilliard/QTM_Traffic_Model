@@ -15,8 +15,7 @@
 % NOTE: Reviewers like to skim a paper by reading captions so I intentionally
 \caption{(a) Example of a real traffic network modeled using the
   QTM. (b) A preview of different QTM model parameters as a function
-  of \emph{non-homogeneous} discretized time intervals indexed by $n$.
-  \authorHighlight{FWT: this figure is not being referenced yet}.}
+  of discretized time intervals.}
 \label{fig:qtm}
 %
 \end{figure}
@@ -25,8 +24,14 @@
 %% TODO(fwt): We need to say that we handle expected number of cars instead of
 %% physical cars, so its fine to have fractions of cars.
 
-A Queue Transmission Model (QTM) is the tuple $(\Qset, \Lset, \vecDT, \MatQIN)$,
-where \Qset and \Lset are, respectively, the set of queues and lights;
+To investigate the impact of light rail schedules on conventional
+traffic networks we need a model of both traffic flow and light rail
+constraints.  As a model of traffic flow, we define the Queue
+Transmission Model (QTM).  Informally, we show an example of a traffic
+network and the evolution of the variables in a QTM model over time
+in Figure~\ref{fig:qtm}.  Formally a QTM is a tuple $(\Qset, \Lset,
+\vecDT, \MatQIN)$, where \Qset and \Lset are, respectively, the set of
+queues and lights;
 %
 \vecDT is a vector of size \Nn representing the discretization of the problem
 horizon $[0,\TMAX]$ and \authorHighlight{the duration in seconds of the $n$-th

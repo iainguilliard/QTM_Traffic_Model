@@ -2151,7 +2151,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                 xlabel = args.x_label[xl_i]
             if args.y_label is not None:
                 ylabel = args.y_label[yl_i]
-            t=results['t']
+            t=[x * args.time_factor for x in results['t']]
 
             if var[0:2]=='l_':
                 l = int((var.split('_'))[1])
@@ -2227,7 +2227,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
             else:
                 ax[i].set_ylabel(ylabel)
             if xlabel == ' ':
-                ax[i].set_xlabel('time')
+                ax[i].set_xlabel('time (s)')
             else:
                 ax[i].set_xlabel(xlabel)
 

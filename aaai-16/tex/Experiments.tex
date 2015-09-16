@@ -98,7 +98,7 @@ We implement this by replacing the bounds constraints on $\pd[n]{\ell}{k}$
 constraints, employing the \textit{big-M} method to apply the constraints only
 while the phase is inactive, where 
 $d^{\mathrm{fixed}}_{\ell,k} \in [\PTMIN{\ell}{k}, \PTMAX{\ell}{k}]$.
-
+%
 \begin{cAlign}
 \pd{\ell}{k} &\le d^{\mathrm{fixed}}_{\ell,k} + \PTMAX{\ell}{k} \p[n]{\ell}{k}
   \tagconstrain{c:pd:fixedUB}\\
@@ -150,7 +150,7 @@ offset by 100s for the slow light rail and 80s for the fast light rail to avoid 
 For all experiments, we used Gurobi as the MILP solver running on a
 heterogeneous cluster \authorHighlight{with 2.8GHz AMD Opteron~4184, 3.1GHz AMD
 Opteron~4334 (12 cores each), and 2Ghz Intel Xeon E5405 (4 cores). We use 4
-cores for each run of the solver.}\footnote{\authorHighlight{FWT: we can easily
+cores for each run of the solver.}\fnremark{\authorHighlight{FWT: we can easily
 cut this description in case we're 1 or 2 lines short.}}
 
 We limit the MIP gap accuracy to 0.02\% and 0.1\% for the arterial and grid

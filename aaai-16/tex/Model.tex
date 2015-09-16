@@ -605,14 +605,28 @@ Formally, given a schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$ represents that
 the light rail uses phase $k$ of \tl at time $n$, we replace
 (\ref{c:pd:incUB}--\ref{c:minPhase}) by \eqref{c:forceTransit} and
 \eqref{c:pd:holdTransit} when $\sum_{k} S_{\tl}(k,n) > 0$.
+
+%\begin{cAlign}
+%%
+%\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
+%%
+%\pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
+%%
+%\end{cAlign}
+\noindent\begin{minipage}{0.5\linewidth}
+\begin{cAlign} 
 %
-\begin{cAlign}
+\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}
 %
-\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
+\end{cAlign}
+\end{minipage}%
+\begin{minipage}{0.5\linewidth}
+\begin{cAlign} 
 %
 \pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
 %
 \end{cAlign}
+\end{minipage}\par\vspace{\belowdisplayskip}
 
 
 %To incorporate a fixed-schedule light rail in our model, we enforce phase $k$ used

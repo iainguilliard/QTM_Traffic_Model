@@ -140,12 +140,14 @@ at the boundaries of the network.
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
 
-We evaluate each network using fixed time control and the optimized control in
-two scenarios: before the introduction of the transit and
-after. In both cases, we use \DT[] equal to 10s for all $n$. Additionally we evaluate each network 
-with two different light rail schedules as shown in  \cref{fig:transits}. A slow light rail with a crossing duration of 50s
-and a period of 200s, and a fast light rail with a crossing duration of 20s and period of 160s. On Network 2, the North-South schedule is
-offset by 100s for the slow light rail and 80s for the fast light rail to avoid a collision at $l_5$.
+We evaluate each network using fixed-time control and the optimized adaptive
+control in two scenarios: before the introduction of the transit and after. In
+both cases, we use \DT[] equal to 10s for all $n$. Additionally we evaluate each
+network with two different light rail schedules as shown in
+\cref{fig:transits}. A slow light rail with a crossing duration of 50s and a
+period of 200s, and a fast light rail with a crossing duration of 20s and period
+of 160s. On Network 2, the North-South schedule is offset by 100s for the slow
+light rail and 80s for the fast light rail to avoid a collision at $l_5$.
 
 For all experiments, we used Gurobi as the MILP solver running on a
 heterogeneous cluster \authorHighlight{with 2.8GHz AMD Opteron~4184, 3.1GHz AMD

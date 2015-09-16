@@ -1,7 +1,7 @@
 \section{Empirical Evaluation}
   
 In this section we compare the solutions for traffic networks modeled as a QTM
-before and after the introduction of a public transit network.
+before and after the introduction of a light rail.
 %
 We consider both fixed control, i.e., a non-adaptive control plan, and optimal
 adaptive control obtained by solving the
@@ -12,7 +12,7 @@ LP~(\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:10}) and their total
 travel time and observed delay distribution are used as comparison metrics.
 %
 Our hypothesis is that the optimal adaptive approach is able to mitigate the
-impact of introducing a public transit w.r.t.\ both metrics.
+impact of introducing light rail w.r.t.\ both metrics.
 %
 In the remainder of this section, we present how we compute fixed control plans
 using CTM, the traffic networks considered in the experiments, our methodology,
@@ -36,8 +36,7 @@ and the results.
 \includegraphics[width=0.40\textwidth]{network2.pdf}}
 \caption{Networks used to evaluate the performance:
   (a) an arterial road with parallel light rail;
-  (b) an urban grid with crisscrossing streets and light
-  rail.
+  (b) an urban grid with crisscrossing streets and light rail.
 %
 %(d) Demand profile of the queues marked as \qLowTraf,
   %\qHighTraf, and \qVarTraf for our experiments.
@@ -121,7 +120,7 @@ at the boundaries of the network.
 %
 
 We evaluate each network using the fixed control and the optimized control in
-two scenarios: before the introduction of the introduction of the transit and
+two scenarios: before the introduction of the introduction of light rail and
 after its introduction. In both cases, we use \DT[] equal to 10s for all $n$.
 
 For all experiments, we used Gurobi as the MILP solver running on a
@@ -177,7 +176,7 @@ red square in the box plots.}
 \cref{fig:arterial:delayCurve,fig:grid:delayCurve} show, for each network, the
 average delay per vehicle as a function of demand for both fixed and adaptive
 control approached in three scenarios: before the light rail and after the
-installation of a light rain using schedules 1 and 2.
+installation of a light rail using schedules 1 and 2.
 %
 As we hypothesized, optimal adaptive control is able to mitigate the impact of
 the introduction of light rail and it marginally increases the average delay
@@ -189,10 +188,10 @@ adaptive controller also produces better quality policies than the fixed phased
 controller, i.e., policies with smaller median, third quartile, and maximum
 delay.
 %
-In our experiments, the maximum observed delay after the transit for the optimal
-adaptive policies is no more than the double of the maximum delay before the
-transit (for both fixed and adaptive approaches).\toIain{Can you double check
-this in the data?}
+In our experiments, the maximum observed delay after the light rail for the
+optimal adaptive policies is no more than the double of the maximum delay before
+the its introduction (for both fixed and adaptive approaches).\toIain{Can you
+double check this in the data?}
 
 
 
@@ -208,12 +207,12 @@ this in the data?}
 \includegraphics[keepaspectratio,width=0.49\textwidth]{network2_t2_reduction.pdf}}
 %
 \caption{Impact on average delay for the arterial (first column) and grid
-(second column) networks for both transit schedules (rows) in different
+(second column) networks for both light rail schedules (rows) in different
 scenarios (curves) of traffic control system before and after installation of
-transit.
+light rail.
 %
 The x-axis is the percentage of cars that switching to the public transportation
-and the y-axis is the impact after the transit is installed.
+and the y-axis is the impact after the light rail is installed.
 %
 Negative impact represents increase in average delay.}
 %
@@ -222,13 +221,13 @@ Negative impact represents increase in average delay.}
 
 
 To further illustrate the benefits of using optimal adaptive control to minimize
-the impact adding a light rail to traffic network, \cref{fig:impact} shows the
+the impact adding light rail to traffic network, \cref{fig:impact} shows the
 impact on average delay as a function of the percentage of cars that switching
 to the light rail.\fnremark{FWT: say that we are look at a fixed demand and that
 this value is depicted by $\clubsuit$ in \cref{fig:delayCurveAndBoxplot}}.
 %
 In these plots, higher numbers are better (i.e., there is a decrease in the
-average delay) and zero means that there is no change after installing the light
+average delay) and zero means that there is no change after installing light
 rail.
 %
 For the three combinations of before and after policies presented,
@@ -238,15 +237,16 @@ For the three combinations of before and after policies presented,
 %
 we can see that, while keeping the fixed phase controller requires from 25\% to
 45\% of the drives to switch to light rail in order to obtain the same average
-delay as before the transit, the optimal adaptive approach requires only from
+delay as before its installation, the optimal adaptive approach requires only from
 2.5\% to 10\% of the drivers to switch when already using optimal adaptive
 control \textbf{before} the light rail.
 %
 When compared fixed phase before the light rail and optimal adaptive after, the
 average delay stays the same if only the 2\% and 5\% of the drives switch to the
-transit when considering first schedule in the arterial and grid networks,
+light rail when considering first schedule in the arterial and grid networks,
 respectively;
 %
 moreover, the average delay \textbf{decreases} for both networks using the
 second light rail schedule even if no driver switches to the newly installed
 public transportation.
+

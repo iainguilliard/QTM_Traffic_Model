@@ -547,16 +547,16 @@ cycle, i.e., when its first phase is changed from inactive to active.
 %
 The MILP~(\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:cycleUB}) encodes
 the problem of finding the optimal traffic control plan in a QTM network without
-\authorHighlight{transit}.
+light rail.
 
-\paragraph{Transit Constraints}
+\paragraph{Light Rail Constraints}
 %
-To incorporate a fixed-schedule transit in our model, we post-process our MILP
-model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ s.t.\ the transit
-uses phase $k$ of \tl at time $n$.
+To incorporate a fixed-schedule light rail in our model, we post-process our
+MILP model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ s.t.\ the
+light rail uses phase $k$ of \tl at time $n$.
 %
-Formally, given a transit schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$
-represents that a transit is using phase $k$ of \tl at time $n$, we replace
+Formally, given a schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$ represents that
+the light rail uses phase $k$ of \tl at time $n$, we replace
 (\ref{c:pd:incUB}--\ref{c:minPhase}) by \eqref{c:forceTransit} and
 \eqref{c:pd:holdTransit} when $\sum_{k} S_{\tl}(k,n) > 0$.
 %
@@ -569,14 +569,14 @@ represents that a transit is using phase $k$ of \tl at time $n$, we replace
 \end{cAlign}
 
 
-%To incorporate a fixed-schedule transit in our model, we enforce phase $k$ used
-%by the transit is always on when the transit crosses at light \tl, i.e., we add
-%the constraint $\p[n]{\ell}{k} = 1$ for all $n$ s.t.\ the transit uses phase $k$
+%To incorporate a fixed-schedule light rail in our model, we enforce phase $k$ used
+%by the light rail is always on when the transit crosses at light \tl, i.e., we add
+%the constraint $\p[n]{\ell}{k} = 1$ for all $n$ s.t.\ the light rail uses phase $k$
 %of \tl at time $n$.
 %%
 %%
-%We also hold $\pd{\ell}{k}$ constant while the transit crosses \tl, i.e., 
+%We also hold $\pd{\ell}{k}$ constant while the light rail crosses \tl, i.e., 
 %$\pd{\ell}{k} = \pd[n-1]{\ell}{k}$.
 %%
-%Since the transit schedule is fixed and known a priori, adding these extra
+%Since the light rail schedule is fixed and known a priori, adding these extra
 %constraints are done in a preprocessing phase before the MILP is solved.

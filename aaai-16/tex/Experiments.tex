@@ -86,6 +86,24 @@ All traffic lights have two phases, north-south and east-west, and for all
 traffic light \tl and phase $k$, \PTMIN{\tl}{k} is 10s, \PTMAX{\tl}{k} is 30s,
 \CTMIN{\tl} is 20s, and \CTMAX{\tl} is 60s.
 
+\begin{figure*}[t!] \centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{\label{fig:arterial:delayCurve}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_delay.pdf}}
+\subfigure[]{\label{fig:grid:delayCurve}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_delay.pdf}}
+\subfigure[]{\label{fig:arterial:boxplot}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_boxplots.pdf}}
+\subfigure[]{\label{fig:grid:boxplot}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_boxplots.pdf}}
+%
+\caption{Average delay by the network demand for the arterial (a) and grid (b)
+networks. Box plots representing the observed distribution of delay for 3
+different values of demand for each network (c,d). The mean is presented as a
+red square in the box plots.}
+%
+\label{fig:delayCurveAndBoxplot} \end{figure*}
+
 
 \subsection{Fixed-Time Control Constraints}
 
@@ -171,27 +189,6 @@ average?}
 
 
 \subsection{Results}
-
-\begin{figure*}[t!] \centering
-%  trim={<left> <lower> <right> <upper>}
-\subfigure[]{\label{fig:arterial:delayCurve}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_delay.pdf}}
-\subfigure[]{\label{fig:grid:delayCurve}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_delay.pdf}}
-\subfigure[]{\label{fig:arterial:boxplot}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_boxplots.pdf}}
-\subfigure[]{\label{fig:grid:boxplot}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_boxplots.pdf}}
-%
-\caption{Average delay by the network demand for the arterial (a) and grid (b)
-networks. Box plots representing the observed distribution of delay for 3
-different values of demand for each network (c,d). The mean is presented as a
-red square in the box plots.}
-%
-\label{fig:delayCurveAndBoxplot} \end{figure*}
-
-
-%
 
 
 %We compare the performance of non-homogeneous and homogeneous solutions in two

@@ -13,7 +13,9 @@
         "r_light" : 21,
         "text_color" : "0.2",
         "font_size" : 20,
-        "label_space": 30, "d_edges": 7, "lx": 11, "ly" : 5
+        "label_space": 30, "d_edges": 7, "lx": 11, "ly" : 5,
+      "track_width": 4,
+      "d_edges": 8
     },
 
     "Nodes" : [

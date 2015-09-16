@@ -1,6 +1,27 @@
 \section{The Queue Transmission Model (QTM)}
 
 
+\begin{figure}[t]
+\centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{
+\label{subfig:overlay}
+\includegraphics[width=0.45\textwidth,trim={1.3cm 1.1cm 3cm 0.5cm},clip]{map_overlay.pdf}}
+\subfigure[]{
+\label{subfig:example}
+%\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{map_example.png}
+\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{pw_queues.pdf}
+}
+% NOTE: Reviewers like to skim a paper by reading captions so I intentionally
+\caption{(a) Example of a real traffic network modeled using the
+  QTM. (b) A preview of different QTM model parameters as a function
+  of \emph{non-homogeneous} discretized time intervals indexed by $n$.
+  \authorHighlight{FWT: this figure is not being referenced yet}.}
+\label{fig:qtm}
+%
+\end{figure}
+
+
 %% TODO(fwt): We need to say that we handle expected number of cars instead of
 %% physical cars, so its fine to have fractions of cars.
 
@@ -134,27 +155,43 @@ $j$:
 
 
 The maximum traffic flow from queue $i$ to queue $j$ is enforced by
-\cref{c:turnProbAndMaxFlow}.
+\cref{c:turnProb,c:maxFlow}.
 %
-The inner inequality of \eqref{c:turnProbAndMaxFlow} ensures that only the
-fraction $\FTURN{i}{j}$ of the total internal outflow of $i$ goes to $j$, and
-the outer inequality forces the flow from $i$ to $j$ to be zero if all phases
-controlling $i$ are inactive (i.e., $\p{\ell}{k} = 0$ for all $k \in
-\QPset{i}$).
+\eqref{c:turnProb} ensures that only the fraction $\FTURN{i}{j}$ of the total
+internal outflow of $i$ goes to $j$, and \eqref{c:maxFlow} forces the flow from
+$i$ to $j$ to be zero if all phases controlling $i$ are inactive.  (i.e.,
+$\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 %
 %If more than one phase $\p{\ell}{k}$ is active, then
 %\eqref{c:turnProbAndMaxFlow} is subsumed by the domain upper bound of
 %$\f{i}{j}$.
 %
+\noindent\begin{minipage}{0.5\linewidth}
 \begin{cAlign} 
 %
-\f{i}{j} \le \FTURN{i}{j} \sum_{k=1}^{\Qn} \f{i}{k}
-%\tagconstrain{c:turnProb}\\ \f{i}{j}
-\le \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}}
-%\tagconstrain{c:maxFlow}
-\tagconstrain{c:turnProbAndMaxFlow}
+\f{i}{j}\!\le\!\FTURN{i}{j}\!\sum_{k=1}^{\Qn}\!\f{i}{k}\tagconstrain{c:turnProb}
 %
 \end{cAlign}
+\end{minipage}%
+\begin{minipage}{0.5\linewidth}
+\begin{cAlign} 
+%
+\f{i}{j}\!\le\!\FMAX{i}{j}\!\sum^{\phantom{\Qn}}_{\makebox[0pt]{$\scriptstyle
+\p{\ell}{k}\!\in\!\QPset{i}$}}\p{\ell}{k}
+\tagconstrain{c:maxFlow}
+%
+\end{cAlign}
+\end{minipage}\par\vspace{\belowdisplayskip}
+
+%\begin{cAlign} 
+%%
+%\f{i}{j} \le \FTURN{i}{j} \sum_{k=1}^{\Qn} \f{i}{k}
+%%\tagconstrain{c:turnProb}\\ \f{i}{j}
+%\le \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}}
+%%\tagconstrain{c:maxFlow}
+%\tagconstrain{c:turnProbAndMaxFlow}
+%%
+%\end{cAlign}
 
 
 
@@ -273,7 +310,7 @@ possible.
 %\trbcite{lin2004enhanced} derive an objective function for the minimisation of
 %total delay based on the difference between the cumulative departure and
 %arrival curves at the origin and destination. However, such an approach
-%requires the network to be cleared at the end of the optimisation period.
+%requires the network to be cleared at the end of the optimization period.
 
 
 \begin{equation}
@@ -365,9 +402,10 @@ e.g., \eqref{eq:objFunc} is equivalent to the objective function (O3) in
 
 \section{Traffic Control with MILP-encoded QTM}
 
-In this section, we show how to compute the optimal control plan by extending
-the LP (\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:10}) into an
-Mixed-Integer LP (MILP).
+In this section, we show how to compute the \authorHighlight{optimized adaptive}
+control plan by extending the LP
+(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:10}) into an Mixed-Integer
+LP (MILP).
 %
 Formally, for all~$\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
 \{1,\dots,N\}$, the phase activation parameter~$\p{\tl}{k} \in \{0,1\}$ becomes
@@ -377,15 +415,14 @@ In order to obtain a valid control plan, we enforce that one phase of traffic
 light \tl is always active at any interval~$n$~\eqref{c:onlyOnePhaseOn} and that
 phase changes happen sequentially~\eqref{c:seqPhases}
 %
-%, i.e., if phase~$k$ was
-%active during interval~$n-1$ and has become inactive in interval~$n$, then
-%phase~$k+1$ must be active in interval~$n$.
+%, i.e., if phase~$k$ was active during interval~$n-1$ and has become inactive
+%in interval~$n$, then phase~$k+1$ must be active in interval~$n$.
 %
 (\eqref{c:seqPhases} assumes that $k+1$ equals 1 if $k = \Pn{}$).
 %
 %% TODO: We need to understand this issue better:
-% \toIain{I removed the constraint $\p{\ell}{k} + \p{\ell}{k+1} \le 1$ because it
-% is subsumed by $\p{\ell}{k} \in \{0,1\}$ and \eqref{c:onlyOnePhaseOn}}
+% \toIain{I removed the constraint $\p{\ell}{k} + \p{\ell}{k+1} \le 1$ because
+% it is subsumed by $\p{\ell}{k} \in \{0,1\}$ and \eqref{c:onlyOnePhaseOn}}
 %
 %
 %% FWT: note sure if the text bellow is necessary
@@ -545,18 +582,18 @@ cycle, i.e., when its first phase is changed from inactive to active.
 %
 \end{cAlign}
 %
-The MILP~(\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:cycleUB}) encodes
-the problem of finding the optimal traffic control plan in a QTM network without
-\authorHighlight{transit}.
+The MILP~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cycleUB}) encodes
+the problem of finding the \authorHighlight{optimized adaptive} traffic control
+plan in a QTM network without light rail.
 
-\paragraph{Transit Constraints}
+\paragraph{Light Rail Constraints}
 %
-To incorporate a fixed-schedule transit in our model, we post-process our MILP
-model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ s.t.\ the transit
-uses phase $k$ of \tl at time $n$.
+To incorporate a fixed-schedule light rail in our model, we post-process our
+MILP model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ s.t.\ the
+light rail uses phase $k$ of \tl at time $n$.
 %
-Formally, given a transit schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$
-represents that a transit is using phase $k$ of \tl at time $n$, we replace
+Formally, given a schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$ represents that
+the light rail uses phase $k$ of \tl at time $n$, we replace
 (\ref{c:pd:incUB}--\ref{c:minPhase}) by \eqref{c:forceTransit} and
 \eqref{c:pd:holdTransit} when $\sum_{k} S_{\tl}(k,n) > 0$.
 %
@@ -569,14 +606,14 @@ represents that a transit is using phase $k$ of \tl at time $n$, we replace
 \end{cAlign}
 
 
-%To incorporate a fixed-schedule transit in our model, we enforce phase $k$ used
-%by the transit is always on when the transit crosses at light \tl, i.e., we add
-%the constraint $\p[n]{\ell}{k} = 1$ for all $n$ s.t.\ the transit uses phase $k$
+%To incorporate a fixed-schedule light rail in our model, we enforce phase $k$ used
+%by the light rail is always on when the transit crosses at light \tl, i.e., we add
+%the constraint $\p[n]{\ell}{k} = 1$ for all $n$ s.t.\ the light rail uses phase $k$
 %of \tl at time $n$.
 %%
 %%
-%We also hold $\pd{\ell}{k}$ constant while the transit crosses \tl, i.e., 
+%We also hold $\pd{\ell}{k}$ constant while the light rail crosses \tl, i.e., 
 %$\pd{\ell}{k} = \pd[n-1]{\ell}{k}$.
 %%
-%Since the transit schedule is fixed and known a priori, adding these extra
+%Since the light rail schedule is fixed and known a priori, adding these extra
 %constraints are done in a preprocessing phase before the MILP is solved.

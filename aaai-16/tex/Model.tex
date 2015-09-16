@@ -155,27 +155,43 @@ $j$:
 
 
 The maximum traffic flow from queue $i$ to queue $j$ is enforced by
-\cref{c:turnProbAndMaxFlow}.
+\cref{c:turnProb,c:maxFlow}.
 %
-The inner inequality of \eqref{c:turnProbAndMaxFlow} ensures that only the
-fraction $\FTURN{i}{j}$ of the total internal outflow of $i$ goes to $j$, and
-the outer inequality forces the flow from $i$ to $j$ to be zero if all phases
-controlling $i$ are inactive (i.e., $\p{\ell}{k} = 0$ for all $k \in
-\QPset{i}$).
+\eqref{c:turnProb} ensures that only the fraction $\FTURN{i}{j}$ of the total
+internal outflow of $i$ goes to $j$, and \eqref{c:maxFlow} forces the flow from
+$i$ to $j$ to be zero if all phases controlling $i$ are inactive.  (i.e.,
+$\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 %
 %If more than one phase $\p{\ell}{k}$ is active, then
 %\eqref{c:turnProbAndMaxFlow} is subsumed by the domain upper bound of
 %$\f{i}{j}$.
 %
+\noindent\begin{minipage}{0.5\linewidth}
 \begin{cAlign} 
 %
-\f{i}{j} \le \FTURN{i}{j} \sum_{k=1}^{\Qn} \f{i}{k}
-%\tagconstrain{c:turnProb}\\ \f{i}{j}
-\le \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}}
-%\tagconstrain{c:maxFlow}
-\tagconstrain{c:turnProbAndMaxFlow}
+\f{i}{j}\!\le\!\FTURN{i}{j}\!\sum_{k=1}^{\Qn}\!\f{i}{k}\tagconstrain{c:turnProb}
 %
 \end{cAlign}
+\end{minipage}%
+\begin{minipage}{0.5\linewidth}
+\begin{cAlign} 
+%
+\f{i}{j}\!\le\!\FMAX{i}{j}\!\sum^{\phantom{\Qn}}_{\makebox[0pt]{$\scriptstyle
+\p{\ell}{k}\!\in\!\QPset{i}$}}\p{\ell}{k}
+\tagconstrain{c:maxFlow}
+%
+\end{cAlign}
+\end{minipage}\par\vspace{\belowdisplayskip}
+
+%\begin{cAlign} 
+%%
+%\f{i}{j} \le \FTURN{i}{j} \sum_{k=1}^{\Qn} \f{i}{k}
+%%\tagconstrain{c:turnProb}\\ \f{i}{j}
+%\le \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}}
+%%\tagconstrain{c:maxFlow}
+%\tagconstrain{c:turnProbAndMaxFlow}
+%%
+%\end{cAlign}
 
 
 
@@ -388,7 +404,7 @@ e.g., \eqref{eq:objFunc} is equivalent to the objective function (O3) in
 
 In this section, we show how to compute the \authorHighlight{optimized adaptive}
 control plan by extending the LP
-(\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:10}) into an Mixed-Integer
+(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:10}) into an Mixed-Integer
 LP (MILP).
 %
 Formally, for all~$\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
@@ -566,7 +582,7 @@ cycle, i.e., when its first phase is changed from inactive to active.
 %
 \end{cAlign}
 %
-The MILP~(\ref{eq:objFunc},~\ref{c:turnProbAndMaxFlow}--\ref{c:cycleUB}) encodes
+The MILP~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cycleUB}) encodes
 the problem of finding the \authorHighlight{optimized adaptive} traffic control
 plan in a QTM network without light rail.
 

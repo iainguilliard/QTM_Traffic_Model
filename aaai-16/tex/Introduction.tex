@@ -36,52 +36,40 @@ often operates at street-level and requires coordination with
 conventional traffic networks and signal control, a major concern in
 light rail installation is whether enough commuters will switch to it
 to offset the additional constraints it places on traffic signal
-control.
-
-Unfortunately, many large cities still use some
-degree of \emph{fixed-time} control~\trbcitenum{el2013multiagent} even
-if they also use \emph{actuated} or \emph{adaptive} control methods
-such as SCATS~\trbcitenum{scats80} or SCOOT~\trbcitenum{scoot81}.
-As we show in this paper, conventional fixed-time control methods
-poses significant challenge for the integration of light
-rail even when their timings are optimized to synchronize with
-the light rail schedule.
+control.  Unfortunately, many large cities still use some degree of
+\emph{fixed-time} control~\trbcitenum{el2013multiagent} rather than
+\emph{actuated} or \emph{adaptive} control methods such as
+SCATS~\trbcitenum{scats80} or SCOOT~\trbcitenum{scoot81}.  As we show
+in this paper, conventional fixed-time control methods pose
+significant challenges for the integration of light rail even when
+their timings are optimized to synchronize with the light rail
+schedule.
 
 However, there is further opportunity to improve traffic signal
 control even beyond adaptive methods through the use of
-\emph{optimized} controllers as evidenced in a variety of approaches
-ranging from mixed integer (linear)
+\emph{optimized} adaptive controllers as evidenced in a variety of
+approaches ranging from mixed integer (linear)
 programming~\trbcitenum{gartner1974optimization,gartner2002arterial,lo1998novel,he2011pamscod,lin2004enhanced,han2012link}
 to heuristic search~\trbcitenum{lo1999dynamic,he2010heuristic} to
 scheduling~\trbcitenum{smith2013surtrac} to reinforcement
-learning~\trbcitenum{el2013multiagent}.  Such optimized
+learning~\trbcitenum{el2013multiagent}.  To this end, we develop a
+linear programming model of traffic flow termed the {\it Queue
+  Transmission Model (QTM)} where traffic signals can be represented
+as discrete variables and optimized for adaptive control via Mixed
+Integer Linear Programming (MILP).  As we show in this paper, such
 controllers hold the promise of maximizing existing infrastructure
-capacity by finding more complex (and potentially closer to optimal)
-jointly coordinated intersection policies in comparison to
-heuristically-adaptive policies such as SCATS and SCOOT. 
+capacity by finding optimized traffic signal control policies that are
+tightly integrated with light rail transit constraints to mitigate
+their impact on conventional traffic delays.
 
-%it is critical to mitigate the impact
-%of light rail on existing traffic congestion.
-
-%it is critical to maximize capacity and
-%throughput of existing road infrastructure through optimized traffic
-%signal control.
-
-In this paper, we study traffic signal control for integrated light
-rail and conventional traffic networks and ways to mitigate delay
-through the use of a novel method of optimized traffic signal control
-based on a novel Mixed Integer Linear Programming (MILP) model of
-traffic flow and signal control that we term the {\it Queue
-  Transmission Model (QTM)}.  Our key results show that while there is
-a substantial impact of light rail on conventional vehicle traffic
-delay using popular fixed-time signal control, our novel optimized
-signal control virtually nullifies this impact. Ultimately this leads
-to a win-win situation where both conventional vehicle traffic and
-light rail commuters benefit through the application of MILP-based
+Overall, our key results in this paper show that while there is a
+substantial impact of light rail on conventional vehicle traffic delay
+using popular fixed-time signal control, our novel optimized signal
+control virtually nullifies this impact. Ultimately this leads to a
+win-win situation where both conventional vehicle traffic and light
+rail commuters benefit through the application of MILP-based
 optimization to jointly manage public transit and conventional traffic
 networks.
-
-
 
 \Omit{
 %master-slave approaches such as SCATS and SCOOT, such optimized methods

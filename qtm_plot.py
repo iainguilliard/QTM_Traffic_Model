@@ -392,7 +392,7 @@ def label_distance(theta,i):
 def plot_circle_label(ax,label,x,y,r):
     p = Circle((x,y), r,ec='k',fc='w')
     ax.add_patch(p)
-    ax.text(x-3,y-3,label,fontsize=10,color='k')
+    ax.text(x-2,y-2,label,fontsize=10,color='k')
 
 def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,debug=False):
 
@@ -466,7 +466,7 @@ def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,debug=
                 if 'bg_alpha' in data['Plot']:
                     if data['Plot']['bg_alpha'] != None:
                         bg_alpha = data['Plot']['bg_alpha']
-                pl.imshow(img,extent=ext,alpha=bg_alpha)
+                #pl.imshow(img,extent=ext,alpha=bg_alpha)
         if figsize is None and 'fig_size' in data['Plot']:
             figsize = tuple(data['Plot']['fig_size'])
         if 'line_width' in data['Plot']:
@@ -505,7 +505,8 @@ def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,debug=
     if figsize is None:
         figsize = (10,5)
     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False,figsize=figsize)
-
+    if 'bg_image' in data['Plot']:
+        pl.imshow(img,extent=ext,alpha=bg_alpha)
     nodes = []
     edges = {}
 
@@ -707,10 +708,18 @@ def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,debug=
                 if qoutline != None:
                     ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size+1, color=qoutline)
                 ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size, color=qtext_color)
-
+                rx = rx1-rx0
+                ry = ry1-ry0
+                rx=(rx/lth); ry=(ry/lth)
+                if 'label_inflow' in q or args.label_inflow and q['Q_IN'] > 0:
+                    rx0 = rx0 - rx*3
+                    ry0 = ry0 - ry*3
                 #plot([rx,rx+ty],[ry,ry-tx])
                 arrow = ax.arrow(rx0,ry0,rx1-rx0,ry1-ry0, shape='full', lw=qline_width,color=qline_color,length_includes_head=True, head_width=qhead_width, width=qtail_width)
-
+                if 'label_inflow' in q or args.label_inflow:
+                    if q['Q_IN'] > 0:
+                        qin_label_radius = 7
+                        plot_circle_label(ax,q['Q_IN'],rx0 - rx * qin_label_radius,ry0 - ry * qin_label_radius,qin_label_radius)
                 arrow.set_ec(qedge_color)
                 arrow.set_fc(qline_color)
 
@@ -1514,6 +1523,8 @@ def plot_parameter(plot,args):
             mec = args.color[c_i]
         else:
             mec = 'k'
+        h = ax.axhline(0,color='0.6')
+        h.set_zorder(0)
         ax.plot(plot_X[plot_i],plot_Y[plot_i],color=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,
                 marker=args.marker[m_i],markeredgecolor=mec,markerfacecolor=mfc,markevery=mevery[m_i])
 
@@ -2140,7 +2151,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                 xlabel = args.x_label[xl_i]
             if args.y_label is not None:
                 ylabel = args.y_label[yl_i]
-            t=results['t']
+            t=[x * args.time_factor for x in results['t']]
 
             if var[0:2]=='l_':
                 l = int((var.split('_'))[1])
@@ -2216,7 +2227,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
             else:
                 ax[i].set_ylabel(ylabel)
             if xlabel == ' ':
-                ax[i].set_xlabel('time')
+                ax[i].set_xlabel('time (s)')
             else:
                 ax[i].set_xlabel(xlabel)
 
@@ -2254,6 +2265,118 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
             if m_i+1 < len(args.marker): m_i += 1
         if xl_i+1 < len(args.x_label): xl_i += 1
         if yl_i+1 < len(args.y_label): yl_i += 1
+
+    if args.title:
+        pl.title(args.title[0])
+
+def plot_flow_profiles(args): #data_sets,params,colors,line_styles,steps):
+
+    data = open_data_file(args.files[0])
+    time = data['Out']['t']
+    N = len(time)
+    if 'Flow_Weights' in data:
+            flow_weights = data['Flow_Weights']
+            for n,t in enumerate(time):
+                for f in flow_weights:
+
+                    if n==0:
+                        flow_weights[f]['wt']=[0]*N
+                    if t > flow_weights[f]['start'] and t <= flow_weights[f]['end']:
+                        flow_weights[f]['wt'][n]=flow_weights[f]['weight']
+                    else:
+                        flow_weights[f]['wt'][n]=0
+                    if n>1:
+                        if t > flow_weights[f]['start'] and time[n-1] < flow_weights[f]['start']:
+                            flow_alpha = (flow_weights[f]['start'] - time[n-1]) / (t - time[n-1])
+                            flow_weights[f]['wt'][n] *= flow_alpha
+                        if t > flow_weights[f]['end'] and time[n-1] < flow_weights[f]['end']:
+                            flow_alpha = (flow_weights[f]['end'] - time[n-1]) / (t - time[n-1])
+                            flow_weights[f]['wt'][n-1] *= flow_alpha
+    else:
+        print 'no flow weights in file'
+        return
+
+    Q_IN_weight = []
+    for i,q in enumerate(data['Queues']):
+        if 'weights' in q:
+            Q_IN_weight.append([0]*N)
+            for w in q['weights']:
+                for n in range(N):
+                    Q_IN_weight[-1][n]+=flow_weights[w]['wt'][n]
+                    #if (args.Q_IN_limit or data.get('Flow_Weight_Q_IN_limit',False)) and Q_IN_weight[i][n] > 1.0:
+                    #    Q_IN_weight[i][n] = 1.0
+
+    y_max = max(max(Q_IN_weight))
+    if args.labels:
+        labels = args.labels
+    else:
+        labels = ['A','B','C','D','E','F','G','H','I']
+    vars = []
+    for i,var in enumerate(Q_IN_weight):
+        data['Out'][labels[i]] = Q_IN_weight[i]
+        vars.append(labels[i])
+    pl.clf()
+    fig, ax = pl.subplots(nrows=len(vars), ncols=1, sharex=True, sharey=False)
+    if args.figsize is None:
+        fig.set_size_inches(15, 4*len(vars))
+    else:
+        fig.set_size_inches(args.figsize[0], args.figsize[1]*len(vars))
+    if not isinstance(ax, np.ndarray): ax=[ax]
+
+
+    xl_i=0
+    yl_i=0
+    c_i=0
+    l_i=0
+    ls_i=0
+    m_i=0
+
+    for i,var in enumerate(vars):
+
+
+        results = data['Out']
+
+
+        ls=args.linestyle[ls_i]
+        col=args.color[c_i]
+        marker = args.marker[m_i]
+        label = labels[l_i]
+        xlabel=''
+        ylabel=''
+        if args.x_label is not None:
+            xlabel = args.x_label[xl_i]
+        if args.y_label is not None:
+            ylabel = args.y_label[yl_i]
+        t=results['t']
+        if var in results.keys():
+            x_data = results[var]
+            ax[i].plot([t[x] * args.time_factor for x in range(len(x_data))],x_data,marker=marker, linestyle = ls, color=col)
+
+        if ylabel == ' ':
+            ax[i].set_ylabel(var+'      ',fontsize=16,rotation=0)
+        else:
+            ax[i].set_ylabel(ylabel+'  ',rotation=0)
+
+        if args.y_limit != None:
+            ax[i].set_ylim(args.y_limit[0],args.y_limit[1])
+
+
+        ax[i].legend(loc='best')
+        if args.x_limit != None:
+            ax[i].set_xlim(args.x_limit[0],args.x_limit[1])
+        #ax[i].yaxis.set_ticks(np.arange(0, int(y_max)+1,1))
+        ax[i].grid(True)
+
+        if ls_i+1 < len(args.linestyle): ls_i += 1
+        if c_i+1 < len(args.color): c_i += 1
+        if l_i+1 < len(labels): l_i += 1
+        if m_i+1 < len(args.marker): m_i += 1
+    if xlabel == ' ':
+        ax[-1].set_xlabel('time (s)')
+    else:
+        ax[-1].set_xlabel(xlabel)
+    if xl_i+1 < len(args.x_label): xl_i += 1
+    if yl_i+1 < len(args.y_label): yl_i += 1
 
     if args.title:
         pl.title(args.title[0])
@@ -2565,6 +2688,7 @@ if __name__ == '__main__':
     parser.add_argument("--plot_phase_offset", help="Plots phase offset vs travel time for each file",action="store_true", default=False)
     parser.add_argument("--plot_box_plot", help="Plots a box plot for each file",action="store_true", default=False)
     parser.add_argument("--plot_vars", help="Plots each var in list",nargs='*')
+    parser.add_argument("--plot_flow_profiles", help="Plots all flow profiles found in the file",action="store_true", default=False)
     parser.add_argument("--io_vars_as_rate", help="Plots input and output vars as rate (i.e. /DT) rather than volume",action="store_true", default=False)
     parser.add_argument("--plot_network", help="Plots a network as a link and node graph",action="store_true", default=False)
     parser.add_argument("--plot_network_delay", help="Plots a network as a coloured link and node graph", default='')
@@ -2586,6 +2710,7 @@ if __name__ == '__main__':
     parser.add_argument("--debug", help="output debug messages", action="store_true", default=False)
     parser.add_argument("--dump_vars", help="Dump raw data for each var in the list",nargs='*')
     parser.add_argument("--dump_phases", help="Dump phases in each file as a list of strings",action="store_true")
+    parser.add_argument("--label_inflow", help="label the inflows on queues in network plots",action="store_true")
     parser.add_argument("--annotate", help="List of y|n whether to annotate the points of each plot with the major frame time", default='n')
     parser.add_argument("--annotate_x", help="List of x points to plot each label in annotate_labels", nargs='*', type=float)
     parser.add_argument("--annotate_y", help="List of y points to plot each label in annotate_labels", nargs='*', type=float)
@@ -2614,6 +2739,8 @@ if __name__ == '__main__':
 
     if args.plot_vars != None:
         plot_vars(args)
+    elif args.plot_flow_profiles:
+        plot_flow_profiles(args)
     elif args.plot_travel_time or args.plot_travel_time_DT:
         plot_travel_time(args)
     elif args.plot_av_travel_time:

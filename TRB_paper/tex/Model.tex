@@ -7,7 +7,7 @@
 A Queue Transmission Model (QTM) is the tuple $(\Qset, \Lset, \vecDT, \MatQIN)$,
 where \Qset and \Lset are, respectively, the set of queues and lights;
 %
-\vecDT is a vector of size \Nn representing the discretization of the problem
+\vecDT is a vector of size \Nn representing the \revision{homogeneous, or non-homogeneous,}{1.2} discretization of the problem
 horizon $[0,\TMAX]$ and the duration in seconds of the $n$-th time interval is
 denoted as \DT[n];
 %
@@ -30,7 +30,7 @@ A \textbf{traffic light} $\tl \in \Lset$ is defined as the tuple~$(\CTMIN{\tl},
 
 \begin{itemize}
 %
-\item $\Pset_\tl$ is the set of phases of $\tl$;
+\item $\Pset_\tl$ is the set of phases of $\tl$\revision{, and defines the phase sequence}{4.2};
 %
 \item \CTMIN{\tl} (\CTMAX{\tl}) is the minimum (maximum) allowed cycle time for
   \tl; and
@@ -62,7 +62,7 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 %
 \item $\Fvec_i$ and $\Prvec_i$ are vectors of size \Qn and their $j$-th entry
   (i.e., \FMAX{i}{j} and \FTURN{i}{j}) represent the maximum flow from queue $i$
-  to $j$ and the turn probability from $i$ to $j$ ($\sum_{j \in
+  to $j$ and the turn probability from $i$ to $j$ (\revision{where }{} $\sum_{j \in
   \Qset}\FTURN{i}{j} = 1$), respectively; and
 %
 \item \QPset{i} denotes the set of traffic light phases controlling the outflow
@@ -96,7 +96,9 @@ all traffic lights is fixed and given as parameter;
 formally, for all $\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
 \{1,\dots,N\}$, the binary variable $\p{\tl}{k}$ is known a priori and indicates
 if phase $k$ of light \tl is active~(i.e., $\p{\tl}{k} = 1$) or not on interval
-$n$.
+$n$. \revision{Each phase $k \in \Pset_\tl$ can control the flow from more than one 
+queue, allowing arbitrary intersection topologies to be modelled, including ``all red''
+ phases as a switching penalty and lost time from yellow lights.}{3.1}
 
 
 We represent the problem of finding the maximal flow between capacity-constrained 
@@ -135,7 +137,9 @@ The maximum traffic flow from queue $i$ to queue $j$ is enforced by
 \cref{c:turnProb,c:maxFlow}.
 %
 \eqref{c:turnProb} ensures that only the fraction $\FTURN{i}{j}$ of the total
-internal outflow of $i$ goes to $j$, and \eqref{c:maxFlow} forces the flow from
+internal outflow of $i$ goes to $j$, and \revision{since each \f{i}{j} appears 
+on both sides of \eqref{c:turnProb}, the upstream queue $i$ will block if any 
+downstream queue $j$ is full. }{4.5}\eqref{c:maxFlow} forces the flow from
 $i$ to $j$ to be zero if all phases controlling $i$ are inactive (i.e.,
 $\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 %
@@ -153,7 +157,7 @@ subsumed by the domain upper bound of $\f{i}{j}$.
 
 %% TODO(fwt): improve the beginning of this paragraph
 
-To simplify the presentation of remainder of the LP, we define the helper
+To simplify the presentation of the remainder of the LP, we define the helper
 variables \qin{i}~\eqref{def:qin}, \qout{i}~\eqref{def:qout}, and
 \tn[n]~\eqref{def:tn} to represent the volume of traffic to enter and leave
 queue $i$ during interval~$n$, and the time elapsed since the beginning of the
@@ -233,7 +237,9 @@ exceed the capacity of the queue, we apply~\eqref{c:10}.
 %\label{fig:converg_c}
 %\end{figure*}
 
-
+\revision{\eqref{c:10} has the effect of forcing \qin[m]{i} to $0$ when queue $i$ is full, 
+which forces \f{j}{i} in \eqref{def:qin} and \eqref{def:qout} to 0. This in turn allows  
+the queue in $i$ to spill back into the upstream queue $j$. }{3.2}
 
 As with MILP formulations of CTM (e.g. \trbcite{lin2004enhanced}),
 QTM is also susceptible to \emph{withholding traffic}, i.e., the
@@ -269,8 +275,8 @@ possible.
 \centering
 %  trim={<left> <lower> <right> <upper>}
 \includegraphics[width=0.55\textwidth,trim={0cm 0cm 0cm 0cm},clip]{cumu_plot_final_6l.pdf}
-\caption{Cumulative arrival (blue) and departure (green) curves, and the
-resulting delay curve (red). The departure curve is maximized by the objective
+\caption[]{Cumulative arrival (blue) and departure (green) curves, and the
+\revout{resulting} delay curve (red) \revision{resulting from the horizontal difference between the arrival and departure curves, less the free flow travel time}{2.3}. The \revision{arrival curve is fixed by the demand profile, and the }{2.4} departure curve is maximized by the objective
 function \eqref{eq:objFunc}, which has the same effect as minimizing the area
 under the delay curve.}
 \label{fig:cumu_delay_plot}
@@ -317,8 +323,9 @@ minimized, which in turn minimizes the delay.
 \label{fig:conv}
 %
 \caption{Approximations of a queue volume obtained using homogeneous
-\DT[] = 1s using: (a) homogeneous \DT[] = 2.5s and 5s; and (b) non-homogeneous
-$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.  Here we see
+\revision{$\vecDT = \left \{1.0,\ldots,1.0 \right \}$}{1.2} using: (a) homogeneous \revision{$\vecDT = \left \{2.5,\ldots,2.5 \right \}$}{1.2} and \revision{$\vecDT = \left \{5.0,\ldots,5.0 \right \}$}{1.2}; and (b) non-homogeneous
+\revision{$\vecDT = \left \{1.0, 1.05, 1.1, 1.16, \ldots , 2.29, 2.41, 2.5 \right \}$}{1.2}
+\revout{$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$}.  Here we see
 that (b) achieves accuracy in the near-term that somewhat degrades over
 the long-term, where accuracy will be less critical for receding horizon control.}
 %% Note: would actually be nice to say something about
@@ -360,8 +367,9 @@ Formally, for all~$\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
 a free variable to be optimized.
 %
 In order to obtain a valid control plan, we enforce that one phase of traffic
-light \tl is always active at any interval~$n$~\eqref{c:onlyOnePhaseOn} and that
-phase changes happen sequentially~\eqref{c:seqPhases}, i.e., if phase~$k$ was
+light \tl is always active at any interval~$n$~\eqref{c:onlyOnePhaseOn}, and 
+\revision{ensure cyclic phase polices }{4.2} \revinout{where }{that }{4.2}
+phase changes \revinout{follow a fixed ordered sequence }{happen sequentially}{4.2}~\eqref{c:seqPhases}, i.e., if phase~$k$ was
 active during interval~$n-1$ and has become inactive in interval~$n$, then
 phase~$k+1$ must be active in interval~$n$.
 %

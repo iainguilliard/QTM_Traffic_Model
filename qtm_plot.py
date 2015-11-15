@@ -6,7 +6,7 @@ from matplotlib.patches import Arc,Arrow,Circle
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.collections import LineCollection
 import numpy as np
-import json
+import ujson as json
 import sys
 import argparse
 import os
@@ -18,6 +18,43 @@ import zipfile
 import zlib
 import pandas as pd
 from IPython.display import display
+import time as clock_time
+import gc
+
+def find_paths(data):
+    paths = []
+    for flow in  data["Flows"].keys():
+        f = flow.split('_')
+        q1 = int(f[0])
+        q2 = int(f[1])
+        found_q1 = False
+        found_q2 = False
+        p1 = None
+        p2 = None
+        for p in paths:
+            if q1 in p:
+                found_q1 = True
+                p1 = p
+
+            if q2 in p:
+                found_q2 = True
+                p2 = p
+
+        if found_q1 and found_q2:
+            if p1 == p2:
+                print "Error! queue %d->%d already added!" % (q1,q2)
+            else:
+                paths.remove(p2)
+                p1 += p2
+        elif found_q1:
+            p1.insert(p1.index(q1)+1,q2)
+        elif found_q2:
+            p2.insert(p2.index(q2),q1)
+        else:
+            paths.append([q1,q2])
+        #print paths
+    return paths
+
 
 def calc_total_stops(data,results):
     Queues = data['Queues']
@@ -394,7 +431,7 @@ def plot_circle_label(ax,label,x,y,r):
     ax.add_patch(p)
     ax.text(x-2,y-2,label,fontsize=10,color='k')
 
-def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,debug=False):
+def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,delay=False,debug=False):
 
     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
 
@@ -1073,7 +1110,7 @@ def calc_min_travel_time(data,args):
             total_q_in+=q_in
     return min_travel_time,total_q_in
 
-def plot_anotations(ax,args):
+def plot_annotations(ax,args):
     if args.annotate_labels is not None and args.annotate_x is not None and args.annotate_y is not None:
         assert len(args.annotate_labels) == len(args.annotate_x) == len(args.annotate_y)
         for i,_ in enumerate(args.annotate_labels):
@@ -1206,25 +1243,31 @@ def plot_box_plot(args):
         props3 = dict(markeredgecolor=args.color[c_i],
                       markerfacecolor=args.color[c_i])
         #print boxprops,c_i,len(args.color)
+
         ax[plot_i].boxplot(Y, vert=True, showmeans=True, widths=0.5, whis=1e99) #, boxprops=props, whiskerprops=props3, capprops=props,
                       #medianprops=props, meanprops=props3)#,flierprops=props3,positions=X)
         #Y = [plot_data[x][1] for x in X]
         #ax.plot(X,Y,c=args.color[c_i], label=plot_label,marker='x')
-        ax[plot_i].axvline(3.5,color='k')
-
+        if args.draw_vlines is not None:
+            for vline_offset in args.draw_vlines:
+                ax[plot_i].axvline(vline_offset,color='k')
+        #ax[plot_i].axvline(3.5,color='k')
         if args.x_limit:
             ax[plot_i].set_xlim(args.x_limit[0], args.x_limit[1])
         if args.y_limit:
             ax[plot_i].set_ylim(args.y_limit[0], args.y_limit[1])
         ax[plot_i].grid()
-
-        ax[plot_i].set_xticklabels(plot_labels,rotation='vertical')
+        if args.box_plot_labels_vertical:
+            rotation = 'vertical'
+        else:
+            rotation = 'horizontal'
+        ax[plot_i].set_xticklabels(plot_labels,rotation=rotation)
         if args.title:
             ax[plot_i].set_title(args.title[plot_i % len(args.title)])
         if i+1 < len(args.linestyle): i += 1
         if c_i+1 < len(args.color): c_i += 1
         if l_i+1 < len(args.linestyle): l_i += 1
-        plot_anotations(ax[plot_i],args)
+        plot_annotations(ax[plot_i],args)
 
     if args.plot_cpu_time:
         ax[0].set_ylabel('Solve Time (s)')
@@ -1239,53 +1282,74 @@ def plot_box_plot(args):
     #    pl.title('Box Plot for Delay' )
 
 def open_data_file(file):
+    start_time_open_file = clock_time.time()
     debug("opening data file:" + file)
     if os.path.isfile(file):
         if zipfile.is_zipfile(file):
             path,file_json = os.path.split(os.path.splitext(file)[0]+".json")
-            debug('Loading zip file:' + file + '...')
+            start_time = clock_time.time()
+            debug('   Loading zip file: ...',True)
             zf = zipfile.ZipFile(file)
-            debug( 'Done.' )
-            debug('   Decoding json file:'+file_json + '...')
-            data = json.loads(zf.read(file_json))
-            debug( 'Done.' )
+            debug( 'Done. %.2f sec' % (clock_time.time() - start_time))
+            start_time = clock_time.time()
+            debug('   Reading json    : ...',True)
+            json_file = zf.read(file_json)
+            debug( 'File size: %.2f MB' % (os.path.getsize(file) / float(2**20) ))
+            debug( 'Done. %.2f sec' % (clock_time.time() - start_time))
+            start_time = clock_time.time()
+            debug('   Decoding json   : ...',True)
+            data = json.loads(json_file)
+            debug( 'Done. %.2f sec' % (clock_time.time() - start_time))
         else:
-            debug( 'Loading file:' + file + '...' )
+            start_time = clock_time.time()
+            debug( '  Loading file:  ...' ,True)
             f = open(str(file),'r')
-            debug('Done.')
-            debug('   Decoding json file:' + file + '...')
+            debug('Done. %.2f sec' % (clock_time.time() - start_time))
+            start_time = clock_time.time()
+            debug('   Decoding json: ...',True)
             data  = json.load(f)
-            debug('Done.')
+            debug('Done. %.2f sec' % (clock_time.time() - start_time))
             f.close()
     else:
         data = None
+    debug('Done. %.2f sec' % (clock_time.time() - start_time_open_file))
     return data
 
-def read_files(plot_files):
+def read_files(plot_files, return_file_sets=False):
     debug(str(plot_files))
-    plots=[]
+    data_sets=[]
+    file_sets=[]
+    gc.disable()
     for plot_file in plot_files:
         files = []
+        if os.path.isfile(plot_file):
+            path,name = os.path.split(plot_file)
+            type = name.split('.')[-1]
+            if type == 'json' or type == 'zip':
+                files.append(plot_file)
 
-        path,name = os.path.split(plot_file)
-        type = name.split('.')[-1]
-        if type == 'json' or type == 'zip':
-            files.append(plot_file)
-        else:
-            if len(path) > 0: path += '/'
-            debug('Opening plot file: '+name)
-            f = open(str(plot_file),'r')
-            for line in f:
-                fields = line.split(' ')
-                if len(fields) > 0 and len(fields[0].strip()) > 0:
-                    files.append(path+fields[0].strip())
-                    if len(fields)>1:
-                        labels.append(fields[1])
-            f.close()
-        data = []
+            else:
+                if len(path) > 0: path += '/'
+                debug('Opening plot file: '+name)
+                f = open(str(plot_file),'r')
+
+                for line in f:
+                    fields = line.split(' ')
+                    if len(fields) > 0 and len(fields[0].strip()) > 0:
+
+                        files.append(path+fields[0].strip())
+                        #if len(fields)>1:
+                        #    labels.append(fields[1])
+                f.close()
+        data_files = []
+        files_opened = []
         debug('  Opening files in plot file: '+str(files))
+
         for file in files:
-            data.append(open_data_file(file))
+            data = open_data_file(file)
+            if data is not None:
+                data_files.append(open_data_file(file))
+                files_opened.append(file)
             #if os.path.isfile(file):
                 # if zipfile.is_zipfile(file):
                 #     path,file_json = os.path.split(os.path.splitext(file)[0]+".json")
@@ -1303,8 +1367,14 @@ def read_files(plot_files):
                 #     data.append(json.load(f))
                 #     #print 'Done.'
                 #     f.close()
-        plots.append(data)
-    return plots
+
+        data_sets.append(data_files)
+        file_sets.append(files_opened)
+    gc.enable()
+    if return_file_sets:
+        return data_sets,file_sets
+    else:
+        return data_sets
 
 
 
@@ -1362,7 +1432,7 @@ def plot_av_travel_time(args):
                         delay += trimmed_delay
 
                 av_delay = np.mean(delay)
-                total_traffic_in = calc_total_traffic(d,results)
+                total_traffic_in = calc_total_traffic(d,results,args.queues)
 
                 if len(plot_label)==0:
                     plot_label = '$'+label.split('$')[1]+'$'
@@ -1391,7 +1461,7 @@ def plot_av_travel_time(args):
         if c_i+1 < len(args.color): c_i += 1
         if m_i+1 < len(args.marker): m_i += 1
         i += 1
-    plot_anotations(ax,args)
+    plot_annotations(ax,args)
     if args.x_limit:
         ax.set_xlim(args.x_limit[0], args.x_limit[1])
     if args.y_limit:
@@ -1479,13 +1549,75 @@ def plot_av_delay( plot_data_files, args):
             results = d['Out']
             if 'Run' in results:
                 results = results['Run'][0]
+
+            if 'Step' in results:
+                N = results['Step'][0]['N']
+            else:
+                N = results['N']
             av_delay, total_traffic_in = get_av_delay(d,args)
             Q_IN_duration = calc_in_flow_duration(d,results) * args.time_factor
             #print total_traffic_in,Q_IN_duration,(Q_IN_duration / 3600.0),total_traffic_in / (Q_IN_duration / 3600.0)
             plot_Y[-1].append(av_delay)
-            plot_X[-1].append(total_traffic_in / (Q_IN_duration / 3600.0))
-    return plot_X,plot_Y,'Network traffic demand (vehicles/hour)','Average delay per vehicle (s)'
+            if args.x_var == 'N':
+                plot_X[-1].append(N)
+            else:
+                plot_X[-1].append(total_traffic_in / (Q_IN_duration / 3600.0))
+        if args.x_var == 'N':
+            x_label = 'N (number of time samples)'
+        else:
+            x_label = 'Network traffic demand (vehicles/hour)'
 
+    return plot_X,plot_Y,x_label,'Average delay per vehicle (s)'
+
+def plot_travel_time(plot_data_files,args):
+    plot_X = []
+    plot_Y = []
+
+    if args.plot_travel_time_ref is not None:
+        ref_file = open_data_file(args.plot_travel_time_ref)
+        ref = ref_file['Out']['total_travel_time']
+    else:
+        ref = None
+
+    for i,data in enumerate(plot_data_files):
+
+        plot_X.append([])
+        plot_Y.append([])
+
+
+        for d in data:
+            results = d['Out']
+            if 'Run' in results:
+                result_set = results['Run']
+            else:
+                result_set = [results]
+            total_travel_time = 0
+            for results in result_set:
+                total_travel_time += results['total_travel_time']
+            if ref is not None:
+                plot_Y[-1].append(((total_travel_time / len(result_set)) - ref) / ref * 100)
+            else:
+                plot_Y[-1].append(total_travel_time / len(result_set))
+            if args.x_var == 'N':
+                if 'Step' in result_set[0]:
+                    N = result_set[0]['Step'][0]['N']
+                else:
+                    N = result_set[0]['N']
+                plot_X[-1].append(N)
+            else:
+                Q_IN_duration = calc_in_flow_duration(d,result_set[0]) * args.time_factor
+                total_traffic_in = calc_total_traffic(d,result_set[0],args.queues)
+                plot_X[-1].append(total_traffic_in / (Q_IN_duration / 3600.0))
+        if args.x_var == 'N':
+            x_label = 'N (number of time samples)'
+        else:
+            x_label = 'Network traffic demand (vehicles/hour)'
+        if args.plot_travel_time_ref is not None:
+            y_label = '% increase in total travel time'
+        else:
+            y_label = 'total travel time (s)'
+
+    return plot_X,plot_Y,x_label,y_label
 
 def plot_parameter(plot,args):
 
@@ -1495,8 +1627,9 @@ def plot_parameter(plot,args):
         fig.set_size_inches(args.figsize[0], args.figsize[1])
     else:
         fig.set_size_inches(15, 7)
-
+    #start_time = clock_time.time()
     plot_data_files = read_files(args.files)
+    #print 'load time:',clock_time.time() - start_time
     titles = []
 
     plot_X,plot_Y,xlabel,ylabel = plot( plot_data_files, args)
@@ -1532,14 +1665,20 @@ def plot_parameter(plot,args):
         if c_i+1 < len(args.color): c_i += 1
         if m_i+1 < len(args.marker): m_i += 1
         i += 1
-    plot_anotations(ax,args)
+    plot_annotations(ax,args)
     if args.x_limit:
         ax.set_xlim(args.x_limit[0], args.x_limit[1])
     if args.y_limit:
         ax.set_ylim(args.y_limit[0], args.y_limit[1])
     ax.grid()
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    if args.x_label != ' ':
+        ax.set_xlabel(args.x_label)
+    else:
+        ax.set_xlabel(xlabel)
+    if args.y_label != ' ':
+        ax.set_ylabel(args.y_label)
+    else:
+        ax.set_ylabel(ylabel)
     ax.legend(loc='best')
     if args.title:
         pl.title(args.title[0])
@@ -1649,7 +1788,8 @@ def plot_av_travel_time_N(args):
                     #print 'run=',run
                     results = d['Out']['Run'][run]
                 #print results.keys()
-                #total_travel_time = calc_total_travel_time(d,results)
+
+                #total_travel_time += calc_total_travel_time(d,results)
                 total_travel_time += results['total_travel_time']
                 solve_time=0
                 if args.plot_cpu_time:
@@ -1684,6 +1824,7 @@ def plot_av_travel_time_N(args):
                 #time = results['t']
                 #total_time = time[-1] - time[0]
                 min_TT = min(results['total_travel_time'],min_TT)
+            av_delay,total_traffic_in = get_av_delay(d,args)
 
             if args.plot_cpu_time:
                 plot_data[-1][solve_time]=total_travel_time/runs
@@ -1707,6 +1848,7 @@ def plot_av_travel_time_N(args):
 
     if ref_file != None:
         min_TT = ref_file['Out']['total_travel_time']
+        #min_TT = calc_total_travel_time(ref_file,ref_file['Out']) #get_av_delay(ref_file,args)
 
     i=0
     c_i=0
@@ -1761,128 +1903,128 @@ def plot_av_travel_time_N(args):
 
 
 
-def plot_travel_time(args):
-    pl.clf()
-    fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
-    if args.figsize:
-        fig.set_size_inches(args.figsize[0], args.figsize[1])
-    else:
-        fig.set_size_inches(15, 7)
-    titles=[]
-    i=0
-    c_i=0
-
-    l_i=0
-    labels=[]
-    if args.labels: labels=args.labels
-    min_TT = 1e9
-    plot_data = []
-    plot_data_mf = []
-    plot_data_results = []
-    for file in args.files:
-        files = []
-
-        path,name = os.path.split(file)
-        if len(path) > 0: path += '/'
-
-        f = open(str(file),'r')
-        for line in f:
-            fields = line.split(' ')
-            if len(fields) > 0:
-                files.append(path+fields[0].strip())
-                if len(fields)>1:
-                    labels.append(fields[1])
-        f.close()
-        data = []
-        for file in files:
-            if os.path.isfile(file):
-                f = open(str(file),'r')
-                data.append(json.load(f))
-                f.close()
-
-        plot_data.append( dict())
-        plot_data_mf.append( dict())
-        plot_label=''
-        if len(labels)>0: plot_label = labels[l_i]
-        annotate=False
-        if i < len(args.annotate) and args.annotate[i]=='y':
-            annotate=True
-
-        for d in data:
-
-            titles.append(d['Title'])
-            results = d['Out']
-            label =  d['Out']['label']
-            if args.plot_travel_time_DT:
-                N = int(1/results['DT'][0])
-                #N = results['DT'][0]
-
-            elif 'Step' in results:
-
-                N = len(d['Out']['Step'][0]['t'])-1
-            else:
-                N = len(results['t'])-1
-            if args.step != None:
-                if 'Step' in results:
-                    results = d['Out']['Step'][args.step]
-                    label = results['label']
-
-            total_travel_time = calc_total_travel_time(d,results)
-
-            if len(plot_label)==0:
-                plot_label = '$'+label.split('$')[1]+'$'
-
-            time = results['t']
-            total_time = time[-1] - time[0]
-
-            plot_data[-1][N]=total_travel_time
-
-            if annotate and 'plan' in results:
-                plot_data_mf[-1][N]=results['plan']['major_frame']
-            else:
-                plot_data_mf[-1][N]=0
-            min_TT = min(total_travel_time,min_TT)
-        i+=1
-    i=0
-    c_i=0
-
-    l_i=0
-    labels=[]
-    if args.labels: labels=args.labels
-    for plot in plot_data:
-        if len(labels)>0:
-            plot_label = labels[l_i]
-        else:
-            plot_label = '$'+label.split('$')[1]+'$'
-        X = sorted(plot)
-        Y = [((plot[x]-min_TT)/min_TT)*100 for x in X]
-        ax.plot(X,Y,c=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,marker=args.marker)
-        for j,x in enumerate(sorted(plot_data_mf[i])):
-            if plot_data_mf[i][x]>0:
-                label_test=True
-                if args.x_limit and (X[j] < args.x_limit[0] or X[j] > args.x_limit[1]):
-                    label_test=False
-                if args.y_limit and (Y[j] < args.y_limit[0] or Y[j] > args.y_limit[1]):
-                    label_test=False
-                if label_test == True:
-                    ax.text(X[j],Y[j],plot_data_mf[i][x],size=8,color=args.color[c_i])
-        if l_i+1 < len(args.linestyle): l_i += 1
-        if c_i+1 < len(args.color): c_i += 1
-        i += 1
-
-    if args.x_limit:
-        ax.set_xlim(args.x_limit[0], args.x_limit[1])
-    if args.y_limit:
-        ax.set_ylim(args.y_limit[0], args.y_limit[1])
-    ax.grid()
-    ax.set_xlabel('N (number of time samples)')
-    ax.set_ylabel('% increase in total travel time') #ax.set_ylabel('Total Travel Time')
-    ax.legend(loc='best')
-    if args.title:
-        pl.title(args.title[0])
-    else:
-        pl.title('Number of time samples vs % increase in total travel time' )
-
+# def plot_travel_time(args):
+#     pl.clf()
+#     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False)
+#     if args.figsize:
+#         fig.set_size_inches(args.figsize[0], args.figsize[1])
+#     else:
+#         fig.set_size_inches(15, 7)
+#     titles=[]
+#     i=0
+#     c_i=0
+#
+#     l_i=0
+#     labels=[]
+#     if args.labels: labels=args.labels
+#     min_TT = 1e9
+#     plot_data = []
+#     plot_data_mf = []
+#     plot_data_results = []
+#     for file in args.files:
+#         files = []
+#
+#         path,name = os.path.split(file)
+#         if len(path) > 0: path += '/'
+#
+#         f = open(str(file),'r')
+#         for line in f:
+#             fields = line.split(' ')
+#             if len(fields) > 0:
+#                 files.append(path+fields[0].strip())
+#                 if len(fields)>1:
+#                     labels.append(fields[1])
+#         f.close()
+#         data = []
+#         for file in files:
+#             if os.path.isfile(file):
+#                 f = open(str(file),'r')
+#                 data.append(json.load(f))
+#                 f.close()
+#
+#         plot_data.append( dict())
+#         plot_data_mf.append( dict())
+#         plot_label=''
+#         if len(labels)>0: plot_label = labels[l_i]
+#         annotate=False
+#         if i < len(args.annotate) and args.annotate[i]=='y':
+#             annotate=True
+#
+#         for d in data:
+#
+#             titles.append(d['Title'])
+#             results = d['Out']
+#             label =  d['Out']['label']
+#             if args.plot_travel_time_DT:
+#                 N = int(1/results['DT'][0])
+#                 #N = results['DT'][0]
+#
+#             elif 'Step' in results:
+#
+#                 N = len(d['Out']['Step'][0]['t'])-1
+#             else:
+#                 N = len(results['t'])-1
+#             if args.step != None:
+#                 if 'Step' in results:
+#                     results = d['Out']['Step'][args.step]
+#                     label = results['label']
+#
+#             total_travel_time = calc_total_travel_time(d,results)
+#
+#             if len(plot_label)==0:
+#                 plot_label = '$'+label.split('$')[1]+'$'
+#
+#             time = results['t']
+#             total_time = time[-1] - time[0]
+#
+#             plot_data[-1][N]=total_travel_time
+#
+#             if annotate and 'plan' in results:
+#                 plot_data_mf[-1][N]=results['plan']['major_frame']
+#             else:
+#                 plot_data_mf[-1][N]=0
+#             min_TT = min(total_travel_time,min_TT)
+#         i+=1
+#     i=0
+#     c_i=0
+#
+#     l_i=0
+#     labels=[]
+#     if args.labels: labels=args.labels
+#     for plot in plot_data:
+#         if len(labels)>0:
+#             plot_label = labels[l_i]
+#         else:
+#             plot_label = '$'+label.split('$')[1]+'$'
+#         X = sorted(plot)
+#         Y = [((plot[x]-min_TT)/min_TT)*100 for x in X]
+#         ax.plot(X,Y,c=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,marker=args.marker)
+#         for j,x in enumerate(sorted(plot_data_mf[i])):
+#             if plot_data_mf[i][x]>0:
+#                 label_test=True
+#                 if args.x_limit and (X[j] < args.x_limit[0] or X[j] > args.x_limit[1]):
+#                     label_test=False
+#                 if args.y_limit and (Y[j] < args.y_limit[0] or Y[j] > args.y_limit[1]):
+#                     label_test=False
+#                 if label_test == True:
+#                     ax.text(X[j],Y[j],plot_data_mf[i][x],size=8,color=args.color[c_i])
+#         if l_i+1 < len(args.linestyle): l_i += 1
+#         if c_i+1 < len(args.color): c_i += 1
+#         i += 1
+#
+#     if args.x_limit:
+#         ax.set_xlim(args.x_limit[0], args.x_limit[1])
+#     if args.y_limit:
+#         ax.set_ylim(args.y_limit[0], args.y_limit[1])
+#     ax.grid()
+#     ax.set_xlabel('N (number of time samples)')
+#     ax.set_ylabel('% increase in total travel time') #ax.set_ylabel('Total Travel Time')
+#     ax.legend(loc='best')
+#     if args.title:
+#         pl.title(args.title[0])
+#     else:
+#         pl.title('Number of time samples vs % increase in total travel time' )
+#
 
 
 def plot_cpu_time(args):
@@ -2116,11 +2258,12 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
     labels=[]
     data_sets = []
     files=[]
-    if args.labels: labels=args.labels
+
 
     for file in args.files:
         data_sets.append(open_data_file(file))
-
+        labels.append(file)
+    if args.labels: labels=args.labels
     xl_i=0
     yl_i=0
 
@@ -2138,131 +2281,142 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                     results = results['Run'][args.run[j]]
                 else:
                     results = results['Run'][0]
-            if args.steps != None and len(args.steps)>j:
-                if 'Step' in results and args.steps[j] > 0:
-                    results = results['Step'][args.steps[j]]
-            ls=args.linestyle[ls_i]
-            col=args.color[c_i]
-            marker = args.marker[m_i]
-            label = args.labels[l_i]
-            xlabel=''
-            ylabel=''
-            if args.x_label is not None:
-                xlabel = args.x_label[xl_i]
-            if args.y_label is not None:
-                ylabel = args.y_label[yl_i]
-            t=[x * args.time_factor for x in results['t']]
+            plots = 1
+            if args.step != None and len(args.step)>j and 'Step' in results:
+                #print args.step[j],len(results['Step']),
+                plots = max(1,min(len(results['Step']),len(args.step[j])))
+                #print plots
+            run_results = results
+            for step_i,plot in enumerate(range(plots)):
+                #print 'step:',step_i
+                if 'Step' in run_results and args.step is not None and  len(args.step[j]) > 0:
+                    #print 'using step:',step_i
+                    results = run_results['Step'][args.step[j][step_i]]
+                ls=args.linestyle[ls_i]
+                col=args.color[c_i]
+                marker = args.marker[m_i]
+                label = labels[l_i]
+                xlabel=''
+                ylabel=''
+                if args.x_label is not None:
+                    xlabel = args.x_label[xl_i]
+                if args.y_label is not None:
+                    ylabel = args.y_label[yl_i]
+                t=[x * args.time_factor for x in results['t']]
 
-            if var[0:2]=='l_':
-                l = int((var.split('_'))[1])
+                if var[0:2]=='l_':
+                    l = int((var.split('_'))[1])
 
-                if l < len(data['Lights']):
-                    num_p = len(data['Lights'][l]['P_MAX'])
-                    N=len(t)
-                    p = [ [ results['d_{%d,%d}' % (l,k)][0] ]*N for k in range(num_p)]
+                    if l < len(data['Lights']):
+                        num_p = len(data['Lights'][l]['P_MAX'])
+                        N=len(t)
+                        p = [ [ results['d_{%d,%d}' % (l,k)][0] ]*N for k in range(num_p)]
 
-                    for k in range(num_p):
-                        P_MAX=data['Lights'][l]['P_MAX'][k]
+                        for k in range(num_p):
+                            P_MAX=data['Lights'][l]['P_MAX'][k]
+                            P_MIN=data['Lights'][l]['P_MIN'][k]
+                            for n,pk in enumerate(results['p_{%d,%d}' % (l,k)]):
+                                if n==0 and p[k][n]==0: p[k][n]=P_MIN
+                                if pk<1e-6:
+                                    p[k][n]=results['d_{%d,%d}' % (l,k)][n]
+
+                                else:
+                                    if n>0: p[k][n]=p[k][n-1]
+
+                        c = [ sum([p[k][n] for k in range(num_p) ]) for n in range(N)]
+
+                        pl_p = [ [ 0 ]*N for k in range(num_p+1)]
+                        if k>2:
+                            pl_p[0] = [-c[n]/2 for n in range(N)]
+
+                            ax[i].plot(t,[x+j*P_MAX*num_p+P_MAX for x in pl_p[0]],  marker=marker, linestyle = ls, color=col)
+                            for k in range(1,num_p+1):
+                                pl_p[k] = [pl_p[k-1][n]+p[k-1][n] for n in range(N)]
+                                ax[i].plot(t,[x+j*P_MAX*num_p+P_MAX for x in pl_p[k]], marker=marker, linestyle = ls, color=col)
+                        else:
+                            ax[i].plot(t,[-x+j*P_MAX*2+P_MAX for x in p[0]],  marker=marker,  linestyle = ls, color=col)
+                            ax[i].plot(t,[x+j*P_MAX*2+P_MAX for x in p[1]],  marker=marker, linestyle = ls, color=col)
+                            ax[i].plot(t,[j*P_MAX*2+P_MAX for x in p[1]],  marker=marker, linestyle = ls, color=col)
+
+
+                elif var[0:2]=='p_' and 1==2:
+
+                    l = int(((var[3:-1].split('_'))[0]).split(',')[0])
+                    k = int(((var[3:-1].split('_'))[0]).split(',')[1])
+                    if l < len(data['Lights']):
+                        num_p = len(data['Lights'][l]['P_MAX'])
+                        N=len(t)
+                        p = [ results['d_{%d,%d}' % (l,k)][0] ]*N
+
                         P_MIN=data['Lights'][l]['P_MIN'][k]
                         for n,pk in enumerate(results['p_{%d,%d}' % (l,k)]):
-                            if n==0 and p[k][n]==0: p[k][n]=P_MIN
+                            if n==0 and p[n]==0: p[n]=P_MIN
                             if pk<1e-6:
-                                p[k][n]=results['d_{%d,%d}' % (l,k)][n]
+                                p[n]=results['d_{%d,%d}' % (l,k)][n]
 
                             else:
-                                if n>0: p[k][n]=p[k][n-1]
+                                if n>0: p[n]=p[n-1]
 
-                    c = [ sum([p[k][n] for k in range(num_p) ]) for n in range(N)]
-
-                    pl_p = [ [ 0 ]*N for k in range(num_p+1)]
-                    if k>2:
-                        pl_p[0] = [-c[n]/2 for n in range(N)]
-
-                        ax[i].plot(t,[x+j*P_MAX*num_p+P_MAX for x in pl_p[0]],  marker=marker, linestyle = ls, color=col)
-                        for k in range(1,num_p+1):
-                            pl_p[k] = [pl_p[k-1][n]+p[k-1][n] for n in range(N)]
-                            ax[i].plot(t,[x+j*P_MAX*num_p+P_MAX for x in pl_p[k]], marker=marker, linestyle = ls, color=col)
-                    else:
-                        ax[i].plot(t,[-x+j*P_MAX*2+P_MAX for x in p[0]],  marker=marker,  linestyle = ls, color=col)
-                        ax[i].plot(t,[x+j*P_MAX*2+P_MAX for x in p[1]],  marker=marker, linestyle = ls, color=col)
-                        ax[i].plot(t,[j*P_MAX*2+P_MAX for x in p[1]],  marker=marker, linestyle = ls, color=col)
-
-
-            elif var[0:2]=='p_' and 1==2:
-
-                l = int(((var[3:-1].split('_'))[0]).split(',')[0])
-                k = int(((var[3:-1].split('_'))[0]).split(',')[1])
-                if l < len(data['Lights']):
-                    num_p = len(data['Lights'][l]['P_MAX'])
-                    N=len(t)
-                    p = [ results['d_{%d,%d}' % (l,k)][0] ]*N
-
-                    P_MIN=data['Lights'][l]['P_MIN'][k]
-                    for n,pk in enumerate(results['p_{%d,%d}' % (l,k)]):
-                        if n==0 and p[n]==0: p[n]=P_MIN
-                        if pk<1e-6:
-                            p[n]=results['d_{%d,%d}' % (l,k)][n]
-
+                    ax[i].plot(t,p, label=results['label'], marker=marker, linestyle = ls, color=col)
+                    ax[i].set_ylim(-1,data['Lights'][l]['P_MAX'][k]+1 )
+                elif var in results.keys():
+                    #if var[0] == 'l':
+                    if var[0:3]=='q_{':
+                        DT = results['DT']
+                        #ax[i].plot(t,[results[var][0]]+[results[var][x]/DT[x-1] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col) #/DT[x_i]
+                        if args.io_vars_as_rate == True:
+                            ax[i].plot(t,[results[var][x]/DT[x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
                         else:
-                            if n>0: p[n]=p[n-1]
-
-                ax[i].plot(t,p, label=results['label'], marker=marker, linestyle = ls, color=col)
-                ax[i].set_ylim(-1,data['Lights'][l]['P_MAX'][k]+1 )
-            elif var in results.keys():
-                #if var[0] == 'l':
-                if var[0:3]=='q_{':
-                    DT = results['DT']
-                    #ax[i].plot(t,[results[var][0]]+[results[var][x]/DT[x-1] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col) #/DT[x_i]
-                    if args.io_vars_as_rate == True:
-                        ax[i].plot(t,[results[var][x]/DT[x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
+                            ax[i].plot(t,[results[var][x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
                     else:
-                        ax[i].plot(t,[results[var][x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
-                else:
-                    ax[i].plot(t,[results[var][x] for x in range(len(t))],marker=marker, label=label, linestyle = ls, color=col)
-                #else:
-                #    ax[i].plot(t,results[var], color=colors[j])
-
-            if ylabel == ' ':
-                ax[i].set_ylabel(r'$%s_{%s}$' % tuple(var.split('_')),fontsize=16)
-            else:
-                ax[i].set_ylabel(ylabel)
-            if xlabel == ' ':
-                ax[i].set_xlabel('time (s)')
-            else:
-                ax[i].set_xlabel(xlabel)
-
-            if var in results.keys():
-
-                if var[0] == 'q' or var[0] == 'f':
-                    if var[2] != '{':
-                        #ax[i].set_ylim(-1,data['Queues'][int(var[3:].split(',')[0])]['Q_MAX']+2)
+                        ax[i].plot(t,[results[var][x] for x in range(len(t))],marker=marker, label=label, linestyle = ls, color=col)
                     #else:
-                        ax[i].set_ylim(-1,data['Queues'][int(var[2:])]['Q_MAX']+2)
-                elif var[0:2] == 'dq':
-                    if var[3] == '{':
-                        ax[i].set_ylim(-1,data['Queues'][int(var[4:].split(',')[0])]['Q_MAX']+2)
+                    #    ax[i].plot(t,results[var], color=colors[j])
+
+                if ylabel == ' ':
+                    if '-' in var:
+                        ax[i].set_ylabel(r'$%s_{%s}$' % tuple(var.split('_')),fontsize=16)
                     else:
-                        ax[i].set_ylim(-1,data['Queues'][int(var[3:])]['Q_MAX']+2)
-                elif var[0] == 'd' and var[1] != 'q':
-                    lp = var[3:-1].split(',')
-                    ax[i].set_ylim(-1,data['Lights'][int(lp[0])]['P_MAX'][int(lp[1])]+2)
-                elif var[0] == 'l':
-                    l = int(var[2:])
-                    ax[i].set_ylim(-1,len(data['Lights'][l]['P_MAX']) )
-                elif var[0] == 'p':
-                    None
-                if args.y_limit is not None:
-                    ax[i].set_ylim(args.y_limit[0],args.y_limit[1])
-                #else:
-                #    ax[i].set_ylim(0,1)
-            ax[i].legend(loc='best')
-            if args.x_limit != None:
-                ax[i].set_xlim(args.x_limit[0],args.x_limit[1])
-            ax[i].grid(True)
-            if ls_i+1 < len(args.linestyle): ls_i += 1
-            if c_i+1 < len(args.color): c_i += 1
-            if l_i+1 < len(labels): l_i += 1
-            if m_i+1 < len(args.marker): m_i += 1
+                        ax[i].set_ylabel(var,fontsize=16)
+                else:
+                    ax[i].set_ylabel(ylabel)
+                if xlabel == ' ':
+                    ax[i].set_xlabel('time (s)')
+                else:
+                    ax[i].set_xlabel(xlabel)
+
+                if var in results.keys():
+
+                    if var[0] == 'q' or var[0] == 'f':
+                        if var[2] != '{':
+                            #ax[i].set_ylim(-1,data['Queues'][int(var[3:].split(',')[0])]['Q_MAX']+2)
+                        #else:
+                            ax[i].set_ylim(-1,data['Queues'][int(var[2:])]['Q_MAX']+2)
+                    elif var[0:2] == 'dq':
+                        if var[3] == '{':
+                            ax[i].set_ylim(-1,data['Queues'][int(var[4:].split(',')[0])]['Q_MAX']+2)
+                        else:
+                            ax[i].set_ylim(-1,data['Queues'][int(var[3:])]['Q_MAX']+2)
+                    elif var[0] == 'd' and var[1] != 'q':
+                        lp = var[3:-1].split(',')
+                        ax[i].set_ylim(-1,data['Lights'][int(lp[0])]['P_MAX'][int(lp[1])]+2)
+                    elif var[0] == 'l':
+                        l = int(var[2:])
+                        ax[i].set_ylim(-1,len(data['Lights'][l]['P_MAX']) )
+                    elif var[0] == 'p':
+                        None
+                    if args.y_limit is not None:
+                        ax[i].set_ylim(args.y_limit[0],args.y_limit[1])
+                    #else:
+                    #    ax[i].set_ylim(0,1)
+                ax[i].legend(loc='best')
+                if args.x_limit != None:
+                    ax[i].set_xlim(args.x_limit[0],args.x_limit[1])
+                ax[i].grid(True)
+                if ls_i+1 < len(args.linestyle): ls_i += 1
+                if c_i+1 < len(args.color): c_i += 1
+                if l_i+1 < len(labels): l_i += 1
+                if m_i+1 < len(args.marker): m_i += 1
         if xl_i+1 < len(args.x_label): xl_i += 1
         if yl_i+1 < len(args.y_label): yl_i += 1
 
@@ -2381,6 +2535,24 @@ def plot_flow_profiles(args): #data_sets,params,colors,line_styles,steps):
     if args.title:
         pl.title(args.title[0])
 
+def dump_keys(args): #data_sets,params,colors,line_styles,steps):
+
+
+    data_sets,loaded_file_sets = read_files(args.files,return_file_sets=True)
+
+    for file_i,data_files in enumerate(data_sets):
+        for j,data in enumerate(data_files):
+            file_name = loaded_file_sets[file_i][j]
+            print 'File:',file_name
+            print '\n  '.join(data['Out'].keys())
+            if 'Run' in data['Out']:
+                for i,run in enumerate(data['Out']['Run']):
+                    print '====Run',i,'\n','\n    '.join(run.keys())
+                    if 'Step' in run:
+                        for j,step in enumerate(run['Step']):
+                            print '------Step',j,'\n', '\n      '.join(step.keys())
+
+
 
 def dump_stats(args):
 
@@ -2484,95 +2656,177 @@ def dump_stats(args):
 
 def dump_sample_vars(args): #data_sets,params,colors,line_styles,steps):
 
-    data_sets = []
-    files=[]
-    if args.labels: labels=args.labels
+    # data_sets = []
+    # files=[]
+    # if args.labels: labels=args.labels
+    #
+    # for file in args.files:
+    #     if file.endswith('.json'):
+    #         files.append(file)
+    #     else:
+    #         f = open(str(file),'r')
+    #         for line in f:
+    #             fields = line.split(' ')
+    #             if len(fields) > 2:
+    #                 files.append(fields[2])
+    #         f.close()
+    # loaded_files=[]
+    # for file in files:
+    #     if os.path.isfile(file):
+    #         loaded_files.append(file)
+    #         f = open(str(file),'r')
+    #         data_sets.append(json.load(f))
+    #         f.close()
 
-    for file in args.files:
-        if file.endswith('.json'):
-            files.append(file)
-        else:
-            f = open(str(file),'r')
-            for line in f:
-                fields = line.split(' ')
-                if len(fields) > 2:
-                    files.append(fields[2])
-            f.close()
-    loaded_files=[]
-    for file in files:
-        if os.path.isfile(file):
-            loaded_files.append(file)
-            f = open(str(file),'r')
-            data_sets.append(json.load(f))
-            f.close()
-
+    data_sets,loaded_file_sets = read_files(args.files,return_file_sets=True)
 
     pd.options.display.float_format = '{:20,.2f}'.format
-    for j,data in enumerate(data_sets):
+    for file_i,data_files in enumerate(data_sets):
 
-        results = data['Out']
-        if args.step != None:
-            if 'Step' in results:
-                results = data['Out']['Step'][args.step]
-        t=results['t']
-        #for i,var in enumerate(args.dump_vars):
-        #        if var in results.keys(): print var,'=',results[var]
-        #for k in range(len(t)):
-        #    for i,var in enumerate(args.dump_vars):
-        #        if var in results.keys(): print '%5.2f' % results[var][k],
-        #    print
-        table = np.zeros((len(args.dump_sample_vars),len(t)))
-        for i,var in enumerate(args.dump_sample_vars):
-            if var in results.keys():
-                var_data = results[var]
-                if var == 'DT':  var_data = var_data[:-1]
-                table[i:] = var_data
-        #pd.set_option('display.width', 2000)
-        pd.set_option('display.max_columns', 500)
-        display(pd.DataFrame(table,index=args.dump_sample_vars))
+        for j,data in enumerate(data_files):
+
+            # results = data['Out']
+            # if args.step != None:
+            #     if 'Step' in results:
+            #         results = data['Out']['Step'][args.step]
+
+            runs = 0
+            results = data['Out']
+            if 'Run' in results:
+                runs = len(data['Out']['Run'])
+                if args.run != None:
+                    results = data['Out']['Run'][args.run[0]]
+                else:
+                    results = data['Out']['Run'][0]
+            if args.step != None:
+                if 'Step' in results:
+                    results = results['Step'][args.step[0][0]]
+            for i,var in enumerate(args.dump_sample_vars):
+                if var in results.keys():
+                    len_t = len(results[var])
+                    break
+            #for i,var in enumerate(args.dump_vars):
+            #        if var in results.keys(): print var,'=',results[var]
+            #for k in range(len(t)):
+            #    for i,var in enumerate(args.dump_vars):
+            #        if var in results.keys(): print '%5.2f' % results[var][k],
+            #    print
+            table = np.zeros((len(args.dump_sample_vars),len_t))
+            for i,var in enumerate(args.dump_sample_vars):
+                if var in results.keys():
+                    var_data = results[var]
+                    if var == 'DT':  var_data = var_data[:-1]
+                    table[i:] = var_data
+            #pd.set_option('display.width', 2000)
+            print loaded_file_sets[file_i][j]
+            pd.set_option('display.max_columns', 500)
+            display(pd.DataFrame(table,index=args.dump_sample_vars))
 
 def dump_vars(args): #data_sets,params,colors,line_styles,steps):
 
-    data_sets = []
-    files=[]
-    if args.labels: labels=args.labels
+    # data_sets = []
+    # files=[]
+    # if args.labels: labels=args.labels
+    #
+    # for file in args.files:
+    #     if file.endswith('.json'):
+    #         files.append(file)
+    #     else:
+    #         f = open(str(file),'r')
+    #         for line in f:
+    #             fields = line.split(' ')
+    #             if len(fields) > 2:
+    #                 files.append(fields[2])
+    #         f.close()
+    # loaded_files=[]
+    # for file in files:
+    #     if os.path.isfile(file):
+    #         loaded_files.append(file)
+    #         f = open(str(file),'r')
+    #         data_sets.append(json.load(f))
+    #         f.close()
 
-    for file in args.files:
-        if file.endswith('.json'):
-            files.append(file)
-        else:
-            f = open(str(file),'r')
-            for line in f:
-                fields = line.split(' ')
-                if len(fields) > 2:
-                    files.append(fields[2])
-            f.close()
-    loaded_files=[]
-    for file in files:
-        if os.path.isfile(file):
-            loaded_files.append(file)
-            f = open(str(file),'r')
-            data_sets.append(json.load(f))
-            f.close()
-
+    data_sets,loaded_file_sets = read_files(args.files,return_file_sets=True)
 
     pd.options.display.float_format = '{:20,.2f}'.format
-    table = np.zeros((len(data_sets),len(args.dump_vars)))
+    table = {}
+    file_names = []
+    for file_i,data_files in enumerate(data_sets):
 
-    for j,data in enumerate(data_sets):
+        #table = np.zeros((len(data_files),len(args.dump_vars)))
 
-        results = data['Out']
-        if args.step != None:
-            if 'Step' in results:
-                results = data['Out']['Step'][args.step]
+        for j,data in enumerate(data_files):
+            runs = 0
+            results = data['Out']
+            result_list = []
+            file_name = loaded_file_sets[file_i][j]
+            column_tag = []
+            #print file_name
+            if 'Run' in results:
+                runs = len(data['Out']['Run'])
 
-        for i,var in enumerate(args.dump_vars):
-            if var in results.keys():
-                var_data = results[var]
-                table[j,i] = var_data
-    #pd.set_option('display.width', 2000)
+                if args.run != None:
+                    result_list.append(data['Out']['Run'][args.run[0]])
+                    file_names.append('%s: Run %d' %(file_name,args.run[0]))
+                    if args.steps != None:
+                        if 'Step' in data['Out']['Run'][args.run[0]]:
+                            result_list.append(data['Out']['Run'][args.run[0]]['Step'][args.steps[0]])
+                            file_names.append('%s: Run %d Step %d' %(file_name,args.run[0],args.steps[0]))
+                elif args.runs:
+                    file_names.append(file_name)
+                    result_list.append([])
+                    for run in range(runs):
+                        if args.steps != None:
+                            steps = len(data['Out']['Run'][run]['Step'])
+                            for step in range(steps):
+                                result_list[-1].append(data['Out']['Run'][run]['Step'][step])
+                                column_tag.append('(%d,%d)' % (run,step))
+
+                        else:
+                            result_list[-1].append(data['Out']['Run'][run])
+
+                else:
+                    result_list.append(data['Out']['Run'][0])
+                    file_names.append('%s: Run 0' %(file_name))
+            else:
+                result_list.append(results)
+                file_names.append(file_name)
+            print len(result_list),type(result_list[0])
+            for k,result_item in enumerate(result_list):
+                if not isinstance(result_item,list):
+                    restult_item = [result_item]
+                for l,results in enumerate(result_item):
+                    for i,var in enumerate(args.dump_vars):
+                        if var in results.keys():
+                            var_data = results[var]
+                        elif var == 'runs' and 'Run' in data['Out']:
+                            var_data = runs
+                        else:
+                            var_data = None
+                        if var_data is not None:
+                            var_key = var + ' (%d)' % (l)
+                            if var_key not in table:
+                                table[var_key] = []
+                            #table[j,i] = var_data
+
+                            table[var_key].append(var_data)
+    print len(file_names)
+    print table.keys()
+    for data in table.keys(): print len(data)
+        #pd.set_option('display.width', 2000)
     pd.set_option('display.max_columns', 500)
-    display(pd.DataFrame(table,index=loaded_files,columns=args.dump_vars))
+    frame_data = pd.DataFrame(table,index=file_names)
+    display(frame_data) #columns=args.dump_vars
+    return frame_data
+    #if args.out is not None:
+    #    write_file(args.out,frame_data)
+
+def write_file(file_name,frame_data):
+        file_type = file_name[-4:-1]
+        if file_type  == 'csv':
+            frame_data.to_csv(args.out)
+        else:
+            print "file type %s not supported" % file_type
 
 def dump_convergence_stats( args):
     files = [filename for filename in os.listdir('.') if filename.startswith(args.files[0])]
@@ -2645,16 +2899,64 @@ def dump_phases(args): #data_sets,params,colors,line_styles,steps):
             print
 
 
-DEBUG = False
 
-def debug(msg=""):
+
+def dump_network(args):
+    data_sets,loaded_file_sets = read_files(args.files,return_file_sets=True)
+
+    data = data_sets[0][0]
+    paths = find_paths(data)
+    print paths
+    print
+    for path in paths:
+        print '%-20s' % path,
+        for k,i in enumerate(path):
+            q = data['Queues'][i]
+            q_in = ''
+            q_out = ''
+            f_ij = ''
+            l = ''
+            if q['Q_IN'] > 0:
+                q_in = '(%d->)' % q['Q_IN']
+            if q['Q_OUT'] > 0:
+                q_out = '(->%d)' % q['Q_OUT']
+            if k < len(path) - 1:
+                flow = '%d_%d' % (path[k],path[k+1])
+                if flow in data['Flows']:
+                    f_ij = ' %d' % data['Flows'][flow]['F_MAX']
+            if q['Q_P'] is not None:
+                l = '[L%d P%d]' % (q['Q_P'][0],q['Q_P'][1])
+            print '%s__%ss__%s%s %s' %(q_in,q['Q_DELAY'],q_out,f_ij,l),
+        print
+    print
+    for path in paths:
+        print '-q',
+        for i in path:
+            print i,
+    print
+
+
+global DEBUG
+global IN_CR
+
+def debug(msg="",CR=False):
     """
     Display debug messege
     :param msg: The message to display
     :return:
     """
+    global DEBUG
+    global IN_CR
     if DEBUG:
-        print 'DEBUG: '+msg
+        if CR:
+            print 'DEBUG: '+msg,
+            IN_CR = True
+        else:
+            if IN_CR:
+                print msg
+                IN_CR = False
+            else:
+                print 'DEBUG: '+msg
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -2667,8 +2969,10 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--out", help="save the plot as OUT")
     parser.add_argument("-n", help="number of points to plot", type=int, default=0)
     parser.add_argument("--histogram", help="plot a histogram of delay with HISTOGRAM wide bins", type=float)
-    parser.add_argument("--step", help="Use output step STEP",type=int)
+    #parser.add_argument("--step", help="Use output step STEP",type=int)
     parser.add_argument("--run", help="Use output run RUN",nargs='*', type=int)
+    parser.add_argument("--runs", help="Use output run RUN",action="store_true", default=False)
+    parser.add_argument("--step", help="List of steps to use for each plot (use one step arg per file)", action='append', nargs='*', type=int)
     parser.add_argument("--steps", help="List of steps to use for each plot", nargs='*', type=int)
     parser.add_argument("--dump_stats", help="Dump stats from results files",action="store_true", default=False)
     parser.add_argument("--dump_convergence_stats", help="Dump stats from a set results files starting with FILE pattern",action="store_true", default=False)
@@ -2709,6 +3013,7 @@ if __name__ == '__main__':
     parser.add_argument("--markevery", help="maker every MARKEVERY points",nargs='+',type=int,default=[1])
     parser.add_argument("--debug", help="output debug messages", action="store_true", default=False)
     parser.add_argument("--dump_vars", help="Dump raw data for each var in the list",nargs='*')
+    parser.add_argument("--dump_sample_vars", help="Dump table with each element of each sample var in the list",nargs='*')
     parser.add_argument("--dump_phases", help="Dump phases in each file as a list of strings",action="store_true")
     parser.add_argument("--label_inflow", help="label the inflows on queues in network plots",action="store_true")
     parser.add_argument("--annotate", help="List of y|n whether to annotate the points of each plot with the major frame time", default='n')
@@ -2723,11 +3028,20 @@ if __name__ == '__main__':
     parser.add_argument("--time_factor", help="time factor to apply to all plots",type=float,default=1)
     parser.add_argument("--index_label_base", help="base index of queue and light labels in network plots as INDEX_LABEL_BASE",type=int,default=0)
     parser.add_argument("--debug_network", help="annotate network plot with q vars to help debug definition",action="store_true",default=False)
+    parser.add_argument("--dump_network", help="print out network definition for debugging",action="store_true",default=False)
+    parser.add_argument("--dump_keys", help="dump keys in file",action="store_true",default=False)
+    parser.add_argument("--draw_vlines", help="Draw vertical lines on plot at offsets in list", nargs='+', type=float)
+    parser.add_argument("--x_var", help="Variable to plot on x axis", default = '')
+    parser.add_argument("--box_plot_labels_vertical", help="Orient x axis labels on box plot vertically", action="store_true", default = False)
     args = parser.parse_args()
 
     linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.'}
 
-    if args.debug: DEBUG = True
+    if args.debug:
+        DEBUG = True
+    else:
+        DEBUG = False
+    IN_CR = False
 
     for i,style in enumerate(args.linestyle):
         if style in linestyle_map:
@@ -2741,8 +3055,8 @@ if __name__ == '__main__':
         plot_vars(args)
     elif args.plot_flow_profiles:
         plot_flow_profiles(args)
-    elif args.plot_travel_time or args.plot_travel_time_DT:
-        plot_travel_time(args)
+    elif args.plot_travel_time:
+        plot_parameter(plot_travel_time,args)
     elif args.plot_av_travel_time:
         plot_av_travel_time(args)
     elif args.plot_av_delay:
@@ -2750,7 +3064,7 @@ if __name__ == '__main__':
     elif args.plot_delay_diff is not None:
         plot_parameter(plot_delay_diff,args)
     elif args.plot_av_travel_time_N:
-        plot_av_travel_time(args)
+        plot_av_travel_time_N(args)
     elif args.plot_phase_offset:
         plot_phase_offset(args)
 
@@ -2765,11 +3079,17 @@ if __name__ == '__main__':
     elif args.plot_network_delay != '':
         plot_network_delay(args)
     elif args.dump_stats:
-            dump_stats(args)
-    elif args.dump_vars != None:
-        dump_vars(args)
-    elif args.dump_phases != None:
+        dump_stats(args)
+    elif args.dump_vars:
+        frame_data = dump_vars(args)
+    elif args.dump_sample_vars:
+        dump_sample_vars(args)
+    elif args.dump_phases:
         dump_phases(args)
+    elif args.dump_network:
+        dump_network(args)
+    elif args.dump_keys:
+        dump_keys(args)
     else:
         #files=[]
         #data=[]
@@ -2791,7 +3111,12 @@ if __name__ == '__main__':
             plot_delay(plot_data_files[0],args.step,args.queues,args.linestyle,args)
 
     if args.out:
-        pl.savefig(args.out, bbox_inches='tight')
+        file_type = args.out[-3:]
+        #print file_type
+        if file_type  == 'csv':
+            frame_data.to_csv(args.out)
+        else:
+            pl.savefig(args.out, bbox_inches='tight')
     pl.show();
 
 

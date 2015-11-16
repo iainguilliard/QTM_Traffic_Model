@@ -30,7 +30,7 @@ A \textbf{traffic light} $\tl \in \Lset$ is defined as the tuple~$(\CTMIN{\tl},
 
 \begin{itemize}
 %
-\item $\Pset_\tl$ is the set of phases of $\tl$\revision{, and defines the phase sequence}{4.2};
+\item $\Pset_\tl$ is the set of phases of $\tl$;
 %
 \item \CTMIN{\tl} (\CTMAX{\tl}) is the minimum (maximum) allowed cycle time for
   \tl; and
@@ -324,8 +324,8 @@ minimized, which in turn minimizes the delay.
 %
 \caption{Approximations of a queue volume obtained using homogeneous
 \revision{$\vecDT = \left \{1.0,\ldots,1.0 \right \}$}{1.2} using: (a) homogeneous \revision{$\vecDT = \left \{2.5,\ldots,2.5 \right \}$}{1.2} and \revision{$\vecDT = \left \{5.0,\ldots,5.0 \right \}$}{1.2}; and (b) non-homogeneous
-\revision{$\vecDT = \left \{1.0, 1.05, 1.1, 1.16, \ldots , 2.29, 2.41, 2.5 \right \}$}{1.2}
-\revout{$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$}.  Here we see
+\revision{$\vecDT = \left \{1.0, 1.05, 1.1, 1.16, \ldots , 2.29, 2.41, 2.5 \right \}$ and }{1.2}
+$\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.  Here we see
 that (b) achieves accuracy in the near-term that somewhat degrades over
 the long-term, where accuracy will be less critical for receding horizon control.}
 %% Note: would actually be nice to say something about

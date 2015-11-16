@@ -155,14 +155,22 @@ cars/s.
 \begin{figure*}[t!]
 \centering
 %  trim={<left> <lower> <right> <upper>}
-\includegraphics[width=0.75\textwidth]{non_homogeneous_control.png}
-\caption{Receding horizon control. In this example, the problem
+\subfigure[]{
+\label{subfig:nh_control}
+\includegraphics[width=0.75\textwidth]{non_homogeneous_control.png}}
+\subfigure[]{
+\label{subfig:nh_discretizations}
+\includegraphics[width=0.75\textwidth]{non_homogeneous_discretizations.pdf}}
+\caption{(a) Receding horizon control. In this example, the problem
   horizon \TMAX is 40s. The major frames for MILP optimization are
   discretized in 12 time intervals ($\Nn = 12$) and they span 15s and
   30s for homogeneous and non-homogeneous discretizations,
   respectively.  The minor frames represent the prefix of the 
   major frame MILP optimization that is executed.  The horizon
-  recedes by the minor frame duration after each execution.}
+  recedes by the minor frame duration after each execution.
+  (b) The two discretizations used in the experiments, shown with a major frame duration of 40s.
+  From the end of the minor frame time,
+  Non-homogeneous $\Delta t$ 1, $\Delta t$ is linearly interpolated from 0.25 to 0.5 over 10s, and Non-homogeneous $\Delta t$ 2, $\Delta t$ is linearly interpolated from 0.25 to 1.0 over 10s. $\Delta t$ is then held constant to the end of the major frame time}
 \label{fig:multiplan}
 \end{figure*}
 

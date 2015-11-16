@@ -38,11 +38,13 @@ such as SCATS~\trbcitenum{scats80} or SCOOT~\trbcitenum{scoot81}.
 However, there is further opportunity to improve traffic signal
 control even beyond adaptive methods through the use of
 \emph{optimized} controllers \revision{(that incorporate elements of both adaptive and actuated control) }{4.1} as evidenced in a variety of approaches
-ranging from mixed integer (linear)
+\revinout{including}{ranging from}{4.6} mixed integer (linear)
 programming~\trbcitenum{gartner1974optimization,gartner2002arterial,lo1998novel,he2011pamscod,lin2004enhanced,han2012link}
-to heuristic search~\trbcitenum{lo1999dynamic,he2010heuristic}
-\revision{to store and forward with pressure control~\trbcitenum{varaiya2013max} }{4.6} to
-\revinout{schedule driven control}{scheduling}{4.6}~\trbcitenum{xie2012schedule,smith2013surtrac} to reinforcement
+\revinout{,}{to}{4.6} heuristic search~\trbcitenum{lo1999dynamic,he2010heuristic}
+\revision{, queuing delay with pressure control~\trbcitenum{varaiya2013max} 
+and linear program control~\trbcitenum{li2014coupled} }{4.6} \revinout{,}{to}{4.6}
+\revinout{scheduling-driven control}{scheduling}{4.6}~\trbcitenum{xie2012schedule,smith2013surtrac} 
+\revinout{, and}{to}{4.6} reinforcement
 learning~\trbcitenum{el2013multiagent}.  Such optimized
 controllers hold the promise of maximizing existing infrastructure
 capacity by finding more complex (and potentially closer to optimal)
@@ -65,7 +67,8 @@ signal control over an \emph{entire traffic network}~(rather than
 focus on arterial routes) and specifically on improving the
 scalability of these methods for large urban traffic networks.  In our
 investigation of existing approaches in this vein, namely exemplar
-methods in the spirit of~\trbcitenum{lo1998novel,lin2004enhanced,han2012link} that
+methods in the spirit of~\trbcitenum{lo1998novel,lin2004enhanced}
+\revout{~\trbcitenum{han2012link}} that
 use a (modified) cell transmission model
 (CTM)~\trbcitenum{daganzo1994cell,daganzo1995cell} for their underlying
 prediction of traffic flows, we remark that a major drawback is the

@@ -2794,7 +2794,7 @@ def dump_vars(args): #data_sets,params,colors,line_styles,steps):
             print len(result_list),type(result_list[0])
             for k,result_item in enumerate(result_list):
                 if not isinstance(result_item,list):
-                    restult_item = [result_item]
+                    result_item = [result_item]
                 for l,results in enumerate(result_item):
                     for i,var in enumerate(args.dump_vars):
                         if var in results.keys():

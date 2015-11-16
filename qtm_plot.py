@@ -3033,6 +3033,7 @@ if __name__ == '__main__':
     parser.add_argument("--draw_vlines", help="Draw vertical lines on plot at offsets in list", nargs='+', type=float)
     parser.add_argument("--x_var", help="Variable to plot on x axis", default = '')
     parser.add_argument("--box_plot_labels_vertical", help="Orient x axis labels on box plot vertically", action="store_true", default = False)
+    parser.add_argument("--dpi", help="DPI to save plots in", type=int, default = 300)
     args = parser.parse_args()
 
     linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.'}
@@ -3116,7 +3117,7 @@ if __name__ == '__main__':
         if file_type  == 'csv':
             frame_data.to_csv(args.out)
         else:
-            pl.savefig(args.out, bbox_inches='tight')
+            pl.savefig(args.out, bbox_inches='tight',dpi=args.dpi)
     pl.show();
 
 

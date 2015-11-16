@@ -168,9 +168,10 @@ cars/s.
   respectively.  The minor frames represent the prefix of the 
   major frame MILP optimization that is executed.  The horizon
   recedes by the minor frame duration after each execution.
-  (b) The two discretizations used in the experiments, shown with a major frame duration of 40s.
-  From the end of the minor frame time,
-  Non-homogeneous $\Delta t$ 1, $\Delta t$ is linearly interpolated from 0.25 to 0.5 over 10s, and Non-homogeneous $\Delta t$ 2, $\Delta t$ is linearly interpolated from 0.25 to 1.0 over 10s. $\Delta t$ is then held constant to the end of the major frame time}
+  \revision{(b) The two discretizations used in the experiments, shown with a major frame duration of 40s.
+  From the end of the minor frame time, $\Delta t$ is linearly interpolated over 10s from 0.25 to 0.5 
+  for Non-homogeneous $\Delta t$ 1, and 0.25 to 1.0 for Non-homogeneous $\Delta t$ 2. 
+  $\Delta t$ is then held constant to the end of the major frame time}{1.2}}
 \label{fig:multiplan}
 \end{figure*}
 
@@ -183,7 +184,7 @@ formulation in a receding horizon manner: a control plan is
 computed for a pre-defined horizon (smaller than \TMAX) and only a prefix of
 this plan is executed before generating a new control plan. 
 %
-\cref{fig:multiplan} depicts our receding horizon approach and we refer to the
+\cref{subfig:nh_control} depicts our receding horizon approach and we refer to the
 planning horizon as a major frame and its executable prefix as a minor frame.
 %
 Notice that, while the plan for a minor frame is being executed, we can start
@@ -198,10 +199,13 @@ For the homogeneous experiments, \DT[] is kept at 0.25s throughout the major
 frame; therefore, given \Nn, the major frame size equals $\Nn/4$ seconds for the
 homogeneous approach.
 %
-For the non-homogeneous experiments, \DT[] linearly increases from
-0.25s at the end of the minor frame to 1.0s at the end of the major frame;
-therefore, the major frame size used by the non-homogeneous approach
-is $10.375 + 0.625(\Nn-40)$ seconds for a given $\Nn > 40$.
+For the non-homogeneous experiments, \revision{we linearly increase \DT[] from the end of the minor
+frame for 10s and then hold it constant to the end of the major frame. 
+We use two discretizations as shown in \cref{subfig:nh_discretizations}:
+Non-homogeneous $\Delta t$ 1 from 0.25 to 0.5, and Non-homogeneous $\Delta t$ 2
+from 0.25 to 1.0. For a given $\Nn > 40$, the major frame size used by the non-homogeneous approach
+is $10.375 + 1.25(\Nn-40)$ seconds for Non-homogeneous $\Delta t$ 1, and 
+$10.375 + 0.625(\Nn-40)$ seconds for Non-homogeneous $\Delta t$ 2. }{1.2}
 %
 %We analyze the effect of the major frame size by varying it from 20s through to 
 %120s.

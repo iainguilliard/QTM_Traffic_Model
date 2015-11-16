@@ -2376,6 +2376,8 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                 if ylabel == ' ':
                     if '-' in var:
                         ax[i].set_ylabel(r'$%s_{%s}$' % tuple(var.split('_')),fontsize=16)
+                    if var =='DT':
+                        ax[i].set_ylabel(r'$\Delta t$',fontsize=12)
                     else:
                         ax[i].set_ylabel(var,fontsize=16)
                 else:

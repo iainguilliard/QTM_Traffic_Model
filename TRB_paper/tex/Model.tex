@@ -214,6 +214,9 @@ because the update considers the previous $w-m$ time steps.
 To ensure that the total volume of traffic traversing $i$ (i.e.,
 $\Vol_i(\tn[n] - \QDELAY{i}, \tn[n])$) and waiting at the stop line does not
 exceed the capacity of the queue, we apply~\eqref{c:10}.
+\revision{When queue $i$ is full, $\qin[n]{i} =0$ by \eqref{c:10} , 
+which forces \f{j}{i} to 0 in \eqref{def:qin} and \eqref{def:qout}. This in turn allows  
+the queue in $i$ to spill back into the upstream queue $j$. }{3.2}
 %
 \begin{cAlign}
 %
@@ -237,9 +240,7 @@ exceed the capacity of the queue, we apply~\eqref{c:10}.
 %\label{fig:converg_c}
 %\end{figure*}
 
-\revision{\eqref{c:10} has the effect of forcing \qin[m]{i} to $0$ when queue $i$ is full, 
-which forces \f{j}{i} in \eqref{def:qin} and \eqref{def:qout} to 0. This in turn allows  
-the queue in $i$ to spill back into the upstream queue $j$. }{3.2}
+
 
 As with MILP formulations of CTM (e.g. \trbcite{lin2004enhanced}),
 QTM is also susceptible to \emph{withholding traffic}, i.e., the

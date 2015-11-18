@@ -494,6 +494,7 @@ def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,delay=
     text_color = 'k'
     font_size = 16
     ext = [-200,200,-110,110]
+    img = None
     if 'Plot' in data:
         ext = data['Plot']['extent']
         if 'bg_image' in data['Plot']:
@@ -542,7 +543,7 @@ def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,delay=
     if figsize is None:
         figsize = (10,5)
     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False,figsize=figsize)
-    if 'bg_image' in data['Plot']:
+    if img is not None:
         pl.imshow(img,extent=ext,alpha=bg_alpha)
     nodes = []
     edges = {}
@@ -1054,28 +1055,34 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
             #titles.append(d['Title'])
             time,cumu_in,cumu_out,cumu_delay,delay_by_car,delay = calc_delay(d, results, queues=q)
             if arrival_plot == False:
-                ax.plot(time,cumu_in,c=args.color[c_i], linestyle=line_style[i], label='Cumulative arrivals', marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor=mfc[c_i],markevery=mevery[m_i])
+                ax.plot(time,cumu_in,color=args.color[c_i], linestyle=line_style[i], label='Cumulative arrivals', marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor=mfc[c_i],markevery=mevery[m_i])
                 if i+1 < len(line_style): i += 1
-                if c_i+1 < len(line_style): c_i += 1
+                if c_i+1 < len(args.color): c_i += 1
                 if m_i+1 < len(args.marker): m_i += 1
                 arrival_plot = True
-            ax.plot(time,cumu_out,c=args.color[c_i],linestyle=line_style[i], label='%s cumulative departures' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=mevery[m_i])
+            if labels[lab_i] == "" or labels[lab_i] == " " or labels[lab_i] is None:
+                label_c = 'Cumulative departures'
+                label_d = 'Delay'
+            else:
+                label_c = '%s cumulative departures' % labels[lab_i]
+                label_d = '%s delay' % labels[lab_i]
+            ax.plot(time,cumu_out,color=args.color[c_i],linestyle=line_style[i], label=label_c, marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=mevery[m_i])
             if i+1 < len(line_style): i += 1
-            if c_i+1 < len(line_style): c_i += 1
+            if c_i+1 < len(args.color): c_i += 1
             if m_i+1 < len(args.marker): m_i += 1
-            ax2.plot(time,cumu_delay,c=args.color[c_i], linestyle=line_style[i], label='%s delay' % labels[lab_i], marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=mevery[m_i])
+            ax2.plot(time,cumu_delay,color=args.color[c_i], linestyle=line_style[i], label=label_d, marker=args.marker[m_i],markeredgecolor=args.color[c_i],markerfacecolor=mfc[c_i],markevery=mevery[m_i])
             #ax.plot(time,[10 * cumu_delay[i]/q if q != 0 else 0 for i,q in enumerate(cumu_in)],label='norm delay')
             if i+1 < len(line_style): i += 1
-            if c_i+1 < len(line_style): c_i += 1
+            if c_i+1 < len(args.color): c_i += 1
             if m_i+1 < len(args.marker): m_i += 1
 
         if lab_i+1 < len(labels): lab_i += 1
     if args.x_limit:
         ax.set_xlim(args.x_limit[0], args.x_limit[1])
     ax.grid()
-    ax.set_xlabel('Time')
+    ax.set_xlabel('Time (s)')
     ax.set_ylabel('Vehicles')
-    ax2.set_ylabel('Delay')
+    ax2.set_ylabel('Delay (s)')
     if args.y_limit != None:
         ax.set_ylim(args.y_limit[0], args.y_limit[1])
     if args.y_limit2 != None:
@@ -1315,7 +1322,7 @@ def open_data_file(file):
     debug('Done. %.2f sec' % (clock_time.time() - start_time_open_file))
     return data
 
-def read_files(plot_files, return_file_sets=False):
+def read_files(plot_files, return_file_sets=False,DEBUG = False):
     debug(str(plot_files))
     data_sets=[]
     file_sets=[]
@@ -2937,9 +2944,8 @@ def dump_network(args):
             print i,
     print
 
-
-global DEBUG
-global IN_CR
+DEBUG = False
+IN_CR = False
 
 def debug(msg="",CR=False):
     """

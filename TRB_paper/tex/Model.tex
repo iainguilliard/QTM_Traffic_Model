@@ -214,7 +214,7 @@ because the update considers the previous $w-m$ time steps.
 To ensure that the total volume of traffic traversing $i$ (i.e.,
 $\Vol_i(\tn[n] - \QDELAY{i}, \tn[n])$) and waiting at the stop line does not
 exceed the capacity of the queue, we apply~\eqref{c:10}.
-\revision{When queue $i$ is full, $\qin[n]{i} =0$ by \eqref{c:10} , 
+\revision{When queue $i$ is full, $\qin[n]{i} =0$ by \eqref{c:10}, 
 which forces \f{j}{i} to 0 in \eqref{def:qin} and \eqref{def:qout}. This in turn allows  
 the queue in $i$ to spill back into the upstream queue $j$. }{3.2}
 %
@@ -267,7 +267,7 @@ possible.
 
 \begin{equation}
 \max 
- \sum_{n=1}^{\Nn} \sum_{i=1}^{\Qn} (\TMAX - \tn + 1) (\qout{i} + \inq{i})
+ \sum_{n=1}^{\Nn} \sum_{i=1}^{\Qn} (\TMAX - \tn + 1) (\outq{i} + \inq{i})
 \tag{O1}\label{eq:objFunc}
 \end{equation}
 
@@ -277,7 +277,7 @@ possible.
 %  trim={<left> <lower> <right> <upper>}
 \includegraphics[width=0.55\textwidth,trim={0cm 0cm 0cm 0cm},clip]{cumu_plot_final_6l.pdf}
 \caption[]{Cumulative arrival (blue) and departure (green) curves, and the
-\revout{resulting} delay curve (red) \revision{resulting from the horizontal difference between the arrival and departure curves, less the free flow travel time}{2.3}. The \revision{arrival curve is fixed by the demand profile, and the }{2.4} departure curve is maximized by the objective
+\revout{resulting} delay curve (red) \revision{resulting from the horizontal difference between the arrival and departure curves, less the free flow travel time}{2.3}. The \revision{arrival curve is fixed by the demand profile, and the}{2.4} departure curve is maximized by the objective
 function \eqref{eq:objFunc}, which has the same effect as minimizing the area
 under the delay curve.}
 \label{fig:cumu_delay_plot}
@@ -286,7 +286,8 @@ under the delay curve.}
 
 The objective \eqref{eq:objFunc} corresponds to minimizing delay in CTM models,
 e.g., \eqref{eq:objFunc} is equivalent to the objective function (O3) in
-\trbcite{lin2004enhanced} for their parameters $\alpha = \beta = 1$.
+\trbcite{lin2004enhanced} for their parameters $\alpha = 1$, $\beta = 1$ for the origin cells, and
+$\beta = 0$ for all other cells
 %
 \cref{fig:cumu_delay_plot} depicts this equivalence using the cumulative number
 of cars entering and leaving a network as a function of time.
@@ -325,7 +326,7 @@ minimized, which in turn minimizes the delay.
 %
 \caption{Approximations of a queue volume obtained using homogeneous
 \revision{$\vecDT = \left \{1.0,\ldots,1.0 \right \}$}{1.2} using: (a) homogeneous \revision{$\vecDT = \left \{2.5,\ldots,2.5 \right \}$}{1.2} and \revision{$\vecDT = \left \{5.0,\ldots,5.0 \right \}$}{1.2}; and (b) non-homogeneous
-\revision{$\vecDT = \left \{1.0, 1.05, 1.1, 1.16, \ldots , 2.29, 2.41, 2.5 \right \}$ and }{1.2}
+\revision{$\vecDT = \left \{1.0, 1.05, 1.1, 1.16, \ldots , 2.29, 2.41, 2.5 \right \}$ where}{1.2}
 $\DT[n] \approx 0.0956n + 0.9044$ for $n \in \{1,\dots,17\}$.  Here we see
 that (b) achieves accuracy in the near-term that somewhat degrades over
 the long-term, where accuracy will be less critical for receding horizon control.}
@@ -369,8 +370,8 @@ a free variable to be optimized.
 %
 In order to obtain a valid control plan, we enforce that one phase of traffic
 light \tl is always active at any interval~$n$~\eqref{c:onlyOnePhaseOn}, and 
-\revision{ensure cyclic phase polices }{4.2} \revinout{where }{that }{4.2}
-phase changes \revinout{follow a fixed ordered sequence }{happen sequentially}{4.2}~\eqref{c:seqPhases}, i.e., if phase~$k$ was
+\revision{ensure cyclic phase polices}{4.2} \revinout{where}{that}{4.2}
+phase changes \revinout{follow a fixed ordered sequence}{happen sequentially}{4.2}~\eqref{c:seqPhases}, i.e., if phase~$k$ was
 active during interval~$n-1$ and has become inactive in interval~$n$, then
 phase~$k+1$ must be active in interval~$n$.
 %

@@ -1,7 +1,7 @@
 \section{Conclusion}
 
 In this paper, we showed how to formulate a novel queue transmission model (QTM)
-model of traffic flow with non-homogeneous time steps as a linear program.  We
+of traffic flow with non-homogeneous time steps as a linear program.  We
 then proceeded to allow the traffic signals to become discrete variables subject
 to a delay minimizing optimization objective and standard traffic signal
 constraints leading to a final MILP formulation of traffic signal control with
@@ -30,3 +30,9 @@ improved successor technology to existing signal control methods.
 %networks and using the same number of binary variables as a
 %homogeneous time step, and with the same quality of a homogeneous
 %solution using more binary variables.
+
+Our future work includes learning the QTM parameters (e.g., turn probabilities
+\FTURN{i}{j} and expected incoming flows \QIN{i}{n}) from loop detector data,
+and evaluating the impact in scalability of different non-homogeneous
+discretizations and size of the computer cluster used for computing the control
+plans. 

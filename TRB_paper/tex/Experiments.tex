@@ -19,7 +19,7 @@ consider the third quartile and maximum of the observed delay distribution.
 %QTM using small enough homogeneous \DT[] with unlimited computational
 %resources.
 %
-\revinout{The hypothesis we wish to evaluate in this paper are}{Our hypotheses are}{2.5}:
+\revinout{The hypotheses we wish to evaluate in this paper are}{Our hypotheses are}{2.5}:
 %
 (i) the quality of the non-homogeneous solutions is at least as good as the
 homogeneous ones when the number of time intervals~\Nn is fixed; and 
@@ -168,10 +168,10 @@ cars/s.
   respectively.  The minor frames represent the prefix of the 
   major frame MILP optimization that is executed.  The horizon
   recedes by the minor frame duration after each execution.
-  \revision{(b) The two non-homogeneous discretizations used in the experiments, shown with a major frame duration of 40s.
-  From the end of the minor frame time, $\Delta t$ is linearly interpolated over 10s from 0.25 to 0.5 
-  for Non-homogeneous $\Delta t$ 1, and 0.25 to 1.0 for Non-homogeneous $\Delta t$ 2. 
-  $\Delta t$ is then held constant to the end of the major frame time}{1.2}}
+  \revision{(b) The two non-homogeneous discretizations used in the experiments, shown here with a major frame duration of 40s.
+  From the end of the minor frame time, $\Delta t$ is linearly interpolated over 10s, from 0.25 to 0.5 
+  for Non-homogeneous $\vecDT_1$, and 0.25 to 1.0 for Non-homogeneous $\vecDT_2$. 
+  $\Delta t$ is then held constant to the end of the major frame time.}{1.2}}
 \label{fig:multiplan}
 \end{figure*}
 
@@ -199,13 +199,13 @@ For the homogeneous experiments, \DT[] is kept at 0.25s throughout the major
 frame; therefore, given \Nn, the major frame size equals $\Nn/4$ seconds for the
 homogeneous approach.
 %
-For the non-homogeneous experiments, \revision{we linearly increase \DT[] from the end of the minor
+For the non-homogeneous experiments, \revision{we increase \DT[] linearly from the end of the minor
 frame for 10s and then hold it constant to the end of the major frame. 
 We use two discretizations as shown in \cref{subfig:nh_discretizations}:
-Non-homogeneous $\Delta t$ 1 from 0.25 to 0.5, and Non-homogeneous $\Delta t$ 2
-from 0.25 to 1.0. For a given $\Nn > 40$, the major frame size used by the non-homogeneous approach
-is $10.375 + 1.25(\Nn-40)$ seconds for Non-homogeneous $\Delta t$ 1, and 
-$10.375 + 0.625(\Nn-40)$ seconds for Non-homogeneous $\Delta t$ 2. }{1.2}
+Non-homogeneous $\vecDT_1$ from 0.25 to 0.5, and Non-homogeneous $\vecDT_2$
+from 0.25 to 1.0. For a given $\Nn > 40$, the major frame size used by this non-homogeneous approach
+is $10.375 + 1.25(\Nn-40)$ seconds for $\vecDT_1$, and 
+$10.375 + 0.625(\Nn-40)$ seconds for $\vecDT_2$. }{1.2}
 %
 %We analyze the effect of the major frame size by varying it from 20s through to 
 %120s.
@@ -223,7 +223,7 @@ We also compare both receding horizon approaches against the optimal solution
 obtained by computing a single control plan for the entire control horizon
 (i.e., $[0,\TMAX]$) using a fixed \DT[] of 0.25s.
 
-\newpage
+%\newpage
 For all our experiments, we used Gurobi\textsuperscript{TM} as the MILP solver with
 12 threads on a 3.1GHz AMD Opteron\textsuperscript{TM}~4334 processor with 12
 cores.
@@ -282,7 +282,7 @@ stochastic strategies.
 \includegraphics[keepaspectratio,height=0.3225\textwidth]{network_1_plot.pdf}}
 \subfigure[]{
 \label{subfig:delay_3}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_1_box_plot.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_1_box_plot-NEW.pdf}}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_3l.pdf}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]
 %{box_plot_converg_3l.pdf}
@@ -293,7 +293,7 @@ stochastic strategies.
 \includegraphics[keepaspectratio,height=0.3225\textwidth]{network_2_plot.pdf}}
 \subfigure[]{
 \label{subfig:delay_6}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_2_box_plot.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_2_box_plot-NEW.pdf}}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_6l.pdf}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]
 %{box_plot_converg_6l.pdf}
@@ -304,7 +304,7 @@ stochastic strategies.
 \includegraphics[keepaspectratio,height=0.3225\textwidth]{network_3_plot.pdf}}
 \subfigure[]{
 \label{subfig:delay_9}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_3_box_plot.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_3_box_plot-NEW.pdf}}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_9l.pdf}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]
 %{box_plot_converg_9l.pdf}
@@ -337,9 +337,9 @@ at smaller \Nn than Homogeneous (H).}
 each network, the increase in the total travel time w.r.t.~the optimal solution
 as a function of \Nn.
 %
-As we hypothesized, the non-homogeneous discretization requires less time
+As we hypothesized, the non-homogeneous discretizations requires less time
 intervals (i.e., smaller \Nn) to obtain a solution with the same total travel
-time.
+time, and $\vecDT_2$ converges before $\vecDT_1$.
 %
 This is important because the size of the MILP, including the number of binary
 variables, scales linearly with \Nn; therefore, the non-homogeneous approach can
@@ -359,11 +359,11 @@ The distribution of the total delay observed by each car while traversing the
 network is shown in \cref{subfig:delay_3,subfig:delay_6,subfig:delay_9}.
 %
 Each group of box plots represents a different value of~\Nn: when the
-non-homogeneous $\DT[]$ first converges; when the homogeneous~$\DT[]$ first
-converges; and the optimum solution itself.
+non-homogeneous $\vecDT_2$ first converges; when the homogeneous~$\DT[]$ first
+converges; and the final solution itself.
 %
-In all networks, the quality of the solution obtained using non-homogeneous
-$\DT[]$ is better or equal than using homogeneous $\DT[]$ for fixed \Nn in both
+In all networks, the quality of the solutions obtained using both of the 
+$\vecDT_1$ and $\vecDT_2$ and is better or equal than using homogeneous $\DT[]$ for fixed \Nn in both
 the total travel time and \emph{fairness}, i.e., smaller third quartile and
 maximum delay.
 
@@ -393,7 +393,7 @@ maximum delay.
 The labels on top of each plot match the labels in
 \cref{subfig:travel_time_6,subfig:delay_6}.
 %
-(c)~presents the same curves for the optimal solution.  Non-homogeneous~(NH)
+(c)~presents the same curves for the optimal solution.  Non-homogeneous~(NH $\vec{\Delta t}_2$)
 provides near-optimal signal plans over a longer time horizon than
 Homogeneous~(H) when the number of time intervals \Nn is small.}
 %
@@ -406,7 +406,7 @@ discretizations, \cref{fig:cumu} shows the cumulative arrival and departure
 curves and the how delay evolves over time for $q_1$ of network 2
 (\cref{subfig:network2}).
 %
-In \cref{subfig:cumu1}, the comparison is done when non-homogeneous $\DT[]$
+In \cref{subfig:cumu1}, the comparison is done when non-homogeneous $\vecDT_2$
 first converges (i.e., point I in \cref{subfig:travel_time_6}) and for this
 value of \Nn, the major frame size in seconds of the non-homogeneous approach is
 19.125s longer than the homogeneous one.

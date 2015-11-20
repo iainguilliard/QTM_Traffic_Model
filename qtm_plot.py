@@ -103,6 +103,13 @@ def calc_free_flow_travel_time(data,results,lanes):
     #print total_in_flow
     return sum(lane_free_flow_travel_time)
 
+def calc_total_free_flow_travel_time(data,results):
+    total_free_flow_travel_time = 0
+    for queue in data['Queues']:
+        total_free_flow_travel_time += queue['Q_DELAY'] * args.time_factor
+    return total_free_flow_travel_time
+
+
 def calc_in_flow_duration(data,results):
     Queues = data['Queues']
     time=results['t']
@@ -1230,7 +1237,10 @@ def plot_box_plot(args):
             if args.plot_cpu_time:
                 box_data=solve_time
             else:
-                box_data = [delay_n  * args.time_factor for delay_n in delay]
+                if 'delay' in results:
+                    box_data = results['delay']
+                else:
+                    box_data = [delay_n  * args.time_factor for delay_n in delay]
             Ni = N - 0.25 + plot_i
             #if Ni in plot_data:
 
@@ -1495,10 +1505,18 @@ def get_av_delay(data,args):
     for run in range(runs):
         if 'Run' in data['Out']:
             results = data['Out']['Run'][run]
-        total_traffic_in = calc_total_traffic(data,results,args.queues)
-        total_travel_time = calc_total_travel_time(data,results) * args.time_factor
-        free_flow_travel_time = calc_free_flow_travel_time(data,results,args.queues) * args.time_factor
-    return (total_travel_time - free_flow_travel_time) / total_traffic_in, total_traffic_in
+        if 'total_traffic_in' in results:
+            total_traffic_in = results['total_traffic_in']
+            total_travel_time = results['total_travel_time']
+            free_flow_travel_time = calc_total_free_flow_travel_time(data,results)
+            average_delay = results['average_delay']
+        else:
+            total_traffic_in = calc_total_traffic(data,results,args.queues)
+            total_travel_time = calc_total_travel_time(data,results) * args.time_factor
+            free_flow_travel_time = calc_free_flow_travel_time(data,results,args.queues) * args.time_factor
+            average_delay = (total_travel_time - free_flow_travel_time) / total_traffic_in
+
+    return average_delay,total_traffic_in
 
 def plot_delay_diff( plot_data_files, args):
     plot_X = []

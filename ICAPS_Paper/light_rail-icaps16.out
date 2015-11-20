@@ -1,0 +1,10 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{The Queue Transmission Model \(QTM\)}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Computing Traffic Flows with QTM}{section.2}% 3
+\BOOKMARK [1][-]{section.3}{Traffic Control with MILP-encoded QTM}{}% 4
+\BOOKMARK [2][-]{subsection.3.1}{QTM as a Fixed-Time Controller}{section.3}% 5
+\BOOKMARK [1][-]{section.4}{Empirical Evaluation}{}% 6
+\BOOKMARK [2][-]{subsection.4.1}{Networks}{section.4}% 7
+\BOOKMARK [2][-]{subsection.4.2}{Experimental Methodology}{section.4}% 8
+\BOOKMARK [2][-]{subsection.4.3}{Results}{section.4}% 9
+\BOOKMARK [1][-]{section.5}{Conclusion}{}% 10

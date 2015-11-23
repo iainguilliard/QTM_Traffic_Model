@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Cygwin) (preloaded format=pdflatex 2015.6.30)  23 NOV 2015 02:54
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Cygwin) (preloaded format=pdflatex 2015.6.30)  23 NOV 2015 03:08
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -827,27 +827,27 @@ LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <9> not available
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 181.
  (./tex/Abstract.tex)
-(./tex/Introduction.tex) (./tex/Model.tex
-<plots/canberra_transit.pdf, id=66, 659.25246pt x 367.82597pt>
+(./tex/Introduction.tex
+
+LaTeX Warning: Citation `guilliard2016trb' on page 1 undefined on input line 31
+.
+
+) (./tex/Model.tex
+<plots/canberra_transit.pdf, id=65, 659.25246pt x 367.82597pt>
 File: plots/canberra_transit.pdf Graphic file (type pdf)
 
 <use plots/canberra_transit.pdf>
 Package pdftex.def Info: plots/canberra_transit.pdf used on input line 9.
 (pdftex.def)             Requested size: 252.94499pt x 150.50037pt.
 
-<../TRB_paper/plots/pw_queues_homogenous.pdf, id=68, 632.3625pt x 487.8225pt>
+<../TRB_paper/plots/pw_queues_homogenous.pdf, id=67, 632.3625pt x 487.8225pt>
 File: ../TRB_paper/plots/pw_queues_homogenous.pdf Graphic file (type pdf)
 
 <use ../TRB_paper/plots/pw_queues_homogenous.pdf>
 Package pdftex.def Info: ../TRB_paper/plots/pw_queues_homogenous.pdf used on in
 put line 15.
 (pdftex.def)             Requested size: 222.59283pt x 171.70808pt.
-
-
-LaTeX Warning: Citation `trbPaperToAppear' on page 1 undefined on input line 48
-.
-
-[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
+ [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
 
 
 
@@ -1103,30 +1103,17 @@ n: multiple pdfs with page group included in a single page
 pdfTeX warning: pdflatex (file ./plots/network2_t2_reduction.pdf): PDF inclusio
 n: multiple pdfs with page group included in a single page
 >] (./light_rail-icaps16.bbl
-Underfull \hbox (badness 5189) in paragraph at lines 4--9
-[]\OT1/ptm/m/n/10 Anonymous.  2016a.  A Non-
- []
-
-
-Underfull \hbox (badness 5771) in paragraph at lines 11--16
-[]\OT1/ptm/m/n/10 Anonymous.  2016b.  A non-
- []
-
-
-Underfull \vbox (badness 3919) has occurred while \output is active []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 35--42
+Underfull \hbox (badness 10000) in paragraph at lines 28--35
 []\OT1/ptm/m/n/10 El-Tantawy,
  []
 
 
-Underfull \hbox (badness 1237) in paragraph at lines 35--42
+Underfull \hbox (badness 1237) in paragraph at lines 28--35
 \OT1/ptm/m/n/10 re-in-force-ment learn-ing for in-te-grated net-work of adap-
  []
 
 
-Underfull \hbox (badness 1163) in paragraph at lines 35--42
+Underfull \hbox (badness 1163) in paragraph at lines 28--35
 \OT1/ptm/m/it/10 tel-li-gent Trans-porta-tion Sys-tems, IEEE Trans-ac-tions on
  []
 
@@ -1179,32 +1166,32 @@ f): PDF inclusion: multiple pdfs with page group included in a single page
 pdfTeX warning: pdflatex (file ./plots/network1_microsim_opt_slow_arterial.pdf)
 : PDF inclusion: multiple pdfs with page group included in a single page
 >]
-Underfull \hbox (badness 2582) in paragraph at lines 110--115
+Underfull \hbox (badness 2582) in paragraph at lines 103--108
 []\OT1/ptm/m/n/10 Lo, H. K.; Chang, E.; and
  []
 
 
-Underfull \hbox (badness 1701) in paragraph at lines 124--130
+Underfull \hbox (badness 1701) in paragraph at lines 117--123
 \OT1/ptm/m/n/10 A dis-crete traf-fic ki-netic model--integrating the lagged
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 133--139
+Underfull \hbox (badness 10000) in paragraph at lines 126--132
 []
  []
 
 
-Underfull \hbox (badness 4441) in paragraph at lines 133--139
+Underfull \hbox (badness 4441) in paragraph at lines 126--132
 \OT1/ptm/m/n/10 Muralidharan, A.; Dervi-soglu, G.; and Horowitz, R.
  []
 
 
-Underfull \hbox (badness 4660) in paragraph at lines 141--146
+Underfull \hbox (badness 4660) in paragraph at lines 134--139
 []\OT1/ptm/m/n/10 Sims, A. G., and Dobin-son,
  []
 
 
-Underfull \hbox (badness 6675) in paragraph at lines 165--170
+Underfull \hbox (badness 6675) in paragraph at lines 158--163
 []\OT1/ptm/m/n/10 Treiber, M.; Hen-
  []
 
@@ -1224,13 +1211,13 @@ Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 232.
  )
 (\end occurred when \ifdefined on line 34 was incomplete) 
 Here is how much of TeX's memory you used:
- 20099 strings out of 493117
- 372594 string characters out of 6141204
- 463931 words of memory out of 5000000
+ 20098 strings out of 493117
+ 372573 string characters out of 6141204
+ 464931 words of memory out of 5000000
  23035 multiletter control sequences out of 15000+600000
  21458 words of font info for 48 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 55i,14n,54p,1122b,395s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 55i,14n,54p,1122b,397s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf-dist
 /fonts/enc/dvips/base/8r.enc}</usr/share/texmf-dist/fonts/type1/public/amsfonts
 /cm/cmbx10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
@@ -1246,10 +1233,10 @@ msy9.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr
 /share/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts
 /type1/urw/times/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmri8
 a.pfb>
-Output written on light_rail-icaps16.pdf (9 pages, 1349216 bytes).
+Output written on light_rail-icaps16.pdf (9 pages, 1348928 bytes).
 PDF statistics:
- 1270 PDF objects out of 1440 (max. 8388607)
- 587 compressed objects within 6 object streams
- 121 named destinations out of 1000 (max. 500000)
+ 1268 PDF objects out of 1440 (max. 8388607)
+ 585 compressed objects within 6 object streams
+ 120 named destinations out of 1000 (max. 500000)
  240 words of extra memory for PDF output out of 10000 (max. 10000000)
 

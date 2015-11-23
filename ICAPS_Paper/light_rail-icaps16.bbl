@@ -1,5 +1,12 @@
 \begin{thebibliography}{}
 
+\bibitem[\protect\citeauthoryear{Anonymous}{2016}]{guilliard2016trb}
+Anonymous.
+\newblock 2016.
+\newblock A non-homogenous time mixed integer {LP} formulation for traffic
+  signal control.
+\newblock In {\em Transport Research Board ({TRB}) Annual Meeting}.
+
 \bibitem[\protect\citeauthoryear{Bazzan and
   Kl{\"{u}}gl}{2013}]{bazzan2013intro}
 Bazzan, A. L.~C., and Kl{\"{u}}gl, F.
@@ -33,20 +40,22 @@ Gartner, N.~H., and Stamatiadis, C.
 \newblock Arterial-based control of traffic flow in urban grid networks.
 \newblock {\em Mathematical and computer modelling} 35(5):657--671.
 
-\bibitem[\protect\citeauthoryear{Gartner, Little, and
-  Gabbay}{1974}]{gartner1974optimization}
-Gartner, N.; Little, J.~D.; and Gabbay, H.
-\newblock 1974.
-\newblock Optimization of traffic signal settings in networks by mixed-integer
-  linear programming.
-\newblock Technical report, DTIC Document.
-
 \bibitem[\protect\citeauthoryear{Han, Friesz, and Yao}{2012}]{han2012link}
 Han, K.; Friesz, T.~L.; and Yao, T.
 \newblock 2012.
 \newblock A link-based mixed integer lp approach for adaptive traffic signal
   control.
 \newblock {\em arXiv preprint arXiv:1211.4625}.
+
+\bibitem[\protect\citeauthoryear{He \bgroup et al\mbox.\egroup
+  }{2010}]{he2010heuristic}
+He, Q.; Lin, W.-H.; Liu, H.; and Head, K.~L.
+\newblock 2010.
+\newblock Heuristic algorithms to solve 0--1 mixed integer lp formulations for
+  traffic signal control problems.
+\newblock In {\em Service Operations and Logistics and Informatics (SOLI), 2010
+  IEEE International Conference on},  118--124.
+\newblock IEEE.
 
 \bibitem[\protect\citeauthoryear{He, Head, and Ding}{2011}]{he2011pamscod}
 He, Q.; Head, K.~L.; and Ding, J.
@@ -61,11 +70,26 @@ Huang, K.~C.
 \newblock {\em Traffic Simulation Model for Urban Networks: CTM-URBAN}.
 \newblock Ph.D. Dissertation, Concordia University.
 
+\bibitem[\protect\citeauthoryear{Hunt \bgroup et al\mbox.\egroup
+  }{1981}]{scoot81}
+Hunt, P.~B.; Robertson, D.~I.; Bretherton, R.~D.; and Winton, R.~I.
+\newblock 1981.
+\newblock Scoot--a traffic responsive method of coordinating signals.
+\newblock Technical report, Transportation Road Research Lab, Crowthorne, U.K.
+
 \bibitem[\protect\citeauthoryear{Kim}{2002}]{kim2002online}
 Kim, Y.
 \newblock 2002.
 \newblock Online traffic flow model applying dynamic flow-density relation.
 \newblock Technical report, Int. At. Energy Agency.
+
+\bibitem[\protect\citeauthoryear{Li and Zhang}{2014}]{li2014coupled}
+Li, J., and Zhang, H.
+\newblock 2014.
+\newblock Coupled linear programming approach for decentralized control of
+  urban traffic.
+\newblock {\em Transportation Research Record: Journal of the Transportation
+  Research Board} (2439):83--93.
 
 \bibitem[\protect\citeauthoryear{Lin and Wang}{2004}]{lin2004enhanced}
 Lin, W.-H., and Wang, C.
@@ -74,6 +98,13 @@ Lin, W.-H., and Wang, C.
   control.
 \newblock {\em Intelligent Transportation Systems, IEEE Transactions on}
   5(4):238--245.
+
+\bibitem[\protect\citeauthoryear{Lo, Chang, and Chan}{1999}]{lo1999dynamic}
+Lo, H.~K.; Chang, E.; and Chan, Y.~C.
+\newblock 1999.
+\newblock Dynamic network traffic control.
+\newblock {\em Transportation Research Part A: Policy and Practice}
+  35(8):721--744.
 
 \bibitem[\protect\citeauthoryear{Lo}{1998}]{lo1998novel}
 Lo, H.~K.
@@ -99,6 +130,29 @@ Muralidharan, A.; Dervisoglu, G.; and Horowitz, R.
 \newblock In {\em American Control Conference, 2009. ACC'09.},  2916--2921.
 \newblock IEEE.
 
+\bibitem[\protect\citeauthoryear{Sims and Dobinson}{1980}]{scats80}
+Sims, A.~G., and Dobinson, K.~W.
+\newblock 1980.
+\newblock Scat--the sydney co-ordinated adaptive traffic system: Philosophy and
+  benefits.
+\newblock {\em IEEE Transactions on Vehicular Technology} 29.
+
+\bibitem[\protect\citeauthoryear{Smith \bgroup et al\mbox.\egroup
+  }{2013}]{smith2013surtrac}
+Smith, S.; Barlow, G.; Xie, X.-F.; and Rubinstein, Z.
+\newblock 2013.
+\newblock Surtrac: Scalable urban traffic control.
+\newblock In {\em Transportation Research Board 92nd Annual Meeting Compendium
+  of Papers}.
+\newblock Transportation Research Board.
+
+\bibitem[\protect\citeauthoryear{Thompson}{2003}]{thompson2003lightrail}
+Thompson, G.~L.
+\newblock 2003.
+\newblock Defining an alternative future: Birth of the light rail movement in
+  north america.
+\newblock In {\em Transportation Research Board (TRB) Annual Meeting}.
+
 \bibitem[\protect\citeauthoryear{Treiber, Hennecke, and
   Helbing}{2000}]{treiber2000congested}
 Treiber, M.; Hennecke, A.; and Helbing, D.
@@ -106,5 +160,19 @@ Treiber, M.; Hennecke, A.; and Helbing, D.
 \newblock Congested traffic states in empirical observations and microscopic
   simulations.
 \newblock {\em Physical Review E} 62(2):1805.
+
+\bibitem[\protect\citeauthoryear{Varaiya}{2013}]{varaiya2013max}
+Varaiya, P.
+\newblock 2013.
+\newblock Max pressure control of a network of signalized intersections.
+\newblock {\em Transportation Research Part C: Emerging Technologies}
+  36:177--195.
+
+\bibitem[\protect\citeauthoryear{Xie, Smith, and
+  Barlow}{2012}]{xie2012schedule}
+Xie, X.-F.; Smith, S.~F.; and Barlow, G.~J.
+\newblock 2012.
+\newblock Schedule-driven coordination for real-time traffic network control.
+\newblock In {\em ICAPS}.
 
 \end{thebibliography}

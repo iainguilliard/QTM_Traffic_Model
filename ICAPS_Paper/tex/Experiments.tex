@@ -55,8 +55,9 @@ and the results.
 \begin{figure}[t!]
 \centering
 %  trim={<left> <lower> <right> <upper>}
-\includegraphics[trim={0 10 0 2},width=0.47\textwidth]{Transit1_sched.pdf}
-\includegraphics[width=0.47\textwidth]{Transit2_sched.pdf}
+%trim={0 10 0 2}
+\includegraphics[width=0.45\textwidth]{Transit1_sched.pdf}
+\includegraphics[width=0.45\textwidth]{Transit2_sched.pdf}
 \caption{Light rail schedule functions.}
 \label{fig:transits}
 \end{figure}
@@ -168,7 +169,7 @@ at the boundaries of the network.
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
 
-Next we microsimulate the network using the Intelligent Driver Model (IDM) \cite{treiber2000congested} under the control of the QTM generated signal plan. All vehicles have identical IDM parameters: length $l=3$ m, desired velocity $v_0 = 50 \text{ km/h}$, safe time headway $T=1.5$ s, maximum acceleration
+Next we microsimulate the network using the Intelligent Driver Model (IDM) \cite{treiber2000congested} under the control of the QTM generated signal plan, with an additional amber light phase for the last 5 s of every green phase.  All vehicles have identical IDM parameters: length $l=3$ m, desired velocity $v_0 = 50 \text{ km/h}$, safe time headway $T=1.5$ s, maximum acceleration
 $a=2 \text{ m/s}^2$, desired deceleration $b = 3 \text{ m/s}^2$, acceleration exponent $\delta = 4$, and jam distance $s_0 = 2$ m.
 We inject cars into the network using the same demand profile as that used during the planning step.
 
@@ -308,6 +309,8 @@ public transportation.
 \label{fig:network1_hist_fast}
 \end{figure*}
 
+\cref{fig:network1_microsim} shows microsimulation time-distance plots for several streets in Network 1. The y-axis of the plot
+shows the distance along the street, and the x-axis shows the evolution over time. Each colored trace represents the journey of a vehicle along the street. Traffic signals at fixed distances down the street appear as black horizontal dashed lines, where a solid bar represents that the phase is inactive, that the light is red, and traffic cannot pass. Where the line is broken the phase is active, the light is green and cars can proceed past. The time-distance plots capture the queueing behaviour of the traffic as each vehicle decelerates when approaching congested traffic, or red or amber light ahead. When the trace of a vehicle is horizontal, it has become stationary.
 From the microsimulation time-distance plots of the side streets (\cref{fig:network1_microsim}) we can see that the fixed-adaptive controller has prioritized the arterial phase duration over the side street duration, to achieve coordinated ``green corridors'', sized for the average traffic density in the network, and suffers from accumulative queue build up in the side streets following each transit of the light rail.
 Conversely, the optimized controller is able to clear out the queue build up in the side streets by increasing the phase time of the side street for a cycle after the transit has passed through, and then returns to a schedule that prioritises the arterial depending on the changes in traffic density. When the traffic density in the arterial is higher than the side streets then the optmized controller will coordinate ``green corridors'' along the arterial (see appendix).
 

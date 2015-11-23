@@ -114,15 +114,17 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 %
 \end{itemize}
 
-
-Differently than the CTM \cite{daganzo1994cell,lin2004enhanced}, the QTM does
-not assume that $\DT[n] = \QDELAY{i}$ for all $n$ and $i$.
 %
-\authorHighlight{Instead, QTM assumes that \QDELAY{i} is divisible by every
-different value of $\DT[n]$.
+%% TODO(fwt): Not sure if still need to talk about CTM or simply say 
+%
+%Differently than the CTM \cite{daganzo1994cell,lin2004enhanced}, the QTM does
+%not assume that $\DT[n] = \QDELAY{i}$ for all $n$ and $i$.
+%
+For this work, we assume that \QDELAY{i} is divisible by every different value
+of $\DT[n]$.
 %
 This allow us to have queues with different travel time at free flow speed
-resulting in a non-first order Markovian model as explained in next section.}
+resulting in a non-first order Markovian model as explained in next section.
 
 %that is, the QTM can represent non-homogeneous time intervals.
 %%

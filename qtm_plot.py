@@ -1708,6 +1708,15 @@ def plot_parameter(plot,args):
     if args.title:
         pl.title(args.title[0])
 
+    if args.dump_csv is not None:
+        table = {}
+        for plot_i in range(len(plot_Y)):
+            table['plot_y_%d' % plot_i] = plot_Y[plot_i]
+            table['plot_x_%d' % plot_i] = plot_X[plot_i]
+        frame_data = pd.DataFrame(table)
+        write_file(args.dump_csv,frame_data)
+
+
 
 def plot_av_travel_time_N(args):
     pl.clf()
@@ -2849,9 +2858,9 @@ def dump_vars(args): #data_sets,params,colors,line_styles,steps):
     #    write_file(args.out,frame_data)
 
 def write_file(file_name,frame_data):
-        file_type = file_name[-4:-1]
+        file_type = file_name[-3:]
         if file_type  == 'csv':
-            frame_data.to_csv(args.out)
+            frame_data.to_csv(file_name)
         else:
             print "file type %s not supported" % file_type
 
@@ -3060,6 +3069,7 @@ if __name__ == '__main__':
     parser.add_argument("--x_var", help="Variable to plot on x axis", default = '')
     parser.add_argument("--box_plot_labels_vertical", help="Orient x axis labels on box plot vertically", action="store_true", default = False)
     parser.add_argument("--dpi", help="DPI to save plots in", type=int, default = 300)
+    parser.add_argument("--dump_csv", help="Dump the plot data to CSV file")
     args = parser.parse_args()
 
     linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.'}

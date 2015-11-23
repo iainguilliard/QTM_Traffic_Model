@@ -26,12 +26,17 @@ the experiments, our methodology, and the results.
 \begin{figure}[t!]
 \centering
 %  trim={<left> <lower> <right> <upper>}
-\subfigure[]{
+\begin{subfigure}{0.47\textwidth}
 \label{fig:net:arterial}
-\includegraphics[trim={0 20 0 20},width=0.47\textwidth]{network1.pdf}}
-\subfigure[]{
+\includegraphics[trim={0 20 0 20},width=\linewidth]{network1.pdf}
+\caption{~}
+\vspace{3mm}
+\end{subfigure}
+\begin{subfigure}{0.50\textwidth}
 \label{fig:net:grid}
-\includegraphics[trim={0 20 0 20},width=0.50\textwidth]{network2.pdf}}
+\includegraphics[trim={0 20 0 20},width=\linewidth]{network2.pdf}
+\caption{~}
+\end{subfigure}
 \caption{Networks used to evaluate the performance:
   (a) an arterial road with parallel light rail;
   (b) an urban grid with crisscrossing streets and light rail.
@@ -211,14 +216,22 @@ deployed indefinitely.
 %
 \centering
 %  trim={<left> <lower> <right> <upper>}
-\subfigure[]{\label{fig:arterial:delayCurve}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_delay.pdf}}
-\subfigure[]{\label{fig:grid:delayCurve}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_delay.pdf}}
-\subfigure[]{\label{fig:arterial:boxplot}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_boxplots.pdf}}
-\subfigure[]{\label{fig:grid:boxplot}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_boxplots.pdf}}
+\begin{subfigure}{0.49\textwidth}\label{fig:arterial:delayCurve}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_delay.pdf}
+\caption{~}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:grid:delayCurve}
+\includegraphics[keepaspectratio,width=\linewidth]{network2_delay.pdf}
+\caption{~}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:arterial:boxplot}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_boxplots.pdf}
+\caption{~}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:grid:boxplot}
+\includegraphics[keepaspectratio,width=\linewidth]{network2_boxplots.pdf}
+\caption{~}
+\end{subfigure}
 %
 \caption{Average delay by the network demand for the arterial (a) and grid (b)
 networks. Box plots representing the observed distribution of delay for 3
@@ -240,13 +253,6 @@ the introduction of light rail and it marginally increases the average delay
 when compared with the average delay produced by fixed-time controller
 \textbf{before} the light rail.
 %
-\cref{fig:network_hist} shows for each network, the cumulative frequency of vehicle stops
-corresponding to demand level $\rm II$ in \cref{fig:demand_profiles}).
-\cref{fig:network1_slow:hist:arterial,fig:network1_slow:hist:side}
- shows that with the slow light rail schedule, the fixed-time controller chooses to prioritize the arterial over the side
- streets, but overall (\cref{fig:network1_slow:hist}) the optimized controller does better with less stops at all frequencies.
- 
-%
 Moreover, as shown in \cref{fig:arterial:boxplot,fig:grid:boxplot}, the
 optimized adaptive controller also produces better signal plans than the
 fixed-time controller, i.e., plans with smaller median, third quartile, and
@@ -259,19 +265,35 @@ signal plans after the introduction of light rail is no more than
 %% bound.
 %
 the double of the maximum delay before the light rail.
-
+%
+\cref{fig:network_hist} provides more details on the behavior of the signal
+plans for demand level $\rm II$~(\cref{fig:demand_profiles}) by showing the
+cumulative number of cars by number of observed stops.
+%
+Note that in \cref{fig:network1_slow:hist:arterial,fig:network1_slow:hist:side}
+the fixed-time controller chooses to prioritize the arterial over the side
+streets, but overall (\cref{fig:network1_slow:hist}) the optimized controller
+does better with less stops at all frequencies.
 
 
 \begin{figure*}[t!] \centering
 %  trim={<left> <lower> <right> <upper>}
-\subfigure[]{\label{fig:arterial:impact:t1}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_t1_reduction.pdf}}
-\subfigure[]{\label{fig:grid:impact:t1}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_t1_reduction.pdf}}
-\subfigure[]{\label{fig:arterial:impact:t2}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_t2_reduction.pdf}}
-\subfigure[]{\label{fig:grid:impact:t2}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network2_t2_reduction.pdf}}
+\begin{subfigure}{0.49\textwidth}\label{fig:arterial:impact:t1}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_t1_reduction.pdf}
+\caption{~}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:grid:impact:t1}
+\includegraphics[keepaspectratio,width=\linewidth]{network2_t1_reduction.pdf}
+\caption{~}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:arterial:impact:t2}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_t2_reduction.pdf}
+\caption{~}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:grid:impact:t2}
+\includegraphics[keepaspectratio,width=\linewidth]{network2_t2_reduction.pdf}
+\caption{~}
+\end{subfigure}
 %
 \vspace{-2mm}
 \caption{Impact on average delay for the arterial (first column) and grid
@@ -326,26 +348,52 @@ transportation.
 \begin{figure*}[t!] \centering
 %  trim={<left> <lower> <right> <upper>}
 %
-%Slow -- SPS: did we want this word in the plot?  Looks odd to me.
-\subfigure[]{\label{fig:network1_slow:hist:arterial}
-\includegraphics[keepaspectratio,width=0.28\textwidth]{network1_hist_slow_arterial.pdf}}
-\subfigure[]{\label{fig:network1_slow:hist:side}
-\includegraphics[keepaspectratio,width=0.2\textwidth]{network1_hist_slow_side.pdf}}
-\subfigure[]{\label{fig:network1_slow:hist}
-\includegraphics[keepaspectratio,width=0.2\textwidth]{network1_hist_slow.pdf}}
-\subfigure[]{\label{fig:network2_slow:hist:}
-\includegraphics[keepaspectratio,width=0.2\textwidth]{network2_hist_slow.pdf}}
+\begin{subfigure}{0.68\textwidth}
+  \centering
+  \footnotesize{Network 1}
+\end{subfigure}
+\begin{subfigure}{0.2\textwidth}
+  \centering
+  \footnotesize{Network 2}
+\end{subfigure}\\[2mm]
+\begin{subfigure}{0.275\textwidth}\label{fig:network1_slow:hist:arterial}
+  \centering
+  \qquad \qquad \footnotesize{Arterial}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_hist_slow_arterial.pdf}
+\end{subfigure}
 %
-\subfigure[]{\label{fig:nerwork1_fast:hist:arterial}
-\includegraphics[keepaspectratio,width=0.28\textwidth]{network1_hist_fast_arterial.pdf}}
-\subfigure[]{\label{fig:network1_fast:hist:side}
-\includegraphics[keepaspectratio,width=0.20\textwidth]{network1_hist_fast_side.pdf}}
-\subfigure[]{\label{fig:network1_fast:hist}
-\includegraphics[keepaspectratio,width=0.20\textwidth]{network1_hist_fast.pdf}}
-\subfigure[]{\label{fig:network2_fast:hist}
-\includegraphics[keepaspectratio,width=0.20\textwidth]{network2_hist_fast.pdf}}
-\vspace{-2.5mm}
-\caption{Impact of fast light rail on number of stops for Network 1.}
+\begin{subfigure}{0.2\textwidth}\label{fig:network1_slow:hist:side}
+  \centering
+  \footnotesize{Side Streets}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_hist_slow_side.pdf}
+\end{subfigure}
+%
+\begin{subfigure}{0.2\textwidth}\label{fig:network1_slow:hist}
+  \centering
+  \footnotesize{Overall}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_hist_slow.pdf}
+\end{subfigure}
+%
+\begin{subfigure}{0.2\textwidth}\label{fig:network2_slow:hist}
+  \centering
+  \footnotesize{Overall}
+\includegraphics[keepaspectratio,width=\linewidth]{network2_hist_slow.pdf}
+\end{subfigure}
+%
+\begin{subfigure}{0.28\textwidth}\label{fig:nwrwork1_fast:hist:arterial}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_hist_fast_arterial.pdf}
+\end{subfigure}
+\begin{subfigure}{0.2\textwidth}\label{fig:network1_fast:hist:side}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_hist_fast_side.pdf}
+\end{subfigure}
+\begin{subfigure}{0.2\textwidth}\label{fig:network1_fast:hist}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_hist_fast.pdf}
+\end{subfigure}
+\begin{subfigure}{0.2\textwidth}\label{fig:network2_fast:hist}
+\includegraphics[keepaspectratio,width=\linewidth]{network2_hist_fast.pdf}
+\end{subfigure}
+\vspace{-2mm}
+\caption{Impact of fast light rail on number of stops for Network 1. Top row is for the slow light rail schedule. Bottom row is for the fast light rail schedule}
 \label{fig:network_hist}
 \end{figure*}
 
@@ -356,17 +404,40 @@ Conversely, the optimized controller is able to clear out the queue build up in 
 
 \begin{figure*}[t!] \centering
 %  trim={<left> <lower> <right> <upper>}
-\subfigure[]{\label{fig:network1_microsim:fixed_side:slow_lr}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_microsim_fixed_slow_side.pdf}}
-\subfigure[]{\label{fig:network1_microsim:opt_side:slow_lr}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_microsim_opt_slow_side.pdf}}
-\subfigure[]{\label{fig:network1_microsim:fixed_side:fast_lr}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_microsim_fixed_slow_arterial.pdf}}
-\subfigure[]{\label{fig:network1_microsim:opt_side:fast_lr}
-\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_microsim_opt_slow_arterial.pdf}}
-
+\begin{subfigure}{0.49\textwidth}
+  \centering
+  \footnotesize{Fixed Controller Side Street $q_5$ to $q_6$}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}
+  \centering
+  \footnotesize{Optimized Controller Side Street $q_5$ to $q_6$}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:network1_microsim:fixed_side:slow_lr}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_microsim_fixed_slow_side.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:network1_microsim:opt_side:slow_lr}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_microsim_opt_slow_side.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}
+  \centering
+  \footnotesize{Fixed Controller Arterial $q_2$ to $q_{10}$}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}
+  \centering
+  \footnotesize{Optimized Controller Arterial $q_2$ to $q_{10}$}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:network1_microsim:fixed_side:fast_lr}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_microsim_fixed_slow_arterial.pdf}
+\caption{}
+\end{subfigure}
+\begin{subfigure}{0.49\textwidth}\label{fig:network1_microsim:opt_side:fast_lr}
+\includegraphics[keepaspectratio,width=\linewidth]{network1_microsim_opt_slow_arterial.pdf}
+\caption{}
+\end{subfigure}
 %
-\vspace{-2.5mm}
+%\vspace{-5mm}
 \caption{Microsimulation time-distance plots of side street $q_5$ to $q_6$ and arterial $q_2$ to $q_{13}$ in Network 1 with the slow light rail schedule. The fixed-adaptive controller has prioritized the arterial phase duration (c) over the side street duration (a) and suffers from accumulative queue build up in the side streets following each transit of the light rail.
 %
 The optimized controller is able to clear out the queue build up in the side streets by increasing the phase time of the side street (b) for a cycle after the transit has passed through, and then returns to a schedule that prioritizes the arterial (d) depending on the changes in traffic density.}

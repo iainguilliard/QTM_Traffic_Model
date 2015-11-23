@@ -158,7 +158,7 @@ $\mathrm{w}_i$ is the weight function in \cref{fig:demand_profiles}
 corresponding to the letter label of $i$ in \cref{fig:networks};
 %
 $\beta$ is the maximum inflow rate in vehicles per \DT, as annotated at the
-queue $i$ in \cref{fig:networks}; and
+start of queue $i$ in \cref{fig:networks}; and
 %
 $\alpha \in (0,2]$ is the scaling factor for the demand level being evaluated.
 
@@ -231,8 +231,8 @@ red square in the box plots.}
 
 
 \cref{fig:arterial:delayCurve,fig:grid:delayCurve} show, for each network, the
-average delay per vehicle as a function of demand for both fixed-time and
-adaptive control approaches in three scenarios: before the light rail and after
+average delay per vehicle as a function of demand for both optimized fixed-time and
+optimized adaptive control approaches in three scenarios: before the light rail and after
 the installation of light rail using the slow and the fast schedules.
 %
 As we hypothesized, optimized adaptive control is able to mitigate the impact of
@@ -240,7 +240,14 @@ the introduction of light rail and it marginally increases the average delay
 when compared with the average delay produced by fixed-time controller
 \textbf{before} the light rail.
 %
-Furthermore, as shown in \cref{fig:arterial:boxplot,fig:grid:boxplot}, the
+\cref{fig:network_hist} shows for each network, the cumulative frequency of vehicle stops
+corresponding to demand level $\rm II$ in \cref{fig:demand_profiles}).
+\cref{fig:network1_slow:hist:arterial,fig:network1_slow:hist:side}
+ shows that with the slow light rail schedule, the fixed-time controller chooses to prioritize the arterial over the side
+ streets, but overall (\cref{fig:network1_slow:hist}) the optimized controller does better with less stops at all frequencies.
+ 
+%
+Moreover, as shown in \cref{fig:arterial:boxplot,fig:grid:boxplot}, the
 optimized adaptive controller also produces better signal plans than the
 fixed-time controller, i.e., plans with smaller median, third quartile, and
 maximum delay.
@@ -319,7 +326,8 @@ transportation.
 \begin{figure*}[t!] \centering
 %  trim={<left> <lower> <right> <upper>}
 %
-\subfigure[]{\label{fig:nwrwork1_slow:hist:arterial}
+Slow
+\subfigure[]{\label{fig:network1_slow:hist:arterial}
 \includegraphics[keepaspectratio,width=0.28\textwidth]{network1_hist_slow_arterial.pdf}}
 \subfigure[]{\label{fig:network1_slow:hist:side}
 \includegraphics[keepaspectratio,width=0.2\textwidth]{network1_hist_slow_side.pdf}}
@@ -328,7 +336,7 @@ transportation.
 \subfigure[]{\label{fig:network2_slow:hist:}
 \includegraphics[keepaspectratio,width=0.2\textwidth]{network2_hist_slow.pdf}}
 %
-\subfigure[]{\label{fig:nwrwork1_fast:hist:arterial}
+\subfigure[]{\label{fig:nerwork1_fast:hist:arterial}
 \includegraphics[keepaspectratio,width=0.28\textwidth]{network1_hist_fast_arterial.pdf}}
 \subfigure[]{\label{fig:network1_fast:hist:side}
 \includegraphics[keepaspectratio,width=0.20\textwidth]{network1_hist_fast_side.pdf}}

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Cygwin) (preloaded format=pdflatex 2015.6.30)  20 NOV 2015 18:37
+=======
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.9.9)  23 NOV 2015 12:57
+>>>>>>> 73df525d206780327d4968f9e4a6f6a1c46b2a85
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -815,7 +819,7 @@ File: plots/canberra_transit.pdf Graphic file (type pdf)
 
 <use plots/canberra_transit.pdf>
 Package pdftex.def Info: plots/canberra_transit.pdf used on input line 9.
-(pdftex.def)             Requested size: 227.64894pt x 135.45276pt.
+(pdftex.def)             Requested size: 252.94499pt x 150.50037pt.
 
 <../TRB_paper/plots/pw_queues_homogenous.pdf, id=57, 632.3625pt x 487.8225pt>
 File: ../TRB_paper/plots/pw_queues_homogenous.pdf Graphic file (type pdf)
@@ -823,15 +827,14 @@ File: ../TRB_paper/plots/pw_queues_homogenous.pdf Graphic file (type pdf)
 <use ../TRB_paper/plots/pw_queues_homogenous.pdf>
 Package pdftex.def Info: ../TRB_paper/plots/pw_queues_homogenous.pdf used on in
 put line 15.
-(pdftex.def)             Requested size: 252.94499pt x 195.12553pt.
-
-Overfull \hbox (10.0148pt too wide) in paragraph at lines 9--36
- [][] 
- []
-
+(pdftex.def)             Requested size: 222.59283pt x 171.70808pt.
 LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <10> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 77.
+<<<<<<< HEAD
 [1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}
+=======
+ [1{/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+>>>>>>> 73df525d206780327d4968f9e4a6f6a1c46b2a85
 
 
 
@@ -843,20 +846,21 @@ Underfull \hbox (badness 2005) in paragraph at lines 155--162
 \OT1/ptm/m/n/10 be-tween capacity-constrained queues as a Lin-ear Pro-
  []
 
-
+[2 <./plots/canberra_transit.pdf> <../TRB_paper/plots/pw_queues_homogenous.pdf>
+]
 Underfull \hbox (badness 1092) in paragraph at lines 280--292
 \OT1/ptm/m/n/10 vian up-date be-cause the up-date con-sid-ers the pre-vi-ous
  []
 
-[2]) (./tex/Experiments.tex
-<plots/network1.pdf, id=167, 570.80911pt x 219.57684pt>
+[3]) (./tex/Experiments.tex
+<plots/network1.pdf, id=239, 570.80911pt x 219.57684pt>
 File: plots/network1.pdf Graphic file (type pdf)
 
 <use plots/network1.pdf>
 Package pdftex.def Info: plots/network1.pdf used on input line 33.
 (pdftex.def)             Requested size: 237.7689pt x 74.73996pt.
 
-<plots/network2.pdf, id=168, 570.74791pt x 443.52798pt>
+<plots/network2.pdf, id=240, 570.74791pt x 443.52798pt>
 File: plots/network2.pdf Graphic file (type pdf)
 
 <use plots/network2.pdf>
@@ -872,56 +876,75 @@ Overfull \hbox (16.05061pt too wide) in paragraph at lines 33--43
  [][] 
  []
 
-[3] <plots/demand_profiles.pdf, id=204, 510.37863pt x 295.84924pt>
+<plots/demand_profiles.pdf, id=241, 510.37863pt x 295.84924pt>
 File: plots/demand_profiles.pdf Graphic file (type pdf)
 
 <use plots/demand_profiles.pdf>
 Package pdftex.def Info: plots/demand_profiles.pdf used on input line 50.
 (pdftex.def)             Requested size: 237.7689pt x 137.82578pt.
 
-<plots/Transit1_sched.pdf, id=205, 496.01247pt x 93.96574pt>
+<plots/Transit1_sched.pdf, id=242, 496.01247pt x 93.96574pt>
 File: plots/Transit1_sched.pdf Graphic file (type pdf)
 
 <use plots/Transit1_sched.pdf>
 Package pdftex.def Info: plots/Transit1_sched.pdf used on input line 58.
 (pdftex.def)             Requested size: 237.7689pt x 34.45856pt.
 
-<plots/Transit2_sched.pdf, id=206, 496.01247pt x 93.96574pt>
+<plots/Transit2_sched.pdf, id=243, 496.01247pt x 93.96574pt>
 File: plots/Transit2_sched.pdf Graphic file (type pdf)
 
 <use plots/Transit2_sched.pdf>
 Package pdftex.def Info: plots/Transit2_sched.pdf used on input line 59.
 (pdftex.def)             Requested size: 237.7689pt x 45.04425pt.
 
-<plots/network1_delay.pdf, id=210, 392.47214pt x 271.79512pt>
+
+LaTeX Warning: Text page 4 contains only floats.
+
+[4 <./plots/network1.pdf> <./plots/network2.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/network2.pdf): PDF i
+nclusion: multiple pdfs with page group included in a single page
+> <./plots/demand_profiles.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/demand_profiles.pdf)
+: PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/Transit1_sched.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/Transit1_sched.pdf):
+ PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/Transit2_sched.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/Transit2_sched.pdf):
+ PDF inclusion: multiple pdfs with page group included in a single page
+>] <plots/network1_delay.pdf, id=412, 392.47214pt x 271.79512pt>
 File: plots/network1_delay.pdf Graphic file (type pdf)
 
 <use plots/network1_delay.pdf>
 Package pdftex.def Info: plots/network1_delay.pdf used on input line 92.
 (pdftex.def)             Requested size: 247.88887pt x 171.66728pt.
 
-<plots/network2_delay.pdf, id=211, 386.6911pt x 271.79512pt>
+<plots/network2_delay.pdf, id=413, 386.6911pt x 271.79512pt>
 File: plots/network2_delay.pdf Graphic file (type pdf)
 
 <use plots/network2_delay.pdf>
 Package pdftex.def Info: plots/network2_delay.pdf used on input line 94.
 (pdftex.def)             Requested size: 247.88887pt x 174.23444pt.
 
-<plots/network1_boxplots.pdf, id=212, 387.00523pt x 225.3607pt>
+<plots/network1_boxplots.pdf, id=414, 387.00523pt x 225.3607pt>
 File: plots/network1_boxplots.pdf Graphic file (type pdf)
 
 <use plots/network1_boxplots.pdf>
 Package pdftex.def Info: plots/network1_boxplots.pdf used on input line 96.
 (pdftex.def)             Requested size: 247.88887pt x 144.3507pt.
 
-<plots/network2_boxplots.pdf, id=213, 387.25618pt x 225.3607pt>
+<plots/network2_boxplots.pdf, id=415, 387.25618pt x 225.3607pt>
 File: plots/network2_boxplots.pdf Graphic file (type pdf)
 
 <use plots/network2_boxplots.pdf>
 Package pdftex.def Info: plots/network2_boxplots.pdf used on input line 98.
 (pdftex.def)             Requested size: 247.88887pt x 144.25786pt.
 
-<plots/network1_t1_reduction.pdf, id=223, 395.70178pt x 281.9973pt>
+<plots/network1_t1_reduction.pdf, id=425, 395.70178pt x 281.9973pt>
 File: plots/network1_t1_reduction.pdf Graphic file (type pdf)
 
 <use plots/network1_t1_reduction.pdf>
@@ -929,7 +952,7 @@ Package pdftex.def Info: plots/network1_t1_reduction.pdf used on input line 230
 .
 (pdftex.def)             Requested size: 247.88887pt x 176.66095pt.
 
-<plots/network2_t1_reduction.pdf, id=224, 395.70178pt x 281.9973pt>
+<plots/network2_t1_reduction.pdf, id=426, 395.70178pt x 281.9973pt>
 File: plots/network2_t1_reduction.pdf Graphic file (type pdf)
 
 <use plots/network2_t1_reduction.pdf>
@@ -937,7 +960,7 @@ Package pdftex.def Info: plots/network2_t1_reduction.pdf used on input line 232
 .
 (pdftex.def)             Requested size: 247.88887pt x 176.66095pt.
 
-<plots/network1_t2_reduction.pdf, id=225, 395.70178pt x 281.9973pt>
+<plots/network1_t2_reduction.pdf, id=427, 395.70178pt x 281.9973pt>
 File: plots/network1_t2_reduction.pdf Graphic file (type pdf)
 
 <use plots/network1_t2_reduction.pdf>
@@ -945,14 +968,134 @@ Package pdftex.def Info: plots/network1_t2_reduction.pdf used on input line 234
 .
 (pdftex.def)             Requested size: 247.88887pt x 176.66095pt.
 
-<plots/network2_t2_reduction.pdf, id=226, 395.70178pt x 281.9973pt>
+<plots/network2_t2_reduction.pdf, id=428, 395.70178pt x 281.9973pt>
 File: plots/network2_t2_reduction.pdf Graphic file (type pdf)
 
 <use plots/network2_t2_reduction.pdf>
 Package pdftex.def Info: plots/network2_t2_reduction.pdf used on input line 236
 .
 (pdftex.def)             Requested size: 247.88887pt x 176.66095pt.
-) (./tex/Conclusion.tex [4])
+
+<plots/avenue_1_f_1w5_hist_0.pdf, id=432, 387.00523pt x 281.11902pt>
+File: plots/avenue_1_f_1w5_hist_0.pdf Graphic file (type pdf)
+
+<use plots/avenue_1_f_1w5_hist_0.pdf>
+Package pdftex.def Info: plots/avenue_1_f_1w5_hist_0.pdf used on input line 289
+.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/avenue_1_f_1w5_hist_1.pdf, id=433, 387.00523pt x 281.11902pt>
+File: plots/avenue_1_f_1w5_hist_1.pdf Graphic file (type pdf)
+
+<use plots/avenue_1_f_1w5_hist_1.pdf>
+Package pdftex.def Info: plots/avenue_1_f_1w5_hist_1.pdf used on input line 291
+.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/avenue_1_1w5_hist_0.pdf, id=434, 387.00523pt x 281.11902pt>
+File: plots/avenue_1_1w5_hist_0.pdf Graphic file (type pdf)
+
+<use plots/avenue_1_1w5_hist_0.pdf>
+Package pdftex.def Info: plots/avenue_1_1w5_hist_0.pdf used on input line 293.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/avenue_1_1w5_hist_1.pdf, id=435, 387.00523pt x 281.11902pt>
+File: plots/avenue_1_1w5_hist_1.pdf Graphic file (type pdf)
+
+<use plots/avenue_1_1w5_hist_1.pdf>
+Package pdftex.def Info: plots/avenue_1_1w5_hist_1.pdf used on input line 295.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/avenue2_1_f_1w5_hist_0.pdf, id=436, 387.00523pt x 281.11902pt>
+File: plots/avenue2_1_f_1w5_hist_0.pdf Graphic file (type pdf)
+
+<use plots/avenue2_1_f_1w5_hist_0.pdf>
+Package pdftex.def Info: plots/avenue2_1_f_1w5_hist_0.pdf used on input line 30
+6.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/avenue2_1_f_1w5_hist_1.pdf, id=437, 387.00523pt x 281.11902pt>
+File: plots/avenue2_1_f_1w5_hist_1.pdf Graphic file (type pdf)
+
+<use plots/avenue2_1_f_1w5_hist_1.pdf>
+Package pdftex.def Info: plots/avenue2_1_f_1w5_hist_1.pdf used on input line 30
+8.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/avenue2_1_1w5_hist_0.pdf, id=438, 387.00523pt x 281.11902pt>
+File: plots/avenue2_1_1w5_hist_0.pdf Graphic file (type pdf)
+
+<use plots/avenue2_1_1w5_hist_0.pdf>
+Package pdftex.def Info: plots/avenue2_1_1w5_hist_0.pdf used on input line 310.
+
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/avenue2_1_1w5_hist_1.pdf, id=439, 387.00523pt x 281.11902pt>
+File: plots/avenue2_1_1w5_hist_1.pdf Graphic file (type pdf)
+
+<use plots/avenue2_1_1w5_hist_1.pdf>
+Package pdftex.def Info: plots/avenue2_1_1w5_hist_1.pdf used on input line 312.
+
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/grid_1_f_1w5_hist_0.pdf, id=440, 387.00523pt x 281.11902pt>
+File: plots/grid_1_f_1w5_hist_0.pdf Graphic file (type pdf)
+
+<use plots/grid_1_f_1w5_hist_0.pdf>
+Package pdftex.def Info: plots/grid_1_f_1w5_hist_0.pdf used on input line 323.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/grid_1_f_1w5_hist_1.pdf, id=441, 387.00523pt x 281.11902pt>
+File: plots/grid_1_f_1w5_hist_1.pdf Graphic file (type pdf)
+
+<use plots/grid_1_f_1w5_hist_1.pdf>
+Package pdftex.def Info: plots/grid_1_f_1w5_hist_1.pdf used on input line 325.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/grid_1_1w5_hist_0.pdf, id=442, 387.00523pt x 281.11902pt>
+File: plots/grid_1_1w5_hist_0.pdf Graphic file (type pdf)
+
+<use plots/grid_1_1w5_hist_0.pdf>
+Package pdftex.def Info: plots/grid_1_1w5_hist_0.pdf used on input line 327.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/grid_1_1w5_hist_1.pdf, id=443, 387.00523pt x 281.11902pt>
+File: plots/grid_1_1w5_hist_1.pdf Graphic file (type pdf)
+
+<use plots/grid_1_1w5_hist_1.pdf>
+Package pdftex.def Info: plots/grid_1_1w5_hist_1.pdf used on input line 329.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/grid2b_1_f_1w5_hist_0.pdf, id=444, 387.00523pt x 281.11902pt>
+File: plots/grid2b_1_f_1w5_hist_0.pdf Graphic file (type pdf)
+
+<use plots/grid2b_1_f_1w5_hist_0.pdf>
+Package pdftex.def Info: plots/grid2b_1_f_1w5_hist_0.pdf used on input line 340
+.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/grid2b_1_f_1w5_hist_1.pdf, id=445, 387.00523pt x 281.11902pt>
+File: plots/grid2b_1_f_1w5_hist_1.pdf Graphic file (type pdf)
+
+<use plots/grid2b_1_f_1w5_hist_1.pdf>
+Package pdftex.def Info: plots/grid2b_1_f_1w5_hist_1.pdf used on input line 342
+.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/grid2b_1_1w5_hist_0.pdf, id=446, 387.00523pt x 281.11902pt>
+File: plots/grid2b_1_1w5_hist_0.pdf Graphic file (type pdf)
+
+<use plots/grid2b_1_1w5_hist_0.pdf>
+Package pdftex.def Info: plots/grid2b_1_1w5_hist_0.pdf used on input line 344.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+
+<plots/grid2b_1_1w5_hist_1.pdf, id=447, 387.00523pt x 281.11902pt>
+File: plots/grid2b_1_1w5_hist_1.pdf Graphic file (type pdf)
+
+<use plots/grid2b_1_1w5_hist_1.pdf>
+Package pdftex.def Info: plots/grid2b_1_1w5_hist_1.pdf used on input line 346.
+(pdftex.def)             Requested size: 247.88887pt x 180.06567pt.
+) (./tex/Conclusion.tex [5])
 (./light_rail-icaps16.bbl
 Underfull \hbox (badness 10000) in paragraph at lines 21--28
 []\OT1/ptm/m/n/10 El-Tantawy,
@@ -971,6 +1114,7 @@ Underfull \hbox (badness 1163) in paragraph at lines 21--28
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
+<<<<<<< HEAD
  [5 <./plots/network1_delay.pdf> <./plots/network2_delay.pdf
 
 pdfTeX warning: pdflatex (file ./plots/network2_delay.pdf): PDF inclusion: mult
@@ -983,6 +1127,20 @@ ultiple pdfs with page group included in a single page
 
 pdfTeX warning: pdflatex (file ./plots/network2_boxplots.pdf): PDF inclusion: m
 ultiple pdfs with page group included in a single page
+=======
+ [6 <./plots/network1_delay.pdf> <./plots/network2_delay.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/network2_delay.pdf):
+ PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/network1_boxplots.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/network1_boxplots.pd
+f): PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/network2_boxplots.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/network2_boxplots.pd
+f): PDF inclusion: multiple pdfs with page group included in a single page
+>>>>>>> 73df525d206780327d4968f9e4a6f6a1c46b2a85
 >]
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
@@ -1009,6 +1167,7 @@ Underfull \hbox (badness 6675) in paragraph at lines 104--109
 
 Underfull \vbox (badness 2680) has occurred while \output is active []
 
+<<<<<<< HEAD
  [6 <./plots/network1_t1_reduction.pdf> <./plots/network2_t1_reduction.pdf
 
 pdfTeX warning: pdflatex (file ./plots/network2_t1_reduction.pdf): PDF inclusio
@@ -1031,6 +1190,9 @@ Package atveryend Info: Empty hook `BeforeClearDocument' on input line 215.
 pdfTeX warning: pdflatex (file ./plots/network2.pdf): PDF inclusion: multiple p
 dfs with page group included in a single page
 > <./plots/demand_profiles.pdf
+=======
+ [7 <./plots/network1_t1_reduction.pdf> <./plots/network2_t1_reduction.pdf
+>>>>>>> 73df525d206780327d4968f9e4a6f6a1c46b2a85
 
 pdfTeX warning: pdflatex (file ./plots/demand_profiles.pdf): PDF inclusion: mul
 tiple pdfs with page group included in a single page
@@ -1040,19 +1202,78 @@ pdfTeX warning: pdflatex (file ./plots/Transit1_sched.pdf): PDF inclusion: mult
 iple pdfs with page group included in a single page
 > <./plots/Transit2_sched.pdf
 
+<<<<<<< HEAD
 pdfTeX warning: pdflatex (file ./plots/Transit2_sched.pdf): PDF inclusion: mult
 iple pdfs with page group included in a single page
+=======
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/network2_t2_reductio
+n.pdf): PDF inclusion: multiple pdfs with page group included in a single page
+>])
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 231.
+ [8
+
+ <./plots/avenue_1_f_1w5_hist_0.pdf> <./plots/avenue_1_f_1w5_hist_1.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/avenue_1_f_1w5_hist_
+1.pdf): PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/avenue_1_1w5_hist_0.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/avenue_1_1w5_hist_0.
+pdf): PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/avenue_1_1w5_hist_1.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/avenue_1_1w5_hist_1.
+pdf): PDF inclusion: multiple pdfs with page group included in a single page
+>] [9 <./plots/avenue2_1_f_1w5_hist_0.pdf> <./plots/avenue2_1_f_1w5_hist_1.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/avenue2_1_f_1w5_hist
+_1.pdf): PDF inclusion: multiple pdfs with page group included in a single page
+
+> <./plots/avenue2_1_1w5_hist_0.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/avenue2_1_1w5_hist_0
+.pdf): PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/avenue2_1_1w5_hist_1.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/avenue2_1_1w5_hist_1
+.pdf): PDF inclusion: multiple pdfs with page group included in a single page
+>] [10 <./plots/grid_1_f_1w5_hist_0.pdf> <./plots/grid_1_f_1w5_hist_1.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/grid_1_f_1w5_hist_1.
+pdf): PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/grid_1_1w5_hist_0.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/grid_1_1w5_hist_0.pd
+f): PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/grid_1_1w5_hist_1.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/grid_1_1w5_hist_1.pd
+f): PDF inclusion: multiple pdfs with page group included in a single page
+>] [11 <./plots/grid2b_1_f_1w5_hist_0.pdf> <./plots/grid2b_1_f_1w5_hist_1.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/grid2b_1_f_1w5_hist_
+1.pdf): PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/grid2b_1_1w5_hist_0.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/grid2b_1_1w5_hist_0.
+pdf): PDF inclusion: multiple pdfs with page group included in a single page
+> <./plots/grid2b_1_1w5_hist_1.pdf
+
+pdfTeX warning: /Library/TeX/texbin/pdflatex (file ./plots/grid2b_1_1w5_hist_1.
+pdf): PDF inclusion: multiple pdfs with page group included in a single page
+>>>>>>> 73df525d206780327d4968f9e4a6f6a1c46b2a85
 >]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 215.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 231.
  (./light_rail-icaps16.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 215.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 215.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 231.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 231.
 Package rerunfilecheck Info: File `light_rail-icaps16.out' has not changed.
 (rerunfilecheck)             Checksum: 936568805FFFB84E036BE587B50D4F3B;637.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 215.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 231.
  )
 (\end occurred when \ifdefined on line 34 was incomplete) 
 Here is how much of TeX's memory you used:
+<<<<<<< HEAD
  19970 strings out of 493117
  368735 string characters out of 6141204
  465932 words of memory out of 5000000
@@ -1081,4 +1302,36 @@ PDF statistics:
  473 compressed objects within 5 object streams
  96 named destinations out of 1000 (max. 500000)
  180 words of extra memory for PDF output out of 10000 (max. 10000000)
+=======
+ 20129 strings out of 493089
+ 377042 string characters out of 6134843
+ 465367 words of memory out of 5000000
+ 23085 multiletter control sequences out of 15000+600000
+ 21458 words of font info for 48 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 55i,14n,54p,1122b,420s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/20
+15/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/texlive/2015/texmf-dist/f
+onts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2015/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2015/texmf-dist/fon
+ts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2015/texmf-dist/font
+s/type1/public/amsfonts/cm/cmmi5.pfb></usr/local/texlive/2015/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2015/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type
+1/public/amsfonts/cm/cmr5.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr7.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmsy5.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmsy7.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmsy9.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmti10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/times/ut
+mb8a.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><
+/usr/local/texlive/2015/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on light_rail-icaps16.pdf (11 pages, 1160276 bytes).
+PDF statistics:
+ 1661 PDF objects out of 1728 (max. 8388607)
+ 591 compressed objects within 6 object streams
+ 119 named destinations out of 1000 (max. 500000)
+ 260 words of extra memory for PDF output out of 10000 (max. 10000000)
+>>>>>>> 73df525d206780327d4968f9e4a6f6a1c46b2a85
 

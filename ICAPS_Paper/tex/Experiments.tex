@@ -155,7 +155,7 @@ is a weight function in \cref{fig:demand_profiles} corresponding to the letter l
 the scaling factor for the demand level being evaluated.
 
 
-For each evaluation we first generate an signal plan using QTM configured as either an optimized adaptive controller or a fixed-time controller, with a \TMAX is set sufficiently high to allow all traffic to clear the network,
+For each evaluation we first generate a signal plan using QTM configured as either an optimized adaptive controller or a fixed-time controller. \TMAX is set sufficiently high to allow all traffic to clear the network,
 typically in the range 1000s to 1500s.\toIain{check horizons}
 %
 By clearing the network, we can easily measure the total travel time for all the
@@ -168,9 +168,9 @@ at the boundaries of the network.
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
 
-Next we microsimulate the network under control of the QTM generated signal plan,
-using the Intelligent Driver Model (IDM) \cite{treiber2000congested}. All vehicles are identical with IDM parameters: length $l=3$ m, desired velocity $v_0 = 50 \text{ km/h}$, safe time headway $T=1.5$ s, maximum acceleration
+Next we microsimulate the network using the Intelligent Driver Model (IDM) \cite{treiber2000congested} under the control of the QTM generated signal plan. All vehicles have identical IDM parameters: length $l=3$ m, desired velocity $v_0 = 50 \text{ km/h}$, safe time headway $T=1.5$ s, maximum acceleration
 $a=2 \text{ m/s}^2$, desired deceleration $b = 3 \text{ m/s}^2$, acceleration exponent $\delta = 4$, and jam distance $s_0 = 2$ m.
+We inject cars into the network using the same demand profile as that used during the planning step.
 
 
 For all experiments, we used Gurobi as the MILP solver running on a
@@ -282,4 +282,72 @@ respectively;
 moreover, the average delay \textbf{decreases} for both networks using the
 fast light rail schedule even if no driver switches to the newly installed
 public transportation.
+
+\begin{figure*}[t!] \centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{\label{fig:arterial_slow:hist:f0}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{avenue_1_f_1w5_hist_0.pdf}}
+\subfigure[]{\label{fig:arterial_slow:hist:f1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{avenue_1_f_1w5_hist_1.pdf}}
+\subfigure[]{\label{fig:arterial_slow:hist:0}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{avenue_1_1w5_hist_0.pdf}}
+\subfigure[]{\label{fig:arterial_slow:hist:1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{avenue_1_1w5_hist_1.pdf}}
+%
+\vspace{-5mm}
+\caption{Impact on number of stops for Network 1 with slow light rail schedule.}
+%
+\label{fig:arterial_hist_slow}
+\end{figure*}
+
+\begin{figure*}[t!] \centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{\label{fig:arterial_fast:hist:f0}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{avenue2_1_f_1w5_hist_0.pdf}}
+\subfigure[]{\label{fig:arterial_fast:hist:f1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{avenue2_1_f_1w5_hist_1.pdf}}
+\subfigure[]{\label{fig:arterial_fast:hist:0}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{avenue2_1_1w5_hist_0.pdf}}
+\subfigure[]{\label{fig:arterial_fast:hist:1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{avenue2_1_1w5_hist_1.pdf}}
+%
+\vspace{-5mm}
+\caption{Impact on number of stops for Network 1 with fast light rail schedule.}
+%
+\label{fig:arterial_hist_fast}
+\end{figure*}
+
+\begin{figure*}[t!] \centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{\label{fig:grid_slow:hist:f0}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{grid_1_f_1w5_hist_0.pdf}}
+\subfigure[]{\label{fig:grid_slow:hist:f1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{grid_1_f_1w5_hist_1.pdf}}
+\subfigure[]{\label{fig:grid_slow:hist:0}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{grid_1_1w5_hist_0.pdf}}
+\subfigure[]{\label{fig:grid_slow:hist:1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{grid_1_1w5_hist_1.pdf}}
+%
+\vspace{-5mm}
+\caption{Impact on number of stops for Network 2 with slow light rail schedule.}
+%
+\label{fig:grid_hist_slow}
+\end{figure*}
+
+\begin{figure*}[t!] \centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{\label{fig:grid_fast:hist:f0}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{grid2b_1_f_1w5_hist_0.pdf}}
+\subfigure[]{\label{fig:grid_fast:hist:f1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{grid2b_1_f_1w5_hist_1.pdf}}
+\subfigure[]{\label{fig:grid_fast:hist:0}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{grid2b_1_1w5_hist_0.pdf}}
+\subfigure[]{\label{fig:grid_fast:hist:1}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{grid2b_1_1w5_hist_1.pdf}}
+%
+\vspace{-5mm}
+\caption{Impact on number of stops for Network 2 with fast light rail schedule.}
+%
+\label{fig:grid_hist_fast}
+\end{figure*}
 

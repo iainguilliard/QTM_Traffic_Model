@@ -4,14 +4,14 @@ As urban traffic congestion is on the increase worldwide with
 estimated productivity losses in the hundreds of billions of dollars
 in the U.S. alone and immeasurable environmental
 impact~\cite{bazzan2013intro}, many cities are increasingly looking to
-public transit options such as light rail that are less expensive
-and often more reliable than heavy rail~\cite{thompson2003lightrail}
-in order to reduce the number of conventional traffic commuters.
-Since light rail often operates at street-level with exclusive
-right-of-way and requires coordination with conventional traffic
-networks and signal control, a major concern in light rail
-installation is whether enough commuters will switch to it to offset
-the additional constraints it places on traffic signal control.
+public transit options such as light rail that are less expensive and
+often more reliable than heavy rail in order to reduce the number of
+conventional traffic commuters~\cite{thompson2003lightrail}.  Since
+light rail often operates at street-level with exclusive right-of-way
+and requires coordination with conventional traffic networks and
+signal control, a major concern in light rail installation is whether
+enough commuters will switch to it to offset the additional
+constraints it places on traffic signal control.
 
 % SPS: Does not necessarily support argument, but an interesting article
 %      is ``A Desire Named Streetcar''
@@ -34,7 +34,7 @@ delay optimization~\trbcitenum{varaiya2013max,li2014coupled},
 scheduling-driven
 control~\trbcitenum{xie2012schedule,smith2013surtrac}, and
 reinforcement learning~\trbcitenum{el2013multiagent}.  While all of
-these approaches hold out the promise of more actively optimized
+these approaches hold out the promise of more highly optimized
 traffic control methods, to date, \emph{none} have studied the 
 optimal integration of light rail schedule constraints with their
 respective methods nor the impact that such integration would have on
@@ -103,19 +103,18 @@ delay.
 %this setting is to
 %, and Mixed Integer Linear
 %Programming (MILP) can be used to optimize the traffic signals to
-We extend the QTM model to incorporate light
-rail schedule constraints and contribute a novel way to optimize
-fixed-time traffic signal control subject to light rail schedules.  
-Perhaps even more importantly, we also contribute a novel optimized
-adaptive signal control variant of the QTM that virtually nullifies
-the impact of the light rail presence as we show experimentally in
-both the QTM optimization objective as well as an external
-microsimulation validation.  
-Ultimately, this leads to a
-win-win situation where both conventional vehicle traffic and light
-rail commuters benefit through the application of MILP-based
-optimization to jointly manage public transit and conventional traffic
-networks.
+We extend the QTM model to incorporate light rail schedule constraints
+and contribute a novel way to optimize fixed-time traffic signal
+control subject to light rail schedules.  As a second major
+contribution, we also define a novel optimized adaptive signal control
+variant of the QTM that virtually nullifies the impact of the light
+rail presence as we show experimentally in both the QTM optimization
+objective as well as an external microsimulation validation using a
+fine-grained nonlinear model of traffic flow.  Ultimately, these
+results demonstrate a win-win situation where both conventional
+vehicle traffic and light rail commuters benefit through the
+application of MILP-based optimization to jointly manage both light
+rail schedule priority and conventional traffic networks.
 
 %Hence, such controllers hold the promise of maximizing existing
 %infrastructure capacity by finding optimized traffic signal control

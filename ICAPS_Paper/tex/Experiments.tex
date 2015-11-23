@@ -266,7 +266,7 @@ the double of the maximum delay before the light rail.
 \subfigure[]{\label{fig:grid:impact:t2}
 \includegraphics[keepaspectratio,width=0.49\textwidth]{network2_t2_reduction.pdf}}
 %
-\vspace{-5mm}
+\vspace{-2mm}
 \caption{Impact on average delay for the arterial (first column) and grid
 (second column) networks for both light rail schedules (rows) in different
 scenarios (curves) of traffic control system before and after installation of
@@ -336,7 +336,7 @@ transportation.
 \includegraphics[keepaspectratio,width=0.20\textwidth]{network1_hist_fast.pdf}}
 \subfigure[]{\label{fig:network2_fast:hist}
 \includegraphics[keepaspectratio,width=0.20\textwidth]{network2_hist_fast.pdf}}
-\vspace{-5mm}
+\vspace{-2mm}
 \caption{Impact of fast light rail on number of stops for Network 1.}
 \label{fig:network1_hist_fast}
 \end{figure*}
@@ -344,7 +344,7 @@ transportation.
 \cref{fig:network1_microsim} shows microsimulation time-distance plots for several streets in Network 1. The y-axis of the plot
 shows the distance along the street, and the x-axis shows the evolution over time. Each colored trace represents the journey of a vehicle along the street. Traffic signals at fixed distances down the street appear as black horizontal dashed lines, where a solid bar represents that the phase is inactive, that the light is red, and traffic cannot pass. Where the line is broken the phase is active, the light is green and cars can proceed past. The time-distance plots capture the queueing behaviour of the traffic as each vehicle decelerates when approaching congested traffic, or red or amber light ahead. When the trace of a vehicle is horizontal, it has become stationary.
 From the microsimulation time-distance plots of the side streets (\cref{fig:network1_microsim}) we can see that the fixed-adaptive controller has prioritized the arterial phase duration over the side street duration, to achieve coordinated ``green corridors'', sized for the average traffic density in the network, and suffers from accumulative queue build up in the side streets following each transit of the light rail.
-Conversely, the optimized controller is able to clear out the queue build up in the side streets by increasing the phase time of the side street for a cycle after the transit has passed through, and then returns to a schedule that prioritises the arterial depending on the changes in traffic density. When the traffic density in the arterial is higher than the side streets then the optmized controller will coordinate ``green corridors'' along the arterial (see appendix).
+Conversely, the optimized controller is able to clear out the queue build up in the side streets by increasing the phase time of the side street for a cycle after the transit has passed through, and then returns to a schedule that prioritises the arterial depending on the changes in traffic density. When the traffic density in the arterial is higher than the side streets then the optmized controller will coordinate ``green corridors'' along the arterial.\footnote{The supplementary material further elucidates this point.}
 
 \begin{figure*}[t!] \centering
 %  trim={<left> <lower> <right> <upper>}
@@ -358,7 +358,7 @@ Conversely, the optimized controller is able to clear out the queue build up in 
 \includegraphics[keepaspectratio,width=0.49\textwidth]{network1_microsim_opt_slow_arterial.pdf}}
 
 %
-\vspace{-5mm}
+\vspace{-2mm}
 \caption{Microsimulation time-distance plots of side street $q_5$ to $q_6$ and arterial $q_2$ to $q_{13}$ in Network 1 with the slow light rail schedule. The fixed-adaptive controller has prioritized the arterial phase duration (c) over the side street duration (a) and suffers from accumulative queue build up in the side streets following each transit of the light rail.
 %
 The optimized controller is able to clear out the queue build up in the side streets by increasing the phase time of the side street (b) for a cycle after the transit has passed through, and then returns to a schedule that prioritizes the arterial (d) depending on the changes in traffic density.}

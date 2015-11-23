@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Cygwin) (preloaded format=pdflatex 2015.6.30)  23 NOV 2015 03:08
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/Cygwin) (preloaded format=pdflatex 2015.6.30)  23 NOV 2015 03:50
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -827,20 +827,15 @@ LaTeX Font Info:    Font shape `OMS/ptm/m/n' in size <9> not available
 LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `OT1/ptm/b/n' tried instead on input line 181.
  (./tex/Abstract.tex)
-(./tex/Introduction.tex
-
-LaTeX Warning: Citation `guilliard2016trb' on page 1 undefined on input line 31
-.
-
-) (./tex/Model.tex
-<plots/canberra_transit.pdf, id=65, 659.25246pt x 367.82597pt>
+(./tex/Introduction.tex) (./tex/Model.tex
+<plots/canberra_transit.pdf, id=66, 659.25246pt x 367.82597pt>
 File: plots/canberra_transit.pdf Graphic file (type pdf)
 
 <use plots/canberra_transit.pdf>
 Package pdftex.def Info: plots/canberra_transit.pdf used on input line 9.
 (pdftex.def)             Requested size: 252.94499pt x 150.50037pt.
 
-<../TRB_paper/plots/pw_queues_homogenous.pdf, id=67, 632.3625pt x 487.8225pt>
+<../TRB_paper/plots/pw_queues_homogenous.pdf, id=68, 632.3625pt x 487.8225pt>
 File: ../TRB_paper/plots/pw_queues_homogenous.pdf Graphic file (type pdf)
 
 <use ../TRB_paper/plots/pw_queues_homogenous.pdf>
@@ -871,14 +866,14 @@ Underfull \hbox (badness 1092) in paragraph at lines 280--292
 Underfull \vbox (badness 3118) has occurred while \output is active []
 
  [3])
-(./tex/Experiments.tex <plots/network1.pdf, id=254, 570.80911pt x 219.57684pt>
+(./tex/Experiments.tex <plots/network1.pdf, id=256, 570.80911pt x 219.57684pt>
 File: plots/network1.pdf Graphic file (type pdf)
 
 <use plots/network1.pdf>
 Package pdftex.def Info: plots/network1.pdf used on input line 33.
 (pdftex.def)             Requested size: 237.7689pt x 74.73996pt.
 
-<plots/network2.pdf, id=255, 570.74791pt x 443.52798pt>
+<plots/network2.pdf, id=257, 570.74791pt x 443.52798pt>
 File: plots/network2.pdf Graphic file (type pdf)
 
 <use plots/network2.pdf>
@@ -894,21 +889,21 @@ Overfull \hbox (16.05061pt too wide) in paragraph at lines 33--43
  [][] 
  []
 
-<plots/demand_profiles.pdf, id=256, 510.37863pt x 295.84924pt>
+<plots/demand_profiles.pdf, id=258, 510.37863pt x 295.84924pt>
 File: plots/demand_profiles.pdf Graphic file (type pdf)
 
 <use plots/demand_profiles.pdf>
 Package pdftex.def Info: plots/demand_profiles.pdf used on input line 50.
 (pdftex.def)             Requested size: 237.7689pt x 137.82578pt.
 
-<plots/Transit1_sched.pdf, id=257, 722.7pt x 79.497pt>
+<plots/Transit1_sched.pdf, id=259, 722.7pt x 79.497pt>
 File: plots/Transit1_sched.pdf Graphic file (type pdf)
 
 <use plots/Transit1_sched.pdf>
 Package pdftex.def Info: plots/Transit1_sched.pdf used on input line 58.
 (pdftex.def)             Requested size: 237.7689pt x 22.19128pt.
 
-<plots/Transit2_sched.pdf, id=258, 722.7pt x 79.497pt>
+<plots/Transit2_sched.pdf, id=260, 722.7pt x 79.497pt>
 File: plots/Transit2_sched.pdf Graphic file (type pdf)
 
 <use plots/Transit2_sched.pdf>
@@ -918,35 +913,35 @@ Package pdftex.def Info: plots/Transit2_sched.pdf used on input line 59.
 
 pdfTeX warning: pdflatex (file ./plots/network2.pdf): PDF inclusion: multiple p
 dfs with page group included in a single page
->] <plots/network1_delay.pdf, id=356, 392.47214pt x 271.79512pt>
+>] <plots/network1_delay.pdf, id=358, 392.47214pt x 271.79512pt>
 File: plots/network1_delay.pdf Graphic file (type pdf)
 
 <use plots/network1_delay.pdf>
 Package pdftex.def Info: plots/network1_delay.pdf used on input line 92.
 (pdftex.def)             Requested size: 247.88887pt x 171.66728pt.
 
-<plots/network2_delay.pdf, id=357, 386.6911pt x 271.79512pt>
+<plots/network2_delay.pdf, id=359, 386.6911pt x 271.79512pt>
 File: plots/network2_delay.pdf Graphic file (type pdf)
 
 <use plots/network2_delay.pdf>
 Package pdftex.def Info: plots/network2_delay.pdf used on input line 94.
 (pdftex.def)             Requested size: 247.88887pt x 174.23444pt.
 
-<plots/network1_boxplots.pdf, id=358, 387.00523pt x 225.3607pt>
+<plots/network1_boxplots.pdf, id=360, 387.00523pt x 225.3607pt>
 File: plots/network1_boxplots.pdf Graphic file (type pdf)
 
 <use plots/network1_boxplots.pdf>
 Package pdftex.def Info: plots/network1_boxplots.pdf used on input line 96.
 (pdftex.def)             Requested size: 247.88887pt x 144.3507pt.
 
-<plots/network2_boxplots.pdf, id=359, 387.25618pt x 225.3607pt>
+<plots/network2_boxplots.pdf, id=361, 387.25618pt x 225.3607pt>
 File: plots/network2_boxplots.pdf Graphic file (type pdf)
 
 <use plots/network2_boxplots.pdf>
 Package pdftex.def Info: plots/network2_boxplots.pdf used on input line 98.
 (pdftex.def)             Requested size: 247.88887pt x 144.25786pt.
 
-<plots/network1_t1_reduction.pdf, id=369, 395.70178pt x 281.9973pt>
+<plots/network1_t1_reduction.pdf, id=371, 395.70178pt x 281.9973pt>
 File: plots/network1_t1_reduction.pdf Graphic file (type pdf)
 
 <use plots/network1_t1_reduction.pdf>
@@ -954,7 +949,7 @@ Package pdftex.def Info: plots/network1_t1_reduction.pdf used on input line 230
 .
 (pdftex.def)             Requested size: 247.88887pt x 176.66095pt.
 
-<plots/network2_t1_reduction.pdf, id=370, 395.70178pt x 281.9973pt>
+<plots/network2_t1_reduction.pdf, id=372, 395.70178pt x 281.9973pt>
 File: plots/network2_t1_reduction.pdf Graphic file (type pdf)
 
 <use plots/network2_t1_reduction.pdf>
@@ -962,7 +957,7 @@ Package pdftex.def Info: plots/network2_t1_reduction.pdf used on input line 232
 .
 (pdftex.def)             Requested size: 247.88887pt x 176.66095pt.
 
-<plots/network1_t2_reduction.pdf, id=371, 395.70178pt x 281.9973pt>
+<plots/network1_t2_reduction.pdf, id=373, 395.70178pt x 281.9973pt>
 File: plots/network1_t2_reduction.pdf Graphic file (type pdf)
 
 <use plots/network1_t2_reduction.pdf>
@@ -970,7 +965,7 @@ Package pdftex.def Info: plots/network1_t2_reduction.pdf used on input line 234
 .
 (pdftex.def)             Requested size: 247.88887pt x 176.66095pt.
 
-<plots/network2_t2_reduction.pdf, id=372, 395.70178pt x 281.9973pt>
+<plots/network2_t2_reduction.pdf, id=374, 395.70178pt x 281.9973pt>
 File: plots/network2_t2_reduction.pdf Graphic file (type pdf)
 
 <use plots/network2_t2_reduction.pdf>
@@ -985,7 +980,7 @@ iple pdfs with page group included in a single page
 
 pdfTeX warning: pdflatex (file ./plots/Transit2_sched.pdf): PDF inclusion: mult
 iple pdfs with page group included in a single page
->] <plots/network1_hist_slow_arterial.pdf, id=458, 195.83789pt x 103.32195pt>
+>] <plots/network1_hist_slow_arterial.pdf, id=460, 195.83789pt x 103.32195pt>
 File: plots/network1_hist_slow_arterial.pdf Graphic file (type pdf)
 
 <use plots/network1_hist_slow_arterial.pdf>
@@ -993,7 +988,7 @@ Package pdftex.def Info: plots/network1_hist_slow_arterial.pdf used on input li
 ne 290.
 (pdftex.def)             Requested size: 141.64857pt x 74.73543pt.
 
-<plots/network1_hist_slow_side.pdf, id=459, 140.47481pt x 98.46788pt>
+<plots/network1_hist_slow_side.pdf, id=461, 140.47481pt x 98.46788pt>
 File: plots/network1_hist_slow_side.pdf Graphic file (type pdf)
 
 <use plots/network1_hist_slow_side.pdf>
@@ -1001,21 +996,21 @@ Package pdftex.def Info: plots/network1_hist_slow_side.pdf used on input line 2
 92.
 (pdftex.def)             Requested size: 101.17645pt x 70.92384pt.
 
-<plots/network1_hist_slow.pdf, id=460, 140.47481pt x 98.46788pt>
+<plots/network1_hist_slow.pdf, id=462, 140.47481pt x 98.46788pt>
 File: plots/network1_hist_slow.pdf Graphic file (type pdf)
 
 <use plots/network1_hist_slow.pdf>
 Package pdftex.def Info: plots/network1_hist_slow.pdf used on input line 294.
 (pdftex.def)             Requested size: 101.17645pt x 70.92384pt.
 
-<plots/network2_hist_slow.pdf, id=461, 140.47481pt x 98.46788pt>
+<plots/network2_hist_slow.pdf, id=463, 140.47481pt x 98.46788pt>
 File: plots/network2_hist_slow.pdf Graphic file (type pdf)
 
 <use plots/network2_hist_slow.pdf>
 Package pdftex.def Info: plots/network2_hist_slow.pdf used on input line 296.
 (pdftex.def)             Requested size: 101.17645pt x 70.92384pt.
 
-<plots/network1_hist_fast_arterial.pdf, id=462, 195.83789pt x 126.91791pt>
+<plots/network1_hist_fast_arterial.pdf, id=464, 195.83789pt x 126.91791pt>
 File: plots/network1_hist_fast_arterial.pdf Graphic file (type pdf)
 
 <use plots/network1_hist_fast_arterial.pdf>
@@ -1023,7 +1018,7 @@ Package pdftex.def Info: plots/network1_hist_fast_arterial.pdf used on input li
 ne 299.
 (pdftex.def)             Requested size: 141.64857pt x 91.803pt.
 
-<plots/network1_hist_fast_side.pdf, id=463, 140.47481pt x 126.91791pt>
+<plots/network1_hist_fast_side.pdf, id=465, 140.47481pt x 126.91791pt>
 File: plots/network1_hist_fast_side.pdf Graphic file (type pdf)
 
 <use plots/network1_hist_fast_side.pdf>
@@ -1031,28 +1026,28 @@ Package pdftex.def Info: plots/network1_hist_fast_side.pdf used on input line 3
 01.
 (pdftex.def)             Requested size: 101.17645pt x 91.41566pt.
 
-<plots/network1_hist_fast.pdf, id=464, 140.47481pt x 126.91791pt>
+<plots/network1_hist_fast.pdf, id=466, 140.47481pt x 126.91791pt>
 File: plots/network1_hist_fast.pdf Graphic file (type pdf)
 
 <use plots/network1_hist_fast.pdf>
 Package pdftex.def Info: plots/network1_hist_fast.pdf used on input line 303.
 (pdftex.def)             Requested size: 101.17645pt x 91.41566pt.
 
-<plots/network2_hist_fast.pdf, id=465, 140.47481pt x 126.91791pt>
+<plots/network2_hist_fast.pdf, id=467, 140.47481pt x 126.91791pt>
 File: plots/network2_hist_fast.pdf Graphic file (type pdf)
 
 <use plots/network2_hist_fast.pdf>
 Package pdftex.def Info: plots/network2_hist_fast.pdf used on input line 305.
 (pdftex.def)             Requested size: 101.17645pt x 91.41566pt.
 
-<plots/network1_microsim_fixed_slow_side.pdf, id=467, 443.26541pt x 145.7743pt>
+<plots/network1_microsim_fixed_slow_side.pdf, id=469, 443.26541pt x 145.7743pt>
 File: plots/network1_microsim_fixed_slow_side.pdf Graphic file (type pdf)
 <use plots/network1_microsim_fixed_slow_side.pdf>
 Package pdftex.def Info: plots/network1_microsim_fixed_slow_side.pdf used on in
 put line 317.
 (pdftex.def)             Requested size: 247.88887pt x 81.52405pt.
 
-<plots/network1_microsim_opt_slow_side.pdf, id=468, 443.26541pt x 145.7743pt>
+<plots/network1_microsim_opt_slow_side.pdf, id=470, 443.26541pt x 145.7743pt>
 File: plots/network1_microsim_opt_slow_side.pdf Graphic file (type pdf)
 
 <use plots/network1_microsim_opt_slow_side.pdf>
@@ -1060,7 +1055,7 @@ Package pdftex.def Info: plots/network1_microsim_opt_slow_side.pdf used on inpu
 t line 319.
 (pdftex.def)             Requested size: 247.88887pt x 81.52405pt.
 
-<plots/network1_microsim_fixed_slow_arterial.pdf, id=469, 449.03697pt x 145.774
+<plots/network1_microsim_fixed_slow_arterial.pdf, id=471, 449.03697pt x 145.774
 3pt>
 File: plots/network1_microsim_fixed_slow_arterial.pdf Graphic file (type pdf)
  <use plots/network1_microsim_fixed_slow_arterial.pdf>
@@ -1068,7 +1063,7 @@ Package pdftex.def Info: plots/network1_microsim_fixed_slow_arterial.pdf used o
 n input line 321.
 (pdftex.def)             Requested size: 247.88887pt x 80.47417pt.
 
-<plots/network1_microsim_opt_slow_arterial.pdf, id=470, 449.03697pt x 145.7743p
+<plots/network1_microsim_opt_slow_arterial.pdf, id=472, 449.03697pt x 145.7743p
 t>
 File: plots/network1_microsim_opt_slow_arterial.pdf Graphic file (type pdf)
  <use plots/network1_microsim_opt_slow_arterial.pdf>
@@ -1078,7 +1073,7 @@ input line 323.
 ) (./tex/Conclusion.tex
 Underfull \vbox (badness 10000) has occurred while \output is active []
 
-) [6 <./plots/network1_delay.pdf> <./plots/network2_delay.pdf
+ [6 <./plots/network1_delay.pdf> <./plots/network2_delay.pdf
 
 pdfTeX warning: pdflatex (file ./plots/network2_delay.pdf): PDF inclusion: mult
 iple pdfs with page group included in a single page
@@ -1090,7 +1085,10 @@ ultiple pdfs with page group included in a single page
 
 pdfTeX warning: pdflatex (file ./plots/network2_boxplots.pdf): PDF inclusion: m
 ultiple pdfs with page group included in a single page
->] [7 <./plots/network1_t1_reduction.pdf> <./plots/network2_t1_reduction.pdf
+>]
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+) [7 <./plots/network1_t1_reduction.pdf> <./plots/network2_t1_reduction.pdf
 
 pdfTeX warning: pdflatex (file ./plots/network2_t1_reduction.pdf): PDF inclusio
 n: multiple pdfs with page group included in a single page
@@ -1102,26 +1100,8 @@ n: multiple pdfs with page group included in a single page
 
 pdfTeX warning: pdflatex (file ./plots/network2_t2_reduction.pdf): PDF inclusio
 n: multiple pdfs with page group included in a single page
->] (./light_rail-icaps16.bbl
-Underfull \hbox (badness 10000) in paragraph at lines 28--35
-[]\OT1/ptm/m/n/10 El-Tantawy,
- []
-
-
-Underfull \hbox (badness 1237) in paragraph at lines 28--35
-\OT1/ptm/m/n/10 re-in-force-ment learn-ing for in-te-grated net-work of adap-
- []
-
-
-Underfull \hbox (badness 1163) in paragraph at lines 28--35
-\OT1/ptm/m/it/10 tel-li-gent Trans-porta-tion Sys-tems, IEEE Trans-ac-tions on
- []
-
-
-Underfull \vbox (badness 10000) has occurred while \output is active []
-
- [8 <./plots/network1_hist_slow_arterial.pdf> <./plots/network1_hist_slow_side.
-pdf
+>] [8 <./plots/network1_hist_slow_arterial.pdf> <./plots/network1_hist_slow_sid
+e.pdf
 
 pdfTeX warning: pdflatex (file ./plots/network1_hist_slow_side.pdf): PDF inclus
 ion: multiple pdfs with page group included in a single page
@@ -1165,7 +1145,22 @@ f): PDF inclusion: multiple pdfs with page group included in a single page
 
 pdfTeX warning: pdflatex (file ./plots/network1_microsim_opt_slow_arterial.pdf)
 : PDF inclusion: multiple pdfs with page group included in a single page
->]
+>] (./light_rail-icaps16.bbl
+Underfull \hbox (badness 10000) in paragraph at lines 28--35
+[]\OT1/ptm/m/n/10 El-Tantawy,
+ []
+
+
+Underfull \hbox (badness 1237) in paragraph at lines 28--35
+\OT1/ptm/m/n/10 re-in-force-ment learn-ing for in-te-grated net-work of adap-
+ []
+
+
+Underfull \hbox (badness 1163) in paragraph at lines 28--35
+\OT1/ptm/m/it/10 tel-li-gent Trans-porta-tion Sys-tems, IEEE Trans-ac-tions on
+ []
+
+
 Underfull \hbox (badness 2582) in paragraph at lines 103--108
 []\OT1/ptm/m/n/10 Lo, H. K.; Chang, E.; and
  []
@@ -1211,13 +1206,13 @@ Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 232.
  )
 (\end occurred when \ifdefined on line 34 was incomplete) 
 Here is how much of TeX's memory you used:
- 20098 strings out of 493117
- 372573 string characters out of 6141204
+ 20097 strings out of 493117
+ 372555 string characters out of 6141204
  464931 words of memory out of 5000000
- 23035 multiletter control sequences out of 15000+600000
+ 23034 multiletter control sequences out of 15000+600000
  21458 words of font info for 48 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 55i,14n,54p,1122b,397s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 55i,14n,54p,1122b,340s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf-dist
 /fonts/enc/dvips/base/8r.enc}</usr/share/texmf-dist/fonts/type1/public/amsfonts
 /cm/cmbx10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
@@ -1233,10 +1228,10 @@ msy9.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr
 /share/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts
 /type1/urw/times/utmr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmri8
 a.pfb>
-Output written on light_rail-icaps16.pdf (9 pages, 1348928 bytes).
+Output written on light_rail-icaps16.pdf (9 pages, 1349827 bytes).
 PDF statistics:
- 1268 PDF objects out of 1440 (max. 8388607)
- 585 compressed objects within 6 object streams
+ 1270 PDF objects out of 1440 (max. 8388607)
+ 587 compressed objects within 6 object streams
  120 named destinations out of 1000 (max. 500000)
  240 words of extra memory for PDF output out of 10000 (max. 10000000)
 

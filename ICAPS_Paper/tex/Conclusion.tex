@@ -1,26 +1,57 @@
 \section{Conclusion}
 
-In this paper, we show how our optimized adaptive traffic signal control method
-based on Mixed Integer Linear Programming (MILP) can be used for mitigating the
-impact of installing light rail on conventional traffic networks.
-%
-Our experiments show that our method is able to minimize the impact on the
-average delay with respect to fixed-time signal control and also finds better
-quality solutions, i.e., solutions with substantially lower third quartile and
-maximum observed delay.
+In this paper, we show how our optimized adaptive traffic signal
+control method based on Mixed Integer Linear Programming (MILP) can be
+used for mitigating the impact of installing light rail on
+conventional traffic networks.  Our experiments with the QTM model of
+traffic flow show that our method is able to minimize the impact on
+the average delay with respect to fixed-time signal control and also
+finds better quality solutions, i.e., solutions with substantially
+lower third quartile and maximum observed delay.  These improvements
+were also verified in a non-QTM based microsimulation model to
+validate performance improvements w.r.t.\ a finer-grained nonlinear
+model of traffic flow (e.g., with acceleration and queue-length
+effects).
 %
 %key results show that while there is a substantial impact of light rail on
 %conventional vehicle traffic delay using popular fixed-time signal control, our
 %novel optimized \authorHighlight{adaptive} signal control virtually nullifies
 %this impact.
 %
-Ultimately this leads to a win-win situation where both conventional vehicle
-traffic and light rail commuters benefit through the application of MILP-based
-optimization.
-%
-Future work includes expanding QTM to model nonlinear
-flows~\cite{lu2011discrete,muralidharan2009freeway,kim2002online,huang2011traffic}.
+Ultimately our results demonstrate a way to optimize conventional
+fixed time controllers w.r.t.\ light rail schedule constraints;
+furthermore, when these methods are extended to our fully optimized
+adaptive controller, it leads to a win-win situation where both
+conventional vehicle traffic and light rail commuters benefit through
+the application of MILP-based optimization \emph{regardless} of the
+reduction in conventional traffic that opts to take light rail.
 
+For future work, a key question to resolve is how large we can scale
+the traffic and light rail network before we need to investigate
+decomposition-based approaches to scaling the solution, either
+within-MILP methods like dual decomposition or literal region-based
+network partitioning schemes used in a variety of conventional traffic
+control methods.  While beyond the scope of this paper, future work
+should also look at the (online) learnability of the QTM model from
+different traffic sensor data ranging from conventional inductive
+(double) loop counters through to video feeds.  Finally, noting that
+the microsimulation model offers a higher-fidelity model of actual
+traffic behavior, future work should consider expanding the QTM to
+model nonlinear traffic
+flows~\cite{lu2011discrete,muralidharan2009freeway,kim2002online,huang2011traffic}
+and investigating the benefits of nonlinear optimization in this
+setting relative to the existing MILP-based QTM.
+
+Notwithstanding this important future work, our key results
+demonstrate the power and potential optimizing fixed-time control
+schedules subject to light rail constraints to use with existing
+traffic signal controllers and enable a novel future generation of
+optimized adaptive signal controllers that virtually nullify the
+impact of the light rail presence.  This mitigates the concern of the
+impact of light rail on conventional traffic networks and removes this
+critical obstacle to the implementation of future light rail systems
+that positively impact the environment, urban traffic congestion, and
+commute times for both conventional traffic and public transit riders.
 
 \Omit{
 In this paper, we showed how to formulate a novel queue transmission model (QTM)

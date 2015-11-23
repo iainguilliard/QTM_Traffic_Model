@@ -630,30 +630,32 @@ the light rail uses phase $k$ of \tl at time $n$, we replace
 (\ref{c:pd:incUB}--\ref{c:minPhase}) by \eqref{c:forceTransit} and
 \eqref{c:pd:holdTransit} when $\sum_{k \in \Pset_\tl} S_{\tl}(k,n) > 0$.
 %
-\remark{Explain \eqref{c:pd:holdTransit}}
-
 %\begin{cAlign}
 %%
 %\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
 %%
 %\pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
 %%
-%\end{cAlign}
-%\noindent\begin{minipage}{0.5\linewidth}
+%\end{cAlign} \noindent\begin{minipage}{0.5\linewidth}
 \begin{cAlign} 
 %
 \p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
 %
-%\end{cAlign}
-%\end{minipage}%
-%\begin{minipage}{0.5\linewidth}
-%\begin{cAlign} 
+%\end{cAlign} \end{minipage}% \begin{minipage}{0.5\linewidth} \begin{cAlign} 
 %
 \pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
 %
 \end{cAlign}
 %\end{minipage}\par\vspace{\belowdisplayskip}
-
+%
+\noindent \eqref{c:forceTransit} enforces that the correct phase $k$ is active
+when the light rail reaches the traffic light $l$, and
+%
+%the effect of \eqref{c:pd:holdTransit} is to not count the time used by the
+%light rail towards the total duration of the phase $k$.
+%
+\eqref{c:pd:holdTransit} ensures that the light rail can pass through $l$ even
+if more than the maximum phase time \PTMAX{\tl}{k} is necessary.
 
 
 \subsection{QTM as a Fixed-Time Controller}

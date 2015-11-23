@@ -326,4 +326,26 @@ public transportation.
 \label{fig:network2_hist}
 \end{figure*}
 
+From the microsimulation time-distance plots of the side streets (\cref{fig:network1_microsim}) we can see that the fixed-adaptive controller has prioritized the arterial phase duration over the side street duration, to achieve coordinated ``green corridors'', sized for the average traffic density in the network, and suffers from accumulative queue build up in the side streets following each transit of the light rail.
+Conversely, the optimized controller is able to clear out the queue build up in the side streets by increasing the phase time of the side street for a cycle after the transit has passed through, and then returns to a schedule that prioritises the arterial depending on the changes in traffic density. When the traffic density in the arterial is higher than the side streets then the optmized controller will coordinate ``green corridors'' along the arterial (see appendix).
+
+\begin{figure*}[t!] \centering
+%  trim={<left> <lower> <right> <upper>}
+\subfigure[]{\label{fig:network1_microsim:fixed_side}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_microsim_fixed_slow_side.pdf}}
+\subfigure[]{\label{fig:network1_microsim:opt_side}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_microsim_opt_slow_side.pdf}}
+\subfigure[]{\label{fig:network1_microsim:fixed_side}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_microsim_fixed_slow_arterial.pdf}}
+\subfigure[]{\label{fig:network1_microsim:opt_side}
+\includegraphics[keepaspectratio,width=0.49\textwidth]{network1_microsim_opt_slow_arterial.pdf}}
+
+%
+\vspace{-5mm}
+\caption{Microsimulation time-distance plots of side street $q_5$ to $q_6$ and arterial $q_2$ to $q_{13}$ in Network 1 with the slow light rail schedule. The fixed-adaptive controller has prioritized the arterial phase duration (c) over the side street duration (a) and suffers from accumulative queue build up in the side streets following each transit of the light rail.
+%
+The optimized controller is able to clear out the queue build up in the side streets by increasing the phase time of the side street (b) for a cycle after the transit has passed through, and then returns to a schedule that prioritizes the arterial (d) depending on the changes in traffic density.}
+%
+\label{fig:network1_microsim}
+\end{figure*}
 

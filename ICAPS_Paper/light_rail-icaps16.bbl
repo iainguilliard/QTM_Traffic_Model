@@ -1,8 +1,15 @@
 \begin{thebibliography}{}
 
-\bibitem[\protect\citeauthoryear{Anonymous}{2016}]{guilliard2016trb}
+\bibitem[\protect\citeauthoryear{Anonymous}{2016a}]{trbPaperToAppear}
 Anonymous.
-\newblock 2016.
+\newblock 2016a.
+\newblock {A Non-homogenous Time Mixed Integer LP Formulation for Traffic
+  Signal Control}.
+\newblock In {\em Details omitted for double-blind reviewing}.
+
+\bibitem[\protect\citeauthoryear{Anonymous}{2016b}]{guilliard2016trb}
+Anonymous.
+\newblock 2016b.
 \newblock A non-homogenous time mixed integer {LP} formulation for traffic
   signal control.
 \newblock In {\em Transport Research Board ({TRB}) Annual Meeting}.

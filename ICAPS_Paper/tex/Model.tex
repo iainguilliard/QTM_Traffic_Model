@@ -52,8 +52,8 @@ in Figure~\ref{fig:qtm}.  Formally a QTM is a tuple $(\Qset, \Lset,
 queues and lights;
 %
 \vecDT is a vector of size \Nn representing the discretization of the problem
-horizon $[0,\TMAX]$ and \authorHighlight{the duration in seconds of the $n$-th
-time interval is denoted as \DT[n];}
+horizon $[0,\TMAX]$ and the duration in seconds of the $n$-th
+time interval is denoted as \DT[n];
 %
 %%
 %% TODO(fwt): Maybe mention that car that are denied entry could be stored in a
@@ -199,12 +199,12 @@ $\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 %\noindent\begin{minipage}{0.5\linewidth}
 \begin{cAlign} 
 %
-\f{i}{j}\!\le\!\FTURN{i}{j}\!\sum_{k=1}^{\Qn}\!\f{i}{k}\tagconstrain{c:turnProb}
+\f{i}{j}\!\le\!\FTURN{i}{j}\!\sum_{k=1}^{\Qn}\!\f{i}{k}\tagconstrain{c:turnProb}\\
 %
-\end{cAlign}
-%\end{minipage}%
-%\begin{minipage}{0.5\linewidth}
-\begin{cAlign} 
+%\end{cAlign}
+%%\end{minipage}%
+%%\begin{minipage}{0.5\linewidth}
+%\begin{cAlign} 
 %
 \f{i}{j}\!\le\!\FMAX{i}{j}\!\sum^{\phantom{\Qn}}_{\makebox[0pt]{$\scriptstyle
 \p{\ell}{k}\!\in\!\QPset{i}$}}\p{\ell}{k}
@@ -254,7 +254,7 @@ elapsed since the beginning of the problem until the end of interval \DT[n].
 
 % Introduce the idea of V_i
 In order to account for the case where \QDELAY{i} is larger than \DT[], we need to
-find the volume of traffic that entered queue $i$ between two points
+find the volume of traffic that entered queue~$i$ between two points
 in time $x$ and $y$.
 %
 This volume of traffic, denoted as $\Vol_i(x,y)$, is obtained by integrating
@@ -291,8 +291,8 @@ exceed the capacity of the queue, we apply~\eqref{c:10}.
 %
 \begin{cAlign}
 %
-& \q{i} = \q[n\!-\!1]{i} \! - \! \qout[n\!-\!1]{i} \! + \!
-\Vol_i(\tn[n\!-\!1] \! - \! \QDELAY{i},\tn[n] \! - \! \QDELAY{i}) \tagconstrain{c:qUpdate}\\
+& \q{i} = \q[n\!-\!1]{i} - \qout[n\!-\!1]{i}  + 
+\Vol_i(\tn[n\!-\!1]  -  \QDELAY{i}, \tn[n]  -  \QDELAY{i}) \tagconstrain{c:qUpdate}\\
 %
 & \Vol_i(\tn[n] - \QDELAY{i}, \tn[n]) + \q{i} \le \QMAX{i}
 \tagconstrain{c:10}
@@ -313,20 +313,21 @@ exceed the capacity of the queue, we apply~\eqref{c:10}.
 
 
 
-As with MILP formulations of CTM (e.g. \trbcite{lin2004enhanced}),
-QTM is also susceptible to \emph{withholding traffic}, i.e., the
-optimizer might prevent cars from moving from $i$ to $j$ even though the
-associated traffic phase is active and $j$ is not full, e.g., this may
-reserve space for traffic from an alternate approach that allows the MILP
-to minimize delay in the long-term even though it leads to unintuitive traffic
-flow behavior.
+As with MILP formulations of CTM (e.g., \trbcite{lin2004enhanced}), QTM is also
+susceptible to \emph{withholding traffic}, i.e., the optimizer might prevent
+cars from moving from $i$ to $j$ even though the associated traffic phase is
+active and $j$ is not full.
 %
-We address this well-known issue through our objective function~\eqref{eq:objFunc} by
-maximizing the total outflow~\qout{i}
+This might be used by the optimizer to reserve space for traffic from an
+alternate queue to further minimize delay in the long-term, even though it leads
+to unintuitive traffic flow behavior.
+%
+We address this well-known issue through our objective
+function~\eqref{eq:objFunc} by maximizing the external outflow~\outq{i}
 %
 %(i.e., both internal and external outflow)
 %
-of~$i$ plus the inflow~\inq{i} from the outside of the network to~$i$.
+and external inflow~\inq{i} of all queues~$i$.
 %
 This quantity is weighted by the remaining time until the end of the problem
 horizon \TMAX to force the optimizer to allow as much traffic volume as possible
@@ -431,18 +432,18 @@ $\beta = 0$ for all other cells.
 
 \section{Traffic Control with MILP-encoded QTM}
 
-In this section, we show how to compute the \authorHighlight{optimized adaptive}
-control plan by extending the LP
-(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:10}) into an Mixed-Integer
-LP (MILP).
+In this section, we show how to compute the optimized adaptive control plan by
+extending the LP~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:10}) into an
+Mixed-Integer LP (MILP).
 %
 Formally, for all~$\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
 \{1,\dots,N\}$, the phase activation parameter~$\p{\tl}{k} \in \{0,1\}$ becomes
 a free variable to be optimized.
 %
 In order to obtain a valid control plan, we enforce that one phase of traffic
-light \tl is always active at any interval~$n$~\eqref{c:onlyOnePhaseOn} and cyclic
-phase policies where phase changes follow a fixed ordered sequence, indexed by $k$~\eqref{c:seqPhases}
+light \tl is always active at any interval~$n$~\eqref{c:onlyOnePhaseOn} and
+cyclic phase policies where phase changes follow a fixed ordered sequence,
+indexed by $k$~\eqref{c:seqPhases}
 %
 %, i.e., if phase~$k$ was active during interval~$n-1$ and has become inactive
 %in interval~$n$, then phase~$k+1$ must be active in interval~$n$.
@@ -460,7 +461,8 @@ phase policies where phase changes follow a fixed ordered sequence, indexed by $
 %
 \begin{cAlign}
 %
-\Omit{\textstyle} \sum_{k=1}^{\Pn} \p{\ell}{k} &= 1\tagconstrain{c:onlyOnePhaseOn}\\
+\Omit{\textstyle} \sum_{k=1}^{\Pn} \p{\ell}{k} &=
+1\tagconstrain{c:onlyOnePhaseOn}\\
 %
 \p[n-1]{\ell}{k} &\le \p{\ell}{k} + \p{\ell}{k+1}\tagconstrain{c:seqPhases}
 %
@@ -612,19 +614,21 @@ cycle, i.e., when its first phase is changed from inactive to active.
 \end{cAlign}
 %
 The MILP~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cycleUB}) encodes
-the problem of finding the \authorHighlight{optimized adaptive} traffic control
+the problem of finding the optimized adaptive traffic control
 plan in a QTM network without light rail.
 
 \paragraph{Light Rail Constraints}
 %
 To incorporate a fixed-schedule light rail in our model, we post-process our
-MILP model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ s.t.\ the
+MILP model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ such that the
 light rail uses phase $k$ of \tl at time $n$.
 %
 Formally, given a schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$ represents that
 the light rail uses phase $k$ of \tl at time $n$, we replace
 (\ref{c:pd:incUB}--\ref{c:minPhase}) by \eqref{c:forceTransit} and
-\eqref{c:pd:holdTransit} when $\sum_{k} S_{\tl}(k,n) > 0$.
+\eqref{c:pd:holdTransit} when $\sum_{k \in \Pset_\tl} S_{\tl}(k,n) > 0$.
+%
+\remark{Explain \eqref{c:pd:holdTransit}}
 
 %\begin{cAlign}
 %%
@@ -636,12 +640,12 @@ the light rail uses phase $k$ of \tl at time $n$, we replace
 %\noindent\begin{minipage}{0.5\linewidth}
 \begin{cAlign} 
 %
-\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}
+\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
 %
-\end{cAlign}
+%\end{cAlign}
 %\end{minipage}%
 %\begin{minipage}{0.5\linewidth}
-\begin{cAlign} 
+%\begin{cAlign} 
 %
 \pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
 %
@@ -652,25 +656,29 @@ the light rail uses phase $k$ of \tl at time $n$, we replace
 
 \subsection{QTM as a Fixed-Time Controller}
 
-We can further extend QTM to compute an optimized control plan
-with fixed phase durations. For all~$\tl \in \Lset$, $k \in \Pset_\tl$, we introduce a new variable, 
-$\PTFIXED{\ell}{k} \in [\PTMIN{\ell}{k}, \PTMAX{\ell}{k} ]$
-and replace the bounds constraints on $\pd[n]{\ell}{k}$,
-($\pd[n]{\ell}{k} \le \PTMAX{\ell}{k}$ and \ref{c:minPhase}), with fixed duration
-constraints, employing the \textit{big-M} method to apply the constraints only
-while the phase is inactive, where 
+We can further extend QTM to compute an optimized control plan with fixed phase
+durations.
 %
-\begin{cAlign}
-        \pd{\ell}{k} &\le \PTFIXED{\ell}{k} + \PTMAX{\ell}{k} \p[n]{\ell}{k}
-  \tagconstrain{c:pd:fixedUB}\\
+For all~$\tl \in \Lset$, $k \in \Pset_\tl$, we introduce the new variable
+$\PTFIXED{\ell}{k} \in [\PTMIN{\ell}{k}, \PTMAX{\ell}{k}]$ and replace the
+bounds constraints on $\pd[n]{\ell}{k}$ (that is, $\pd[n]{\ell}{k} \le
+\PTMAX{\ell}{k}$ and \ref{c:minPhase}) with fixed the duration
+constraints~(\ref{c:pd:fixedUB}-\ref{c:pd:fixedLB}).
+%
+\begin{cAlign} \pd{\ell}{k} &\le \PTFIXED{\ell}{k} + \PTMAX{\ell}{k}
+  \p[n]{\ell}{k} \tagconstrain{c:pd:fixedUB}\\
 %
   \pd{\ell}{k} &\ge \PTFIXED{\ell}{k} - \PTMAX{\ell}{k} \p[n]{\ell}{k}
-  \tagconstrain{c:pd:fixedLB}
-\end{cAlign}
- 
-Constraints \ref{c:pd:fixedLB} and \ref{c:pd:fixedUB} are only applied over time
-intervals, $n$, where $\tn[n] > \CTMAX{\tl}$, to allow the controller to optimize an
- initial phase offset at the start of the plan.
+  \tagconstrain{c:pd:fixedLB} \end{cAlign}
+
+
+Similarly to the variable phase duration constraints, the \textit{big-M} method
+is employed to enforce (\ref{c:pd:fixedUB}-\ref{c:pd:fixedLB}) only while the
+phase is inactive.
+%
+Furthermore, these constraints are only applied over time intervals $n$ such
+that $\tn[n] > \CTMAX{\tl}$ in order to allow the controller to optimize an
+initial phase offset at the start of the plan.
 %TODO talk about how the fixed phase times fit around transit crossings.
 
 

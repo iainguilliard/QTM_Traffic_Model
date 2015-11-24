@@ -27,14 +27,14 @@ the experiments, our methodology, and the results.
 \centering
 %  trim={<left> <lower> <right> <upper>}
 \begin{subfigure}{0.47\textwidth}
-\label{fig:net:arterial}
 \includegraphics[trim={0 20 0 20},width=\linewidth]{network1.pdf}
 \caption{~}
+\label{fig:net:arterial}
 \vspace{3mm}
 \end{subfigure}
 \begin{subfigure}{0.50\textwidth}
-\label{fig:net:grid}
 \includegraphics[trim={0 20 0 20},width=\linewidth]{network2.pdf}
+\label{fig:net:grid}
 \caption{~}
 \end{subfigure}
 \caption{Networks used to evaluate the performance:
@@ -172,7 +172,7 @@ For each evaluation, we first generate a signal plan using QTM configured as
 either an optimized adaptive controller or a fixed-time controller.
 %
 We use a problem horizon \TMAX large enough, typically in the range 1000s --
-1500s, to allow all traffic to clear the network, what let us measure the
+1500s, to allow all traffic to clear the network, that lets us measure the
 incurred delay in all the cars.
 %
 Next, we microsimulate the signal plans on their respective the networks using
@@ -216,21 +216,21 @@ deployed indefinitely.
 %
 \centering
 %  trim={<left> <lower> <right> <upper>}
-\begin{subfigure}{0.49\textwidth}\label{fig:arterial:delayCurve}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_delay.pdf}
-\caption{~}
+\caption{~}\label{fig:arterial:delayCurve}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:grid:delayCurve}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network2_delay.pdf}
-\caption{~}
+\caption{~}\label{fig:grid:delayCurve}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:arterial:boxplot}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_boxplots.pdf}
-\caption{~}
+\caption{~}\label{fig:arterial:boxplot}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:grid:boxplot}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network2_boxplots.pdf}
-\caption{~}
+\caption{~}\label{fig:grid:boxplot}
 \end{subfigure}
 %
 \caption{Average delay by the network demand for the arterial (a) and grid (b)
@@ -258,7 +258,7 @@ optimized adaptive controller also produces better signal plans than the
 fixed-time controller, i.e., plans with smaller median, third quartile, and
 maximum delay.
 %
-Overall our experiments, the maximum observed delay for the optimized adaptive
+Over all our experiments, the maximum observed delay for the optimized adaptive
 signal plans after the introduction of light rail is no more than
 %
 %% TODO(fwt): The results improved and we can (and have to) provide a tighter
@@ -267,7 +267,7 @@ signal plans after the introduction of light rail is no more than
 the double of the maximum delay before the light rail.
 %
 \cref{fig:network_hist} provides more details on the behavior of the signal
-plans for demand level $\rm II$~(\cref{fig:demand_profiles}) by showing the
+plans for demand level $\rm II$~(\cref{fig:arterial:delayCurve,fig:grid:delayCurve}) by showing the
 cumulative number of cars by number of observed stops.
 %
 Note that in \cref{fig:network1_slow:hist:arterial,fig:network1_slow:hist:side}
@@ -278,21 +278,21 @@ does better with less stops at all frequencies.
 
 \begin{figure*}[t!] \centering
 %  trim={<left> <lower> <right> <upper>}
-\begin{subfigure}{0.49\textwidth}\label{fig:arterial:impact:t1}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_t1_reduction.pdf}
-\caption{~}
+\caption{~}\label{fig:arterial:impact:t1}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:grid:impact:t1}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network2_t1_reduction.pdf}
-\caption{~}
+\caption{~}\label{fig:grid:impact:t1}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:arterial:impact:t2}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_t2_reduction.pdf}
-\caption{~}
+\caption{~}\label{fig:arterial:impact:t2}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:grid:impact:t2}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network2_t2_reduction.pdf}
-\caption{~}
+\caption{~}\label{fig:grid:impact:t2}
 \end{subfigure}
 %
 \vspace{-2mm}
@@ -356,44 +356,52 @@ transportation.
   \centering
   \footnotesize{Network 2}
 \end{subfigure}\\[2mm]
-\begin{subfigure}{0.275\textwidth}\label{fig:network1_slow:hist:arterial}
+\begin{subfigure}{0.275\textwidth}
   \centering
   \qquad \qquad \footnotesize{Arterial}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_hist_slow_arterial.pdf}
+\caption{~}\label{fig:network1_slow:hist:arterial}
 \end{subfigure}
 %
-\begin{subfigure}{0.2\textwidth}\label{fig:network1_slow:hist:side}
+\begin{subfigure}{0.2\textwidth}
   \centering
   \footnotesize{Side Streets}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_hist_slow_side.pdf}
+\caption{~}\label{fig:network1_slow:hist:side}
 \end{subfigure}
 %
-\begin{subfigure}{0.2\textwidth}\label{fig:network1_slow:hist}
+\begin{subfigure}{0.2\textwidth}
   \centering
   \footnotesize{Overall}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_hist_slow.pdf}
+\caption{~}\label{fig:network1_slow:hist}
 \end{subfigure}
 %
-\begin{subfigure}{0.2\textwidth}\label{fig:network2_slow:hist}
+\begin{subfigure}{0.2\textwidth}
   \centering
   \footnotesize{Overall}
 \includegraphics[keepaspectratio,width=\linewidth]{network2_hist_slow.pdf}
+\caption{~}\label{fig:network2_slow:hist}
 \end{subfigure}
 %
-\begin{subfigure}{0.28\textwidth}\label{fig:nwrwork1_fast:hist:arterial}
+\begin{subfigure}{0.28\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_hist_fast_arterial.pdf}
+\caption{~}\label{fig:nwrwork1_fast:hist:arterial}
 \end{subfigure}
-\begin{subfigure}{0.2\textwidth}\label{fig:network1_fast:hist:side}
+\begin{subfigure}{0.2\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_hist_fast_side.pdf}
+\caption{~}\label{fig:network1_fast:hist:side}
 \end{subfigure}
-\begin{subfigure}{0.2\textwidth}\label{fig:network1_fast:hist}
+\begin{subfigure}{0.2\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_hist_fast.pdf}
+\caption{~}\label{fig:network1_fast:hist}
 \end{subfigure}
-\begin{subfigure}{0.2\textwidth}\label{fig:network2_fast:hist}
+\begin{subfigure}{0.2\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network2_hist_fast.pdf}
+\caption{~}\label{fig:network2_fast:hist}
 \end{subfigure}
 \vspace{-2mm}
-\caption{Impact of fast light rail on number of stops for Network 1. Top row is for the slow light rail schedule. Bottom row is for the fast light rail schedule}
+\caption{Impact of controller on number of stops. Top row is for the slow light rail schedule. Bottom row is for the fast light rail schedule}
 \label{fig:network_hist}
 \end{figure*}
 
@@ -412,13 +420,13 @@ Conversely, the optimized controller is able to clear out the queue build up in 
   \centering
   \footnotesize{Optimized Controller Side Street $q_5$ to $q_6$}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:network1_microsim:fixed_side:slow_lr}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_microsim_fixed_slow_side.pdf}
-\caption{}
+\caption{}\label{fig:network1_microsim:fixed_side:slow_lr}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:network1_microsim:opt_side:slow_lr}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_microsim_opt_slow_side.pdf}
-\caption{}
+\caption{}\label{fig:network1_microsim:opt_side:slow_lr}
 \end{subfigure}
 \begin{subfigure}{0.49\textwidth}
   \centering
@@ -428,13 +436,13 @@ Conversely, the optimized controller is able to clear out the queue build up in 
   \centering
   \footnotesize{Optimized Controller Arterial $q_2$ to $q_{10}$}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:network1_microsim:fixed_side:fast_lr}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_microsim_fixed_slow_arterial.pdf}
-\caption{}
+\caption{}\label{fig:network1_microsim:fixed_side:fast_lr}
 \end{subfigure}
-\begin{subfigure}{0.49\textwidth}\label{fig:network1_microsim:opt_side:fast_lr}
+\begin{subfigure}{0.49\textwidth}
 \includegraphics[keepaspectratio,width=\linewidth]{network1_microsim_opt_slow_arterial.pdf}
-\caption{}
+\caption{}\label{fig:network1_microsim:opt_side:fast_lr}
 \end{subfigure}
 %
 %\vspace{-5mm}

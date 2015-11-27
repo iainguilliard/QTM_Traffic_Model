@@ -2827,7 +2827,7 @@ def dump_vars(args): #data_sets,params,colors,line_styles,steps):
             else:
                 result_list.append(results)
                 file_names.append(file_name)
-            print len(result_list),type(result_list[0])
+            #print len(result_list),type(result_list[0])
             for k,result_item in enumerate(result_list):
                 if not isinstance(result_item,list):
                     result_item = [result_item]
@@ -2846,9 +2846,9 @@ def dump_vars(args): #data_sets,params,colors,line_styles,steps):
                             #table[j,i] = var_data
 
                             table[var_key].append(var_data)
-    print len(file_names)
-    print table.keys()
-    for data in table.keys(): print len(data)
+    #print len(file_names)
+    #print table.keys()
+    #for data in table.keys(): print len(data)
         #pd.set_option('display.width', 2000)
     pd.set_option('display.max_columns', 500)
     frame_data = pd.DataFrame(table,index=file_names)

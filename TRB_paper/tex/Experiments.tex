@@ -64,10 +64,10 @@ We consider three networks of increasing complexity (\cref{fig:networks}): an
 avenue crossed by three side streets; a 2-by-3 grid; and a 3-by-3 grid with a
 diagonal avenue.
 %
-The queues receiving cars from outside of the network are marked in
+The queues receiving vehicles from outside of the network are marked in
 \cref{fig:networks} and we refer to them as input queues.
 %
-The maximum queue capacity~(\QMAX{i}) is 60 cars for non-input queues and
+The maximum queue capacity~(\QMAX{i}) is 60 vehicles for non-input queues and
 infinity for input queues to prevent interruption of the input demand due to
 spill back from the stop line. 
 %
@@ -78,7 +78,7 @@ For each street, flows are defined from the head of each queue $i$ into the tail
 queue $j$;
 %
 there is no turning traffic ($\FTURN{i}{j}=1$), and the maximum flow rate
-between queues, \FMAX{i}{j}, is set at 5 cars/s.
+between queues, \FMAX{i}{j}, is set at 5 vehicles/s.
 %
 All traffic lights have two phases, north-south and east-west, and lights 2, 4
 and 6 of network 3 have the additional northeast-southwest phase to control the
@@ -133,7 +133,7 @@ Then a spike in demand is introduced in the queues marked as \qVarTraf
 From time 70s to 85s, the demand is returned to the background level, and then
 reduced to zero for all input queues.
 %
-We extend the problem horizon~\TMAX until all cars have left the network.
+We extend the problem horizon~\TMAX until all vehicles have left the network.
 %
 By clearing the network, we can easily measure the total travel time for all the
 traffic as the area between the cumulative arrival and departure curves measured
@@ -144,10 +144,10 @@ at the boundaries of the network.
 %
 %\cref{tab:network_demand} presents the demand profile of each network.
 %
-The background level for the input queues are 1, 4 and 2 cars/s for queues
+The background level for the input queues are 1, 4 and 2 vehicles/s for queues
 marked as \qLowTraf, \qHighTraf and \qVarTraf (\cref{subfig:demand_plot}),
 respectively; and during the high demand period, the queues \qVarTraf receive 4
-cars/s.
+vehicles/s.
 
 
 
@@ -282,7 +282,7 @@ stochastic strategies.
 \includegraphics[keepaspectratio,height=0.3225\textwidth]{network_1_plot.pdf}}
 \subfigure[]{
 \label{subfig:delay_3}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_1_box_plot-NEW.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth,trim={0cm -0.5cm 0cm 0.2cm}]{network_1_box_plot-NEW.pdf}}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_3l.pdf}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]
 %{box_plot_converg_3l.pdf}
@@ -293,7 +293,7 @@ stochastic strategies.
 \includegraphics[keepaspectratio,height=0.3225\textwidth]{network_2_plot.pdf}}
 \subfigure[]{
 \label{subfig:delay_6}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_2_box_plot-NEW.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth,trim={0cm -0.5cm 0cm 0.0cm}]{network_2_box_plot-NEW.pdf}}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_6l.pdf}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]
 %{box_plot_converg_6l.pdf}
@@ -304,7 +304,7 @@ stochastic strategies.
 \includegraphics[keepaspectratio,height=0.3225\textwidth]{network_3_plot.pdf}}
 \subfigure[]{
 \label{subfig:delay_9}
-\includegraphics[keepaspectratio,height=0.3225\textwidth]{network_3_box_plot-NEW.pdf}}
+\includegraphics[keepaspectratio,height=0.3225\textwidth,trim={0cm -0.5cm 0cm 0.0cm}]{network_3_box_plot-NEW.pdf}}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]{box_plot_early_9l.pdf}
 %\includegraphics[keepaspectratio,height=0.3225\textwidth]
 %{box_plot_converg_9l.pdf}
@@ -355,7 +355,7 @@ The effect in the total travel time of these poor solutions can be seen in
 
 
 
-The distribution of the total delay observed by each car while traversing the
+The distribution of the total delay observed by each vehicle while traversing the
 network is shown in \cref{subfig:delay_3,subfig:delay_6,subfig:delay_9}.
 %
 Each group of box plots represents a different value of~\Nn: when the

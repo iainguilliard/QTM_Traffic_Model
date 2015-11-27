@@ -20,7 +20,7 @@ denoted as \DT[n];
 %% learned from historical data.
 %
 and \MatQIN is a matrix $|\Qset| \times \TMAX$ in which \QIN{i}{n} represents
-the flow of cars requesting to enter queue $i$ from the outside of the network
+the flow of vehicles requesting to enter queue $i$ from the outside of the network
 at time $n$.
 
 
@@ -65,8 +65,9 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
   to $j$ and the turn probability from $i$ to $j$ (\revision{where }{} $\sum_{j \in
   \Qset}\FTURN{i}{j} = 1$), respectively; and
 %
-\item \QPset{i} denotes the set of traffic light phases controlling the outflow
-  of queue $i$.
+\item \QPset{i} is the set of  traffic light phases controlling the outflow
+  of queue $i$, where the pair, $\left(\ell,k \right) \in \QPset{i}$, denotes phase $k$
+  of light $\ell$.
 %
 \end{itemize}
 
@@ -98,12 +99,12 @@ formally, for all $\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
 if phase $k$ of light \tl is active~(i.e., $\p{\tl}{k} = 1$) or not on interval
 $n$. \revision{Each phase $k \in \Pset_\tl$ can control the flow from more than one 
 queue, allowing arbitrary intersection topologies to be modelled, including ``all red''
- phases as a switching penalty and lost time from yellow lights.}{3.1}
+ phases as a switching penalty and modeling lost time from amber lights.}{3.1}
 
 
 We represent the problem of finding the maximal flow between capacity-constrained 
 queues as a Linear Program
-(LP) over the following variables defined for all interval $n \in
+(LP) over the following variables defined for all intervals $n \in
 \{1,\dots,\Nn\}$ and queues $i$ and $j$:
 
 \begin{itemize}
@@ -141,14 +142,14 @@ internal outflow of $i$ goes to $j$, and \revision{since each \f{i}{j} appears
 on both sides of \eqref{c:turnProb}, the upstream queue $i$ will block if any 
 downstream queue $j$ is full. }{4.5}\eqref{c:maxFlow} forces the flow from
 $i$ to $j$ to be zero if all phases controlling $i$ are inactive (i.e.,
-$\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
+$\p{\ell}{k} = 0$ for all $\left(l,k\right) \in \QPset{i}$).
 %
 If more than one phase $\p{\ell}{k}$ is active, then \eqref{c:maxFlow} is
 subsumed by the domain upper bound of $\f{i}{j}$.
 %
 \begin{cAlign}
 \f{i}{j} &\le \FTURN{i}{j} \sum_{k=1}^{\Qn}  \f{i}{k} \tagconstrain{c:turnProb}\\
-\f{i}{j} &\le \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}} {\p{\ell}{k}}
+\f{i}{j} &\le \FMAX{i}{j} \sum_{\left(l,k \right) \in \QPset{i}} {\p{\ell}{k}}
 \tagconstrain{c:maxFlow}
 \end{cAlign}
 
@@ -204,7 +205,7 @@ representing the misaligned beginning and end of $[x,y]$.
 
 Using these helper variables, \eqref{c:qUpdate} represents the flow conservation
 principle for queue $i$ where $\Vol_i(\tn[n-1]-\QDELAY{i},\tn[n]-\QDELAY{i})$ is
-the volume of cars that reached the stop line during \DT[n].
+the volume of vehicles that reached the stop line during \DT[n].
 %
 Since \vecDT and \QDELAY{i} for all queues are known a priori, the indexes $m$
 and $w$ used by $V_i$ can be pre-computed in order to encode \eqref{eq:vol};
@@ -244,7 +245,7 @@ the queue in $i$ to spill back into the upstream queue $j$. }{3.2}
 
 As with MILP formulations of CTM (e.g. \trbcite{lin2004enhanced}),
 QTM is also susceptible to \emph{withholding traffic}, i.e., the
-optimizer might prevent cars from moving from $i$ to $j$ even though the
+optimizer might prevent vehicles from moving from $i$ to $j$ even though the
 associated traffic phase is active and $j$ is not full, e.g., this may
 reserve space for traffic from an alternate approach that allows the MILP
 to minimize delay in the long-term even though it leads to unintuitive traffic
@@ -290,14 +291,14 @@ e.g., \eqref{eq:objFunc} is equivalent to the objective function (O3) in
 $\beta = 0$ for all other cells.
 %
 \cref{fig:cumu_delay_plot} depicts this equivalence using the cumulative number
-of cars entering and leaving a network as a function of time.
+of vehicles entering and leaving a network as a function of time.
 %
 The delay experienced by the vehicles travelling through this network (red curve
 in \cref{fig:cumu_delay_plot}) equals the horizontal difference at each point
 between the cumulative departure and arrival curves (less the free flow travel
 time through the network).
 %
-Maximizing \qout{i} weighted by $(\TMAX - \tn +1)$ in \eqref{eq:objFunc} is the
+Maximizing \outq{i} weighted by $(\TMAX - \tn +1)$ in \eqref{eq:objFunc} is the
 same as forcing the departure curve to be as close as possible to the arrival
 curve as early as possible; therefore, the area between arrival and departure is
 minimized, which in turn minimizes the delay.
@@ -533,7 +534,7 @@ The value \eqref{c:cycleLB} and \eqref{c:cycleUB} over time for a traffic light
 \begin{cAlign}
 %
 \pd[n-1]{\ell}{1} + \sum\limits_{k=2}^{\Pn} \pd{\ell}{k} &\ge \CTMIN{\ell}
-(\p{k}{1} - \p[n-1]{k}{1}) \tagconstrain{c:cycleLB}\\
+(\p{\ell}{1} - \p[n-1]{\ell}{1}) \tagconstrain{c:cycleLB}\\
 %
 \pd[n-1]{\ell}{1} + \sum\limits_{k=2}^{\Pn} \pd{\ell}{k} &\le \CTMAX{\ell}
 \tagconstrain{c:cycleUB}

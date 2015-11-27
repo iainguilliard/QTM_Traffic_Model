@@ -508,7 +508,7 @@ class microsim:
                 for i,x in enumerate(l.scedule_state[:-1]):
                     if x > 0:
                         plt.plot([l.scedule_time[i],l.scedule_time[i+1]],[l.position,l.position],'k',lw=2)
-            plt.title(road.indexes)
+            if args.title ==' ': plt.title(road.indexes)
             plt.xlabel('time (s)')
             plt.ylabel('distance (m)')
 
@@ -558,6 +558,7 @@ if __name__ == '__main__':
     parser.add_argument("--stop_threshold", help="velocity threshold below which a car is considered stopped ", type=float, default  = 1.0)
     parser.add_argument("--max_stops", help="number of stops to count for histogram ", type=int)
     parser.add_argument("--ylim", help="range of y axis", nargs = 2, type=float)
+    parser.add_argument("--xlim", help="range of x axis", nargs = 2, type=float)
     parser.add_argument("--title", help="array of titles for the plots", nargs = '*')
 
     args = parser.parse_args()
@@ -596,13 +597,20 @@ if __name__ == '__main__':
                     plot_paths = [i for i,p in enumerate(sim.paths)]
                 else:
                     plot_paths = sim.indexes_to_path_indexes(args.plot)
-
+                k=0
                 for i in plot_paths:
                     if i is not None:
                         plot_fig(plt,args.figsize)
                         sim.plot(plt,i)
-                    if args.save_fig is not None:
-                        plt.savefig(args.save_fig,bbox_inches='tight',dpi=args.dpi)
+                        if args.title is not None:
+                            plt.title(args.title[k])
+                        if args.ylim is not None:
+                            plt.ylim(args.ylim[0],args.ylim[1])
+                        if args.xlim is not None:
+                            plt.xlim(args.xlim[0],args.xlim[1])
+                        if args.save_fig is not None:
+                            plt.savefig(args.save_fig,bbox_inches='tight',dpi=args.dpi)
+                        k += 1
 
             if args.plot_car is not None:
                 plot_fig(plt,args.figsize)

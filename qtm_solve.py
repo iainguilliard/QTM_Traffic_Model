@@ -375,6 +375,20 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
         # Integrate new variables
         m.update()
+        if mip_start is not None:
+            prev_mp_dt = mip_start['Out']['DT']
+            prev_mp_t = mip_start['Out']['t']
+            prev_mp_t += [prev_mp_t[-1] + prev_mp_dt[-1]]
+            print prev_mp_t
+            print time
+            for i in range(L):
+                for j in range(len(l[i])):
+                    prev_p = mip_start['Out']['p_{%d,%d}' % (i,j)]
+                    prev_p_f = interp.interp1d(prev_mp_t,prev_p + [prev_p[-1]],kind='zero')
+                    new_p = prev_p_f(time)
+                    for n in range(N):
+                        p[i][j][n].start = int(new_p[n] + 0.25)
+
 
         if fixed_plan != None:
             p_fixed_plan = [[[ 0 for n in range(N) ] for j in range(len(l[i]))] for i in range(L)]
@@ -419,10 +433,11 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         sum_in =  quicksum([quicksum([time[n] * q_in[i][n] if Q_IN[i]>0 else 0 for n in range(n_samples)]) for i in range(Q) ])
         sum_out = quicksum([quicksum([time[n] * q_out[i][n] if Q_OUT[i]>0 else 0 for n in range(n_samples)]) for i in range(Q) ])
         m.addConstr(total_travel_time == sum_out - sum_in)
+        #m.addConstr( sum_out == sum_in)
         if obj == 'MAX_OUT':
             out_flow = quicksum([ quicksum([ (T_MAX-time[n]) * out_q[i][n] * DT[n] for n in range(0,N)]) for i in range(Q) ])
             in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n] for i in range(Q) ]) for n in range(0,N)])
-
+            #flow = quicksum( [ quicksum([ (T_MAX-time[n]) * f[j][i][n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]) for n in range(0,N)])
             m.setObjective(alpha_obj * out_flow  + beta_obj * in_flow, GRB.MAXIMIZE)
         elif obj == 'MAX_OUT2':
             out_flow = quicksum([ quicksum([ (T_MAX-time[n]) * out_q[i][n] * DT[n] for n in range(0,N)]) for i in range(Q) ])
@@ -1443,19 +1458,27 @@ if __name__ == '__main__':
                     tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight)
         else:
             base_N = args.nsamples
-            for i in range(args.bootstrap):
-                base_N /= 2
+            for i in range(args.bootstrap+1):
                 print 'base_N=',base_N
+                base_N *= 2
+            start_time = clock_time.time()
+            base_N = args.nsamples
+            accuracy = args.accuracy
             prev_run = None
             data_itr = copy.deepcopy(data)
             for i in range(args.bootstrap + 1):
-                data_itr=milp_solver(data_itr,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=int(base_N * (i + 1)),DT_file=args.DT_file, fixed_plan=fixed,nthreads=args.threads,
-                    timelimit=args.timelimit,accuracy=args.accuracy,
+                data_itr=milp_solver(data_itr,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=int(base_N),DT_file=args.DT_file, fixed_plan=fixed,nthreads=args.threads,
+                    timelimit=args.timelimit,accuracy=accuracy,
                     verbose=args.verbose,obj=args.obj,alpha_obj=args.alpha,
                     beta_obj=args.beta,DT_offset=args.DT_offset,seed = args.seed,
                     tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=prev_run)
                 prev_run = copy.deepcopy(data_itr)
+                base_N *= 2
+                #accuracy *= 2
             data = data_itr
+            solve_time = clock_time.time() - start_time
+            print 'Total Solve time: %s seconds' % solve_time
+            data['Out']['solve_time'] = solve_time
 
 
     if data != None:

@@ -15,6 +15,7 @@ import numpy as np
 import scipy.interpolate as interp
 import math
 #import plot_model as pl
+#import matplotlib.pyplot as plt
 
 
 DEBUG = False
@@ -52,7 +53,7 @@ def t_in_index(t_prop,t,t_prev):
 
 def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=None,minor_frame=0,major_frame=0,blend_frame=None,nthreads=0,fixed_plan=None,
            timelimit=0,accuracy=0,verbose=False,label=None,step=None,run=None,obj='NEW',alpha_obj=1.0,beta_obj=0.001,
-           DT_offset=0,seed=0,tune=False,tune_file='',param=None, in_weight=1.0,mip_start=None):
+           DT_offset=0,seed=0,tune=False,tune_file='',param=None, in_weight=1.0,mip_start=None,refine=False):
     start_time = clock_time.time()
     try:
 
@@ -166,6 +167,73 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             time.append(t)
             t+=_dt
         time_full = time + [t]
+
+        if refine is not False:
+            out=data['Out']
+            if run != None:
+                out = out['Run'][run]
+            if step != None and step > 0:
+                out = out['Step'][step-1]
+            prev_mp_dt = out['DT']
+            prev_mp_t = out['t']
+            prev_mp_t += [prev_mp_t[-1] + prev_mp_dt[-1]]
+            print prev_mp_t
+            print time
+            new_t_sample = [0 for n in time]
+            for i in range(len(data['Lights'])):
+                for j in range(len(data['Lights'][i]['P_MAX'])):
+                    prev_p = out['p_{%d,%d}' % (i,j)]
+                    for k in range(1,len(prev_p)):
+                        p_state = prev_p[k]
+
+                        if prev_p[k] != prev_p[k-1]:
+                            k_t = int(time[k] / DT[0])
+                            new_t_sample[(k_t * 2) - 2] = 1
+                            new_t_sample[(k_t * 2) - 1] = 1
+                            new_t_sample[(k_t * 2)    ] = 1
+
+
+
+                    #plt.figure(figsize=(20,5))
+
+                    #plt.plot(prev_mp_t[0:-1],prev_p,'-x')
+
+                    #plt.plot(time,new_p,'-',marker='.')
+                    #plt.plot(time,new_t,'-',marker='o')
+                    #plt.ylim(-0.1,1.1)
+                    #plt.show();
+
+            dt_step = DT[0]
+            dt = dt_step
+            new_DT=[]
+            for state in new_t_sample:
+                if state == 1:
+                    new_DT.append(dt)
+                    dt = dt_step
+                else:
+                    dt += dt_step
+            if sum(new_DT) < time[-1]:
+                new_DT.append(time[-1] - sum(new_DT))
+            print new_DT
+            print sum(new_DT), '(',time[-1],')'
+            #plt.plot(time,new_t_sample,'-',marker='o')
+            #plt.ylim(-0.1,1.1)
+            #plt.show();
+            DT = new_DT
+            t=t0
+            time = []
+            for _dt in DT:
+                time.append(t)
+                t+=_dt
+            time_full = time + [t]
+            N = len(DT)
+            n_samples = N
+
+
+            print prev_mp_t
+            print time
+
+
         #print 'time     =',time
         #print 'time_full=',time_full
         if 'Flow_Weights' in data:
@@ -375,20 +443,31 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
         # Integrate new variables
         m.update()
-        if mip_start is not None:
-            prev_mp_dt = mip_start['Out']['DT']
-            prev_mp_t = mip_start['Out']['t']
+
+        if mip_start is not None and step > 0:
+            out=data['Out']
+            if run != None:
+                out = out['Run'][run]
+            if step != None and step > 0:
+                out = out['Step'][step-1]
+            prev_mp_dt = out['DT']
+            prev_mp_t = out['t']
             prev_mp_t += [prev_mp_t[-1] + prev_mp_dt[-1]]
-            print prev_mp_t
-            print time
             for i in range(L):
                 for j in range(len(l[i])):
-                    prev_p = mip_start['Out']['p_{%d,%d}' % (i,j)]
+                    prev_p = out['p_{%d,%d}' % (i,j)]
                     prev_p_f = interp.interp1d(prev_mp_t,prev_p + [prev_p[-1]],kind='zero')
                     new_p = prev_p_f(time)
+                    ##plt.figure(figsize=(20,5))
+
+                    ##plt.plot(prev_mp_t[0:-1],prev_p,'-x')
+
+                    ##plt.plot(time,new_p,'-',marker='.')
+                    #plt.plot(time,new_t,'-',marker='o')
+                    ##plt.ylim(-0.1,1.1)
+                    ##plt.show();
                     for n in range(N):
                         p[i][j][n].start = int(new_p[n] + 0.25)
-
 
         if fixed_plan != None:
             p_fixed_plan = [[[ 0 for n in range(N) ] for j in range(len(l[i]))] for i in range(L)]
@@ -825,7 +904,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             m.read(param)
         print 'relax_constr=',len(relax_constr)
         print 'rhspen=',len(rhspen)
-
+        setup_time = clock_time.time() - start_time
         m.optimize()
         solve_time = clock_time.time() - start_time
 
@@ -880,6 +959,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             print status_codes[m.status][2]
             print 'Obj:', m.objVal
             print 'Total Travel Time:', total_travel_time.x
+            print 'Setup time: %s seconds' % setup_time
             print 'Solve time: %s seconds' % solve_time
 
             #
@@ -899,7 +979,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 data_out = data['Out']['Run'][run]
             else:
                 data_out = data['Out']
-            if step != None:
+            if step != None and mip_start != 'final':
                 if 'Step' not in data_out:
                     data_out['Step'] = []
                 data_out['Step'].append(dict())
@@ -909,6 +989,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             data_out['t'] = time
             data_out['DT'] = DT
             data_out['DT_offset'] = DT_offset
+            data_out['setup_time'] = setup_time
             data_out['solve_time'] = solve_time
             data_out['solver_runtime'] = m.Runtime
             data_out['objval'] = m.objVal
@@ -1346,6 +1427,78 @@ def DT_final_solver(data,args):
     print (data['Out']).keys()
     return data
 
+def bootstrap_solver(data,args):
+    av_travel_time=0
+    av_solve_time=0
+    start_time = clock_time.time()
+    for run in range(int(args.average)):
+        base_N = args.nsamples
+        for i in range(args.bootstrap+1):
+            print 'base_N=',base_N
+            base_N *= 2
+        run_start_time = clock_time.time()
+        base_N = args.nsamples
+        accuracy = args.accuracy
+        #prev_run = None
+        data_itr = copy.deepcopy(data)
+        if args.average and args.average==1:
+            run_index=None
+        else:
+            run_index=run
+
+        for k in range(args.bootstrap + 1):
+            print
+            print '------------ Run %d Frame %d ----------' % (run + 1, k + 1)
+            print
+            if k == args.bootstrap:
+                mip_start = 'final'
+            else:
+                mip_start = 'step'
+            if milp_solver(data,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=int(base_N),DT_file=args.DT_file, fixed_plan=fixed,nthreads=args.threads,
+                timelimit=args.timelimit,accuracy=accuracy,
+                verbose=args.verbose,step=k,run=run_index,
+                obj=args.obj,alpha_obj=args.alpha,
+                beta_obj=args.beta,DT_offset=args.DT_offset,seed = args.seed,
+                tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=mip_start) is None:
+                return None
+            #prev_run = copy.deepcopy(data_itr)
+            base_N *= 2
+            #accuracy *= 2
+        #data = data_itr
+
+        run_solve_time = clock_time.time() - run_start_time
+
+        print 'Total Run Solve time: %s seconds' % run_solve_time
+        print 'Run %d Completed in %d Frames' % (run + 1, k + 1)
+        if run_index != None:
+            #print data['Out']['Run'][run].keys()
+            #print data['Out'].keys()
+            av_travel_time += data['Out']['Run'][run]['total_travel_time']
+            data['Out']['Run'][run]['solve_time'] = run_solve_time
+        else:
+            av_travel_time += data['Out']['total_travel_time']
+            data['Out']['solve_time'] = run_solve_time
+        av_solve_time += run_solve_time
+
+        data['Out']['av_travel_time'] = av_travel_time / (run + 1)
+        data['Out']['av_solve_time'] = av_solve_time / (run + 1)
+        file_start_time = clock_time.time()
+        write_file(data,args)
+        file_write_time = clock_time.time() - file_start_time
+        print "File write time: % seconds" % file_write_time
+        #print
+        #print '======== Generating final solution over frames ========'
+        #print
+    solve_time = clock_time.time() - start_time
+
+    data['Out']['solve_time'] = solve_time
+    data['Out']['av_travel_time'] = av_travel_time / (args.average)
+    data['Out']['av_solve_time'] = av_solve_time / (args.average)
+    print 'Average Bootstrap Solve time: %s seconds' % data['Out']['av_solve_time']
+    print 'Total Bootstrap Solve time: %s seconds' % solve_time
+    return data
+
+
 def write_file(data,args):
     out_file = 'out_'+args.file
     if args.out:
@@ -1457,55 +1610,36 @@ if __name__ == '__main__':
                     beta_obj=args.beta,DT_offset=args.DT_offset,seed = args.seed,
                     tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight)
         else:
-            base_N = args.nsamples
-            for i in range(args.bootstrap+1):
-                print 'base_N=',base_N
-                base_N *= 2
-            start_time = clock_time.time()
-            base_N = args.nsamples
-            accuracy = args.accuracy
-            prev_run = None
-            data_itr = copy.deepcopy(data)
-            for i in range(args.bootstrap + 1):
-                data_itr=milp_solver(data_itr,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=int(base_N),DT_file=args.DT_file, fixed_plan=fixed,nthreads=args.threads,
-                    timelimit=args.timelimit,accuracy=accuracy,
-                    verbose=args.verbose,obj=args.obj,alpha_obj=args.alpha,
-                    beta_obj=args.beta,DT_offset=args.DT_offset,seed = args.seed,
-                    tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=prev_run)
-                prev_run = copy.deepcopy(data_itr)
-                base_N *= 2
-                #accuracy *= 2
-            data = data_itr
-            solve_time = clock_time.time() - start_time
-            print 'Total Solve time: %s seconds' % solve_time
-            data['Out']['solve_time'] = solve_time
+            data = bootstrap_solver(data,args)
+
 
 
     if data != None:
-        out_file = 'out_'+args.file
-        if args.out:
-            out_file=args.out
-        if not args.novars:
-            if args.zip:
-                out_file_zip = os.path.splitext(out_file)[0]+".zip"
-                zf = zipfile.ZipFile(out_file_zip, mode='w',compression=zipfile.ZIP_DEFLATED)
-                zf.writestr(out_file, json.dumps(data))
-                zf.close()
-            else:
-                f = open(out_file,'w')
-                json.dump(data,f)
-                f.close()
-        if args.meta or args.novars:
-            if 'Run' in data['Out']:
-                for run in data['Out']['Run']:
-                    for step in run['Step']:
-                        rm_vars(step)
-                    rm_vars(run)
-            if 'Step' in data['Out']:
-                for step in data['Out']['Step']:
-                    rm_vars(step)
-            rm_vars(data['Out'])
-            f = open(out_file+'.meta','w')
-            json.dump(data,f)
-            f.close()
+        write_file(data,args)
+        # out_file = 'out_'+args.file
+        # if args.out:
+        #     out_file=args.out
+        # if not args.novars:
+        #     if args.zip:
+        #         out_file_zip = os.path.splitext(out_file)[0]+".zip"
+        #         zf = zipfile.ZipFile(out_file_zip, mode='w',compression=zipfile.ZIP_DEFLATED)
+        #         zf.writestr(out_file, json.dumps(data))
+        #         zf.close()
+        #     else:
+        #         f = open(out_file,'w')
+        #         json.dump(data,f)
+        #         f.close()
+        # if args.meta or args.novars:
+        #     if 'Run' in data['Out']:
+        #         for run in data['Out']['Run']:
+        #             for step in run['Step']:
+        #                 rm_vars(step)
+        #             rm_vars(run)
+        #     if 'Step' in data['Out']:
+        #         for step in data['Out']['Step']:
+        #             rm_vars(step)
+        #     rm_vars(data['Out'])
+        #     f = open(out_file+'.meta','w')
+        #     json.dump(data,f)
+        #     f.close()
 

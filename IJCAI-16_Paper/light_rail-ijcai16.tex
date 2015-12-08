@@ -1,0 +1,233 @@
+% should I use value functions or expected cost functions
+
+\def\year{2016}
+\documentclass[letterpaper]{article}
+\usepackage{ijcai16}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\frenchspacing
+%\setlength{\pdfpagewidth}{8.5in}
+%\setlength{\pdfpageheight}{11in}
+
+\usepackage{amsmath}%
+\usepackage{amsfonts}%
+\usepackage{amssymb}%
+\usepackage{graphicx}
+\usepackage{url}
+%\usepackage{subfigure}
+\usepackage{subcaption}
+\usepackage{color}
+
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage[capitalise,noabbrev]{cleveref}
+%\usepackage{subcaption}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\graphicspath{{../TRB_paper/plots/}{plots/}}
+
+\setcounter{secnumdepth}{2}
+
+
+\usepackage[inline]{enumitem}  %% For in-line lists
+
+
+\newcommand{\Omit}[1]{}
+
+
+% CITATIONS
+%------------------------------------------
+% TRB uses an Author (num) citation style. I haven't found a way to make
+% LaTeX/Bibtex do this automatically using the standard \cite macro, but
+% this modified \trbcite macro does the trick.
+
+% SCOTT CHANGED MACROS TO USE AAAI CITATIONS
+
+%% sort&compress option?
+%%\usepackage[sort,numbers]{natbib}
+%%	\newcommand{\trbcite}[1]{\citeauthor{#1} ({\it \citenum{#1}})}
+%%	\newcommand{\trbcitenum}[1]{({\it \citenum{#1}})}
+%%\setcitestyle{round}
+\newcommand{\trbcite}[1]{\citeauthor{#1} (\citeyear{#1})}
+\newcommand{\trbcitenum}[1]{\cite{#1}}
+
+
+%% Toggle comments on next two lines to turn on/off editorial remarks
+\newcommand{\remark}[1]{\color{red} #1 \color{black}}
+\newcommand{\fnremark}[1]{\remark{\footnote{\remark{#1}}}}
+\newcommand{\toIain}[1]{\footnote{\textbf{To Iain}: #1}}
+\newcommand{\toFelipe}[1]{\footnote{\textbf{To Felipe}: #1}}
+\newcommand{\comment}[1]{}
+
+%% FWT: I'm using this to highlight parts of the text that might need polishing.
+\newcommand{\authorHighlight}[1]{\textcolor{red}{#1}}
+
+
+%%
+%% Final version: Uncomment the lines bellow to turn off all the high-lights and
+%% other remarks
+%%
+%\renewcommand{\remark}[1]{}
+%\renewcommand{\fnremark}[1]{}
+%\renewcommand{\toIain}[1]{}
+%\renewcommand{\toFelipe}[1]{}
+%\renewcommand{\comment}[1]{}
+%\renewcommand{\authorHighlight}[1]{#1}
+
+
+%\renewcommand{\authorHighlight}[1]{#1}
+
+% All math definitions before start document
+\input{./tex/MathDef.tex}
+
+
+%% Macros for constraints
+\newcounter{constraintcounter}
+% Use \tagconstrain{labelName} to tag the constraint as C.X and label
+% it as labelName
+\newcommand{\tagconstrain}[1]{\refstepcounter{constraintcounter}\tag{C\theconstraintcounter}\label{#1}}
+% Use the cAlign as the align environment for constraint
+\newenvironment{cAlign}{\align}{\endalign}
+% defining the name for the labels of the type cAlign
+\crefname{equation}{constraint}{constraints}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%                                  SPACING
+%%
+%%                       Preventing widow/orphan lines
+%% tex.stackexchange.com/questions/4152/how-do-i-prevent-widow-orphan-lines
+%%
+\widowpenalty=10000
+\clubpenalty=10000
+%%
+%%
+%%     Preventing inline equations to be broken (and possibly more stuff)
+%% http://tex.stackexchange.com/a/94397
+%%
+\binoppenalty=\maxdimen
+\relpenalty=\maxdimen
+%%
+%%
+%%                     Changing the spacing between lines
+%%
+%\usepackage{setspace}  %% \begin{singlespace} \begin{doublespace}, etc
+%\newcommand{\fwtBodySpacing}{\setstretch{1.235}}
+%\setstretch{1.22} % 1.235 is almost the same as \onehalfspacing
+%\newcommand{\fwtRegularSpacing}{\setstrech{1}}
+%%\onehalfspacing
+%%
+%%
+%%                   EXPLICITLY CHANGING INTERWORD SPACING
+%%
+%% See: http://tex.stackexchange.com/questions/23921/how-to-shorten-shrink-spaces-between-words
+%%
+%% To see the current spacing add this to the text
+%% \the\fontdimen2\font
+%%
+%% If the first parameter is 0, then it disables the change. Good for testing
+%% the effects of it
+\newcommand{\changeInterWordSpace}[3]{\ifthenelse{#1 = 0}{#3}{\changeInterWordSpaceREAL{#2}{#3}}}
+%%
+\newcommand*{\changeInterWordSpaceREAL}[2]{%
+\newdimen\origiwspc%
+%\newdimen\origiwstr%
+\origiwspc=\fontdimen2\font% original inter word space
+%\origiwstr=\fontdimen2\font% original inter word stretch
+\fontdimen2\font=#1% inter word space
+%\fontdimen3\font=0.1em%
+#2%
+\fontdimen2\font=\origiwspc% (original) inter word space
+%\fontdimen3\font=\origiwstr% (original) inter word stretch
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\begin{document}
+
+\title{A Novel Mixed Integer LP Model to\\ Mitigate
+ the Impact of Light Rail on Conventional Traffic Networks}
+
+\author{Paper ID XX}
+\Omit{
+\author{
+Iain Guilliard \and Felipe Trevizan\\
+\small Machine Learning Group, NICTA\\
+\small Research School of Computer Science, ANU\\
+\small iain.guilliard@nicta.com.au\\
+\small felipe.trevizan@nicta.com.au\\
+\And Scott Sanner\\
+\small Computer Science Department\\
+\small Oregon State University\\ 
+\small scott.sanner@oregonstate.edu\\
+\And Brian Williams\\
+\small MERS Group\\
+\small Computer Science and AI Laboratory\\
+\small MIT\\
+\small williams@mit.edu\\
+}
+}
+\date{}
+
+\maketitle
+
+\begin{abstract}
+\input{./tex/Abstract.tex} 
+\end{abstract}
+
+
+
+% Note: in Steve Smith's TRB article, Intro on numbered page 2, so this seems OK
+\input{./tex/Introduction.tex}
+
+\input{./tex/Model.tex}
+
+\input{./tex/Experiments.tex}
+
+%% The related work is integrated in the introduction
+%\input{./tex/RelatedWork.tex}
+
+\input{./tex/Conclusion.tex}
+
+%\input{./tex/Acknowledgment.tex}
+
+%% Flushing everything to have the bibliography in its own page. Some of these
+%% \newpage will redundant at some point
+%\begin{figure*}[t!]
+%\centering
+%\subfigure[]{
+%\label{subfig:microsim_rail_f}
+%\includegraphics[width=0.49\textwidth,trim={0cm 0cm 0cm 0cm},clip]{plot_avenue_1_f_1w2.pdf}}
+%\subfigure[]{
+%\label{subfig:microsim_rail}
+%\includegraphics[width=0.49\textwidth,trim={0cm 0cm 0cm 0cm},clip]{plot_avenue_1_1w2.pdf}}
+%\subfigure[]{
+%\label{subfig:microsim_rail_f_side}
+%\includegraphics[width=0.49\textwidth,trim={0cm 0cm 0cm 0cm},clip]{plot_avenue_1_f_1w2_side_0.pdf}}
+%\subfigure[]{
+%\label{subfig:microsim_rail_side}
+%\includegraphics[width=0.49\textwidth,trim={0cm 0cm 0cm 0cm},clip]{plot_avenue_1_1w2_side_0.pdf}}
+%\label{fig:micosim}
+%\end{figure*}
+
+%\newpage
+%~
+%\newpage
+%~
+%\newpage
+
+
+
+\bibliographystyle{named}
+\bibliography{Transport}
+
+
+\end{document}

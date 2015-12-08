@@ -1061,6 +1061,10 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
             #title = d['Title']
             #titles.append(d['Title'])
             time,cumu_in,cumu_out,cumu_delay,delay_by_car,delay = calc_delay(d, results, queues=q)
+            if args.normalize:
+                print
+                cumu_out /= np.max(cumu_out)
+                cumu_in /= np.max(cumu_in)
             if arrival_plot == False:
                 ax.plot(time,cumu_in,color=args.color[c_i], linestyle=line_style[i], label='Cumulative arrivals', marker=args.marker[m_i],markeredgecolor=args.color[c_i], markerfacecolor=mfc[c_i],markevery=mevery[m_i])
                 if i+1 < len(line_style): i += 1
@@ -2422,8 +2426,10 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                     ax[i].set_xlabel(xlabel)
 
                 if var in results.keys():
+                    if var[0:3] == 'fij' or var[0:3] == 'fxy':
+                        ax[i].set_ylim(-1,max(results[var]))
 
-                    if var[0] == 'q' or var[0] == 'f':
+                    elif var[0] == 'q' or var[0] == 'f':
                         if var[2] != '{':
                             #ax[i].set_ylim(-1,data['Queues'][int(var[3:].split(',')[0])]['Q_MAX']+2)
                         #else:
@@ -2433,6 +2439,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                             ax[i].set_ylim(-1,data['Queues'][int(var[4:].split(',')[0])]['Q_MAX']+2)
                         else:
                             ax[i].set_ylim(-1,data['Queues'][int(var[3:])]['Q_MAX']+2)
+
                     elif var[0] == 'd' and var[1] != 'q':
                         lp = var[3:-1].split(',')
                         ax[i].set_ylim(-1,data['Lights'][int(lp[0])]['P_MAX'][int(lp[1])]+2)
@@ -3070,6 +3077,7 @@ if __name__ == '__main__':
     parser.add_argument("--box_plot_labels_vertical", help="Orient x axis labels on box plot vertically", action="store_true", default = False)
     parser.add_argument("--dpi", help="DPI to save plots in", type=int, default = 300)
     parser.add_argument("--dump_csv", help="Dump the plot data to CSV file")
+    parser.add_argument("--normalize", help="Normalize cumulative plots", action="store_true",default=False)
     args = parser.parse_args()
 
     linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.'}

@@ -130,6 +130,10 @@ class path():
         else:
             return None
 
+    def get_link_offset(self,x):
+        if self.get_link_index(x) is None: print x,self.length
+        return self.link_offsets[self.get_link_index(x)]
+
     def nextCarDistance(self,car):
         i = self.cars_travelling.index(car)
         #print 'i=',i
@@ -186,6 +190,12 @@ class path():
             total_stops.append(car.get_stops(threshhold))
         return total_stops
 
+
+
+
+
+
+
 class car():
 
     def __init__(self,path,t,init_speed,maxspeed):
@@ -213,8 +223,10 @@ class car():
         self.time_log = [t]
         self.stopLineDistance_log = [0]
         self.nextRedTime_log = [0]
+        self.link_log = [-1]
         self.link_indexes = None
         self.links = None
+        self.link_postition_log = [0]
 
     def nextCarDistance(self):
         return self.path.nextCarDistance(self)
@@ -301,6 +313,12 @@ class car():
                 self.time_log.append(self.t)
                 self.stopLineDistance_log.append(self.nextStopLineDistance(self.t))
                 self.nextRedTime_log.append(self.nextRedTime(self.t))
+                i = self.path.get_link_index(self.position)
+                if self.link is None or i is None:
+                    self.link_log.append(-1)
+                else:
+                    self.link_log.append(i)
+                    self.link_postition_log.append(self.path.get_link_offset(self.position))
 
     def get_stops(self,threshold):
         stopped = np.array(self.speed_log) < threshold
@@ -517,6 +535,8 @@ class microsim:
         data['Out']['delay'] = delay
         data['Out']['total_travel_time'] = total_travel_time
         data['Out']['total_traffic_in'] = total_traffic_in
+        data['Out']['Microsim'] = {}
+
 
 def plot_fig(plt,figsize):
     if figsize is not None:

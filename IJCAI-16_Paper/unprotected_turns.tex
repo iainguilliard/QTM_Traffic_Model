@@ -1,0 +1,216 @@
+% should I use value functions or expected cost functions
+
+\def\year{2016}
+\documentclass[letterpaper]{article}
+\usepackage{ijcai16}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\frenchspacing
+%\setlength{\pdfpagewidth}{8.5in}
+%\setlength{\pdfpageheight}{11in}
+
+\usepackage{amsmath}%
+\usepackage{amsfonts}%
+\usepackage{amssymb}%
+\usepackage{graphicx}
+\usepackage{url}
+%\usepackage{subfigure}
+\usepackage{subcaption}
+\usepackage{color}
+
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage[capitalise,noabbrev]{cleveref}
+%\usepackage{subcaption}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\graphicspath{{../TRB_paper/plots/}{plots/}}
+
+\setcounter{secnumdepth}{2}
+
+
+\usepackage[inline]{enumitem}  %% For in-line lists
+
+
+\newcommand{\Omit}[1]{}
+
+
+% CITATIONS
+%------------------------------------------
+% TRB uses an Author (num) citation style. I haven't found a way to make
+% LaTeX/Bibtex do this automatically using the standard \cite macro, but
+% this modified \trbcite macro does the trick.
+
+% SCOTT CHANGED MACROS TO USE AAAI CITATIONS
+
+%% sort&compress option?
+%%\usepackage[sort,numbers]{natbib}
+%%	\newcommand{\trbcite}[1]{\citeauthor{#1} ({\it \citenum{#1}})}
+%%	\newcommand{\trbcitenum}[1]{({\it \citenum{#1}})}
+%%\setcitestyle{round}
+\newcommand{\trbcite}[1]{\citeauthor{#1} (\citeyear{#1})}
+\newcommand{\trbcitenum}[1]{\cite{#1}}
+
+
+%% Toggle comments on next two lines to turn on/off editorial remarks
+\newcommand{\remark}[1]{\color{red} #1 \color{black}}
+\newcommand{\fnremark}[1]{\remark{\footnote{\remark{#1}}}}
+\newcommand{\toIain}[1]{\footnote{\textbf{To Iain}: #1}}
+\newcommand{\toFelipe}[1]{\footnote{\textbf{To Felipe}: #1}}
+\newcommand{\comment}[1]{}
+
+%% FWT: I'm using this to highlight parts of the text that might need polishing.
+\newcommand{\authorHighlight}[1]{\textcolor{red}{#1}}
+
+
+%%
+%% Final version: Uncomment the lines bellow to turn off all the high-lights and
+%% other remarks
+%%
+%\renewcommand{\remark}[1]{}
+%\renewcommand{\fnremark}[1]{}
+%\renewcommand{\toIain}[1]{}
+%\renewcommand{\toFelipe}[1]{}
+%\renewcommand{\comment}[1]{}
+%\renewcommand{\authorHighlight}[1]{#1}
+
+
+%\renewcommand{\authorHighlight}[1]{#1}
+
+% All math definitions before start document
+\input{./tex/MathDef.tex}
+
+
+%% Macros for constraints
+\newcounter{constraintcounter}
+% Use \tagconstrain{labelName} to tag the constraint as C.X and label
+% it as labelName
+\newcommand{\tagconstrain}[1]{\refstepcounter{constraintcounter}\tag{C\theconstraintcounter}\label{#1}}
+% Use the cAlign as the align environment for constraint
+\newenvironment{cAlign}{\align}{\endalign}
+% defining the name for the labels of the type cAlign
+\crefname{equation}{constraint}{constraints}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%                                  SPACING
+%%
+%%                       Preventing widow/orphan lines
+%% tex.stackexchange.com/questions/4152/how-do-i-prevent-widow-orphan-lines
+%%
+\widowpenalty=10000
+\clubpenalty=10000
+%%
+%%
+%%     Preventing inline equations to be broken (and possibly more stuff)
+%% http://tex.stackexchange.com/a/94397
+%%
+\binoppenalty=\maxdimen
+\relpenalty=\maxdimen
+%%
+%%
+%%                     Changing the spacing between lines
+%%
+%\usepackage{setspace}  %% \begin{singlespace} \begin{doublespace}, etc
+%\newcommand{\fwtBodySpacing}{\setstretch{1.235}}
+%\setstretch{1.22} % 1.235 is almost the same as \onehalfspacing
+%\newcommand{\fwtRegularSpacing}{\setstrech{1}}
+%%\onehalfspacing
+%%
+%%
+%%                   EXPLICITLY CHANGING INTERWORD SPACING
+%%
+%% See: http://tex.stackexchange.com/questions/23921/how-to-shorten-shrink-spaces-between-words
+%%
+%% To see the current spacing add this to the text
+%% \the\fontdimen2\font
+%%
+%% If the first parameter is 0, then it disables the change. Good for testing
+%% the effects of it
+\newcommand{\changeInterWordSpace}[3]{\ifthenelse{#1 = 0}{#3}{\changeInterWordSpaceREAL{#2}{#3}}}
+%%
+\newcommand*{\changeInterWordSpaceREAL}[2]{%
+\newdimen\origiwspc%
+%\newdimen\origiwstr%
+\origiwspc=\fontdimen2\font% original inter word space
+%\origiwstr=\fontdimen2\font% original inter word stretch
+\fontdimen2\font=#1% inter word space
+%\fontdimen3\font=0.1em%
+#2%
+\fontdimen2\font=\origiwspc% (original) inter word space
+%\fontdimen3\font=\origiwstr% (original) inter word stretch
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\Fmax}[1][n]{\ensuremath{\mathcal{F}_{#1}}\xspace}
+
+\begin{document}
+
+\title{Unprotected Turns}
+
+\author{Iain Guilliard}
+\date{8 December 2015}
+
+\maketitle
+\onecolumn
+\section{New Constraints}
+To find the outflow from $i$ to $j$ during interval $n$, we need to find the minimum of:
+\begin{itemize}
+\item  the maximum allowed flow from $i$ to $j$, $\Fmax$
+\item traffic at the stop line and queued in $i$ during $\DT$
+\item  the free capacity in $j$ during $\DT$.
+\end{itemize}
+
+\begin{align}
+\f{i}{j} = \text{min}\left(\Fmax, \FTURN{i}{j} \frac{\QMAX{i} - \q{i}}{\DT},
+\FTURN{i}{j} \frac{V\left(\tn[n-1] - \QDELAY{i},\tn - \QDELAY{i}\right) + \q{j}}{\DT}
+\right)
+\end{align}
+
+There are 4 possible cases for $\Fmax$:
+
+1. $\f{i}{j}$ is not a yielding flow and there is no stop light:
+\begin{align}
+\Fmax\ = \FMAX{i}{j}
+\end{align}
+
+2. $\f{i}{j}$ is not a yielding flow and there is a stop light:
+\begin{align}
+\Fmax = \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}}\p{\ell}{k}
+\end{align}
+We note that only one $\p{\ell}{k} \in \QPset{i}$ can be active in any interval $n$, so $\Fmax$ is either $0$ or $\FMAX{i}{j}$
+3. $\f{i}{j}$ is yielding to $\f{x}{y}$:
+\begin{align}
+\Fmax = \FMAX{i}{j} \left(1 - \frac{\f{x}{y}}{\FMAX{x}{y}}\right)
+\end{align}
+
+4. $\f{i}{j}$ is yielding to to $\f{x}{y}$ and controlled by a stop light:
+\begin{align}
+\Fmax = \text{min}\left(
+\FMAX{i}{j} \left(1 - \frac{\f{x}{y}}{\FMAX{x}{y}}\right),
+\FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}}\p{\ell}{k}
+\right)
+\end{align}
+Requiring one additional binary variable.
+
+\section{$\text{min}()$ function as linear constraints}
+
+if $\phi = \text{min}\left( a,b \right) $ then,
+\begin{align}
+0 &\le b - \phi \le U(1- z) \\
+0 &\le a - \phi \le Uz \\
+L(1-z) &\le a - b \le Uz
+\end{align}
+is a set of linear contraints that will set $\phi$ to the minimum of $a$ and $b$, where $U$ and $L$ are very large postive and negative numbers respectively, and $z$ is binary.
+
+To find $\text{min}(a,b,c)$ we can use $\text{min}(a,\text{min}(b,c))$, which requires 2 binary variables
+
+\end{document}
+                                    

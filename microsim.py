@@ -6,7 +6,7 @@ import scipy.interpolate as interp
 import matplotlib.pyplot as plt
 import qtm_plot as qtm
 import argparse
-import ujson as json
+import json as json
 import pandas as  pd
 
 def random():
@@ -109,7 +109,7 @@ class path():
         self.free_flow_travel_time = length / free_flow_speed
         self.links = links
         self.link_offsets = link_offsets
-        self.link_f = interp.interp1d(link_offsets,range(len(links) + 1),kind='zero')
+        self.link_f = self.link_f = interp.interp1d(link_offsets,range(len(links) + 1),kind='zero')
 
     def add(self,car):
         self.cars.append(car)
@@ -120,7 +120,7 @@ class path():
 
     def get_link_index(self,x):
         if 0 <= x < self.length:
-            return int(self.link_f(x))
+            return self.indexes[int(self.link_f(x))]
         else:
             return None
 
@@ -132,7 +132,7 @@ class path():
 
     def get_link_offset(self,x):
         if self.get_link_index(x) is None: print x,self.length
-        return self.link_offsets[self.get_link_index(x)]
+        return self.link_offsets[int(self.link_f(x))]
 
     def nextCarDistance(self,car):
         i = self.cars_travelling.index(car)
@@ -226,7 +226,7 @@ class car():
         self.link_log = [-1]
         self.link_indexes = None
         self.links = None
-        self.link_postition_log = [0]
+        self.link_position_log = [0]
 
     def nextCarDistance(self):
         return self.path.nextCarDistance(self)
@@ -316,9 +316,16 @@ class car():
                 i = self.path.get_link_index(self.position)
                 if self.link is None or i is None:
                     self.link_log.append(-1)
+                    self.link_position_log.append(0)
                 else:
                     self.link_log.append(i)
-                    self.link_postition_log.append(self.path.get_link_offset(self.position))
+                    self.link_position_log.append(self.position - self.path.get_link_offset(self.position))
+            else:
+                self.link_log.append(-1)
+                self.link_position_log.append(0)
+        else:
+            self.link_log.append(-1)
+            self.link_position_log.append(0)
 
     def get_stops(self,threshold):
         stopped = np.array(self.speed_log) < threshold
@@ -373,12 +380,16 @@ def find_paths(data):
 
 class microsim:
 
-    def __init__(self,data,free_flow_speed,time_factor=1,amber_time=5):
+    def __init__(self,data,free_flow_speed,time_factor=1,amber_time=5,road_width=0):
         self.cars = []
+        self.time = []
         self.amber_time = amber_time
-        self.load_file(data,free_flow_speed,time_factor=time_factor)
+        self.free_flow_speed = free_flow_speed
+        self.time_factor = time_factor
+        self.load_file(data,free_flow_speed,time_factor=time_factor,road_width=road_width)
 
-    def load_file(self,data,free_flow_speed,time_factor = 1):
+
+    def load_file(self,data,free_flow_speed,time_factor = 1,road_width=0):
         data_DT = [x * time_factor for x in data['Out']['DT']]
         self.data_time = [x * time_factor for x in data['Out']['t']]
         q_paths = find_paths(data)
@@ -416,7 +427,7 @@ class microsim:
                             t = 0
                         state = x
                     #print schedule
-                    sig = signal(schedule,distance,self.amber_time)
+                    sig = signal(schedule,distance - road_width,self.amber_time)
                     signals.append(sig)
                 l = link(i,signal)
                 links.append(l)
@@ -455,16 +466,18 @@ class microsim:
 
 
     def simulate(self,DT,indexes = None):
+        self.DT = DT
         if indexes is not None:
             paths = self.indexes_to_paths(indexes)
         else:
             paths = self.paths
         for path in paths:
             if path is not None:
-                time = np.arange(0,self.data_time[-1],DT)
-                self.cars.append(self.microsim_road(path,time,DT))
+                self.time = np.arange(0,self.data_time[-1],DT)
+                self.cars.append(self.microsim_road(path,self.time,DT))
             else:
                 self.cars.append([])
+
 
 
     def microsim_road(self,road, time, DT):
@@ -531,11 +544,20 @@ class microsim:
             plt.ylabel('distance (m)')
 
     def write(self,data):
-        data['Out']['average_delay'] = average_delay
-        data['Out']['delay'] = delay
-        data['Out']['total_travel_time'] = total_travel_time
-        data['Out']['total_traffic_in'] = total_traffic_in
-        data['Out']['Microsim'] = {}
+        data['Out']['average_delay'] = self.average_delay()
+        data['Out']['delay'] = self.delay()
+        data['Out']['total_travel_time'] = self.total_travel_time()
+        data['Out']['total_traffic_in'] = self.total_traffic_in()
+        data['Out']['Microsim'] = {'cars': [],
+                                   'time': list(self.time),
+                                   'DT' : self.DT,
+                                   'time_factor': self.time_factor,
+                                   'free_flow_speed':  self.free_flow_speed,
+                                   'amber_time': self.amber_time
+                                   }
+        for car_path in self.cars:
+            for car in car_path:
+                data['Out']['Microsim']['cars'].append({'position': list(car.link_position_log), 'link': list(car.link_log)})
 
 
 def plot_fig(plt,figsize):
@@ -580,6 +602,7 @@ if __name__ == '__main__':
     parser.add_argument("--ylim", help="range of y axis", nargs = 2, type=float)
     parser.add_argument("--xlim", help="range of x axis", nargs = 2, type=float)
     parser.add_argument("--title", help="array of titles for the plots", nargs = '*')
+    parser.add_argument("--road_width", help="set road_width", type=float, default = 0) # default = 10
 
     args = parser.parse_args()
 
@@ -593,7 +616,7 @@ if __name__ == '__main__':
         for l,data in enumerate(files):
             #data = file[0][0]
 
-            sim = microsim(data,free_flow_speed,time_factor=time_factor)
+            sim = microsim(data,free_flow_speed,time_factor=time_factor,road_width=args.road_width)
             sim.simulate(DT,indexes = args.index)
             average_delay = sim.average_delay()
             delay = sim.delay()

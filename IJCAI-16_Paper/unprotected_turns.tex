@@ -1,8 +1,13 @@
 % should I use value functions or expected cost functions
 
 \def\year{2016}
-\documentclass[letterpaper]{article}
-\usepackage{ijcai16}
+\documentclass[a4paper]{article}
+%\documentclass[11pt,twosided]{amsart}
+%\usepackage[inner=2cm,outer=2cm]{geometry}  
+%\geometry{a4paper}   
+\usepackage{fullpage} 
+%\usepackage{ijcai16}
+%\renewcommand{\twocolumn}{\onecolumn}
 \usepackage{times}
 \usepackage{helvet}
 \usepackage{courier}
@@ -157,10 +162,9 @@
 
 \author{Iain Guilliard}
 \date{8 December 2015}
-
 \maketitle
-\onecolumn
-\section{New Constraints}
+
+\section{New Constraints for Unprotected Turns}
 To find the outflow from $i$ to $j$ during interval $n$, we need to find the minimum of:
 \begin{itemize}
 \item  the maximum allowed flow from $i$ to $j$, $\Fmax$
@@ -175,23 +179,23 @@ To find the outflow from $i$ to $j$ during interval $n$, we need to find the min
 \end{align}
 
 There are 4 possible cases for $\Fmax$:
-
-1. $\f{i}{j}$ is not a yielding flow and there is no stop light:
+\begin{enumerate}
+\item  $\f{i}{j}$ is not a yielding flow and there is no stop light:
 \begin{align}
 \Fmax\ = \FMAX{i}{j}
 \end{align}
 
-2. $\f{i}{j}$ is not a yielding flow and there is a stop light:
+\item  $\f{i}{j}$ is not a yielding flow and there is a stop light:
 \begin{align}
 \Fmax = \FMAX{i}{j} \sum_{\p{\ell}{k} \in \QPset{i}}\p{\ell}{k}
-\end{align}
-We note that only one $\p{\ell}{k} \in \QPset{i}$ can be active in any interval $n$, so $\Fmax$ is either $0$ or $\FMAX{i}{j}$
-3. $\f{i}{j}$ is yielding to $\f{x}{y}$:
+\end{align}We note that at most one $\p{\ell}{k} \in \QPset{i}$ can be active in any interval $n$, so $\Fmax$ is either $0$ or $\FMAX{i}{j}$
+
+\item  $\f{i}{j}$ is yielding to $\f{x}{y}$:
 \begin{align}
 \Fmax = \FMAX{i}{j} \left(1 - \frac{\f{x}{y}}{\FMAX{x}{y}}\right)
 \end{align}
 
-4. $\f{i}{j}$ is yielding to to $\f{x}{y}$ and controlled by a stop light:
+\item  $\f{i}{j}$ is yielding to to $\f{x}{y}$ and controlled by a stop light:
 \begin{align}
 \Fmax = \text{min}\left(
 \FMAX{i}{j} \left(1 - \frac{\f{x}{y}}{\FMAX{x}{y}}\right),
@@ -199,8 +203,9 @@ We note that only one $\p{\ell}{k} \in \QPset{i}$ can be active in any interval 
 \right)
 \end{align}
 Requiring one additional binary variable.
+\end{enumerate}
 
-\section{$\text{min}()$ function as linear constraints}
+\subsection{$\text{min}()$ function as linear constraints}
 
 if $\phi = \text{min}\left( a,b \right) $ then,
 \begin{align}
@@ -209,7 +214,7 @@ if $\phi = \text{min}\left( a,b \right) $ then,
 L(1-z) &\le a - b \le Uz
 \end{align}
 is a set of linear contraints that will set $\phi$ to the minimum of $a$ and $b$, where $U$ and $L$ are very large postive and negative numbers respectively, and $z$ is binary.
-
+%
 To find $\text{min}(a,b,c)$ we can use $\text{min}(a,\text{min}(b,c))$, which requires 2 binary variables
 
 \end{document}

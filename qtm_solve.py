@@ -91,7 +91,7 @@ def min3_constr(m,g,a,b,c):
 
 def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=None,minor_frame=0,major_frame=0,blend_frame=None,nthreads=0,fixed_plan=None,
            timelimit=0,accuracy=0,verbose=False,label=None,step=None,run=None,obj='NEW',alpha_obj=1.0,beta_obj=0.001,gamma_obj=0.0001,
-           DT_offset=0,seed=0,tune=False,tune_file='',param=None, in_weight=1.0,mip_start=None,refine=False,no_assertion_fail=False):
+           DT_offset=0,seed=0,tune=False,tune_file='',param=None, in_weight=1.0,mip_start=None,refine=False,no_assertion_fail=False, lost_time=0):
     start_time = clock_time.time()
     try:
 
@@ -300,7 +300,45 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         # Define Constants
         T_MAX = time[N-1]+1
 
+        if lost_time > 0:
+            for i,light in enumerate(data['Lights']):
+                P_MIN = []
+                P_MAX = []
+                p0 = []
+                c0 = []
+                d0 = []
+                c_min_extra = 0
+                c_max_extra = 0
 
+                for j,p in enumerate(light['P_MAX']):
+                    P_MIN.append(light['P_MIN'][j]) # - lost_time
+                    P_MIN.append(lost_time)
+                    P_MAX.append(light['P_MAX'][j]) # - lost_time
+                    P_MAX.append(lost_time)
+                    p0.append(light['p0'][j])
+                    p0.append(0)
+                    c0.append(light['c0'][j])
+                    c0.append(0)
+                    d0.append(light['d0'][j])
+                    d0.append(lost_time)
+                    c_min_extra += lost_time
+                    c_max_extra += lost_time
+                    # light['P_MIN'].insert(j+1,lost_time)
+                    # light['p0'].insert(j+1,0)
+                    # light['c0'].insert(j+1,0)
+                    # light['d0'].insert(j+1,0)
+                light['P_MIN'] = P_MIN
+                light['P_MAX'] = P_MAX
+                light['p0'] = p0
+                light['c0'] = c0
+                light['d0'] = d0
+                #light['C_MIN'] += c_min_extra
+                #light['C_MAX'] += c_max_extra
+                print light
+            for i,q in enumerate(data['Queues']):
+                if q['Q_P'] is not None:
+                    for j in range(1,len(q['Q_P'])):
+                        q['Q_P'][j] = q['Q_P'][j] * 2
         epsilon = 0.1
 
         Q = len(data['Queues'])
@@ -364,6 +402,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
 
         #print 'P_MAX_ext=', P_MAX_ext
+
 
 
         # initial conditions
@@ -904,7 +943,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                 Pr_ij = data['Flows'][f_ij]['Pr']
                             else:
                                 Pr_ij = 1.0
-                            if (i,j) not in dominant_flows and "F_Y" not in data['Flows'][f_ij] and False:
+                            if (i,j) not in dominant_flows and "F_Y" not in data['Flows'][f_ij]: # and False:
                                 if Q_p[i] != None:
                                     m.addConstr( f[i][j][n] <= F_ij * quicksum([ p[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]) )
                                 m.addConstr( f[i][j][n] <= Pr_ij * ( quicksum([f[i][k][n] if '%d_%d' % (i,k) in data['Flows'] and i != k else 0 for k in range(Q)]) ) )
@@ -1247,6 +1286,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             data_out['num_vars'] = m.NumVars
             data_out['num_binvars'] = m.NumBinVars
             data_out['num_constrs'] = m.NumConstrs
+            data_out['lost_time'] = lost_time
             if timelimit<1e30:
                 data_out['time_limit'] = timelimit
             else:
@@ -1483,7 +1523,7 @@ def plan_solver(data,args):
                 print
                 if milp_solver(data,t0=t0,t1=t1,n_samples=n_samples, DT_vari=DT_vari,minor_frame=minor_frame,major_frame=major_frame,blend_frame=blend_frame,fixed_plan=None,nthreads=args.threads,timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
                        label=label+' step %d' % k,
-                       step=k,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed=args.seed,tune=tune,tune_file=tune_file,param=args.param) is None:
+                       step=k,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed=args.seed,tune=tune,tune_file=tune_file,param=args.param,lost_time = args.lost_time) is None:
                     return None
                 t0+=minor_frame
                 if run_index != None:
@@ -1664,7 +1704,7 @@ def DT_final_solver(data,args):
 
     if milp_solver(data,t0=t0,t1=t1,n_samples=int((t1-t0)/DT), fixed_plan=data['Out']['Fixed_Plan'],nthreads=args.threads,
            timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
-           step=None,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,) is None:
+           step=None,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma) is None:
         return None
 
 
@@ -1706,7 +1746,7 @@ def bootstrap_solver(data,args):
                 verbose=args.verbose,step=k,run=run_index,
                 obj=args.obj,alpha_obj=args.alpha,
                 beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed = args.seed,
-                tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=mip_start) is None:
+                tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=mip_start, lost_time = args.lost_time) is None:
                 return None
             #prev_run = copy.deepcopy(data_itr)
             base_N *= 2
@@ -1817,6 +1857,7 @@ if __name__ == '__main__':
     parser.add_argument("--Q_IN_limit", help="limit in flow weights to Q_IN ", action="store_true", default=False)
     parser.add_argument("--bootstrap", help="iterativly solve for fixed DT using N iteratations of MIP start bootstraping ", type=int)
     parser.add_argument("--no_assertion_fail", help="Do not fail on assertion errors", action="store_true", default=False)
+    parser.add_argument("--lost_time", help="lost_time per phase", type=float,default=0.0)
 
     args = parser.parse_args()
     if args.debug: DEBUG = True
@@ -1857,7 +1898,7 @@ if __name__ == '__main__':
                     timelimit=args.timelimit,accuracy=args.accuracy,
                     verbose=args.verbose,obj=args.obj,alpha_obj=args.alpha,
                     beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed = args.seed,
-                    tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,no_assertion_fail=args.no_assertion_fail)
+                    tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,no_assertion_fail=args.no_assertion_fail, lost_time = args.lost_time)
         else:
             data = bootstrap_solver(data,args)
 

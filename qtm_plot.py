@@ -366,7 +366,8 @@ def plot_delay_gt(data, step, width, threshold, queues=[],plots=None,line_style=
     ax.grid()
     ax.set_xlabel('N (Samples)')
     ax.set_ylabel('Number of vehicles delayed > %0.8g' % threshold)
-    ax.legend(loc='best')
+    if not args.no_legend:
+        ax.legend(loc='best')
 
     pl.title('Delay > %0.1g Histogram for Queues %s' % (threshold,', '.join([str(q) for q in queues])) )
 
@@ -414,7 +415,8 @@ def plot_delay_histogram(data, step, width, queues=[],line_style=['--'],colours=
         ax.set_xlim(args.x_limit[0], args.x_limit[1])
     if args.y_limit != None:
         ax.set_ylim(args.y_limit[0], args.y_limit[1])
-    ax.legend(loc='best')
+    if not args.no_legend:
+        ax.legend(loc='best')
 
     pl.title('Delay Histogram for Queues %s' % ', '.join([str(q) for q in queues]) )
 
@@ -501,12 +503,15 @@ def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,delay=
     text_color = 'k'
     font_size = 16
     ext = [-200,200,-110,110]
+    bg_ext = ext
     img = None
     if 'Plot' in data:
         ext = data['Plot']['extent']
         if 'bg_image' in data['Plot']:
             if data['Plot']['bg_image'] != None:
                 img = mpimg.imread(data['Plot']['bg_image'])
+                if 'bg_extent' in data['Plot']:
+                    bg_ext = data['Plot']['bg_extent']
                 bg_alpha = 1.0
                 if 'bg_alpha' in data['Plot']:
                     if data['Plot']['bg_alpha'] != None:
@@ -551,7 +556,7 @@ def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,delay=
         figsize = (10,5)
     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False,figsize=figsize)
     if img is not None:
-        pl.imshow(img,extent=ext,alpha=bg_alpha)
+        pl.imshow(img,extent=bg_ext,alpha=bg_alpha)
     nodes = []
     edges = {}
 
@@ -1102,7 +1107,8 @@ def plot_delay(data, step, queues=[],line_style=['--'],args=None):
     #    ax2.set_ylim(0, 25)
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1+h2, l1+l2, loc='upper left')
+    if not args.no_legend:
+        ax.legend(h1+h2, l1+l2, loc='upper left')
     if args.title:
         #pl.title('Arrival Curves and Delay for Queues %s' % ', '.join([str(q) for q in queues]) )
         pl.title(args.title[0] )
@@ -1490,7 +1496,8 @@ def plot_av_travel_time(args):
     ax.grid()
     ax.set_xlabel('Total traffic through network (vehicles)')
     ax.set_ylabel('Average travel time through network (s)')
-    ax.legend(loc='best')
+    if not args.no_legend:
+        ax.legend(loc='best')
     if args.title:
         pl.title(args.title[0])
     #else:
@@ -1708,7 +1715,8 @@ def plot_parameter(plot,args):
         ax.set_ylabel(args.y_label)
     else:
         ax.set_ylabel(ylabel)
-    ax.legend(loc='best')
+    if not args.no_legend:
+        ax.legend(loc='best')
     if args.title:
         pl.title(args.title[0])
 
@@ -1930,7 +1938,8 @@ def plot_av_travel_time_N(args):
     else:
         ax.set_xlabel('N (number of time samples)')
     ax.set_ylabel('% increase in total travel time') #ax.set_ylabel('Total Travel Time')
-    ax.legend(loc='best')
+    if not args.no_legend:
+        ax.legend(loc='best')
     if args.title:
         pl.title(args.title[0])
     #else:
@@ -2161,7 +2170,8 @@ def plot_cpu_time(args):
     ax.grid()
     ax.set_xlabel('CPU time')
     ax.set_ylabel('Total travel time')
-    ax.legend(loc='best')
+    if not args.no_legend:
+        ax.legend(loc='best')
     if args.title:
         pl.title(args.title[0])
     else:
@@ -2277,7 +2287,8 @@ def plot_phase_offset(args):
     ax.grid()
     ax.set_xlabel('Phase offset (s)')
     ax.set_ylabel('Total travel time')
-    ax.legend(loc='best')
+    if not args.no_legend:
+        ax.legend(loc='best')
     if args.title:
         pl.title(args.title[0])
     else:
@@ -2452,7 +2463,8 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                         ax[i].set_ylim(args.y_limit[0],args.y_limit[1])
                     #else:
                     #    ax[i].set_ylim(0,1)
-                ax[i].legend(loc='best')
+                if not args.no_legend:
+                    ax[i].legend(loc='best')
                 if args.x_limit != None:
                     ax[i].set_xlim(args.x_limit[0],args.x_limit[1])
                 ax[i].grid(True)
@@ -2557,8 +2569,8 @@ def plot_flow_profiles(args): #data_sets,params,colors,line_styles,steps):
         if args.y_limit != None:
             ax[i].set_ylim(args.y_limit[0],args.y_limit[1])
 
-
-        ax[i].legend(loc='best')
+        if not args.no_legend:
+            ax[i].legend(loc='best')
         if args.x_limit != None:
             ax[i].set_xlim(args.x_limit[0],args.x_limit[1])
         #ax[i].yaxis.set_ticks(np.arange(0, int(y_max)+1,1))
@@ -3078,6 +3090,7 @@ if __name__ == '__main__':
     parser.add_argument("--dpi", help="DPI to save plots in", type=int, default = 300)
     parser.add_argument("--dump_csv", help="Dump the plot data to CSV file")
     parser.add_argument("--normalize", help="Normalize cumulative plots", action="store_true",default=False)
+    parser.add_argument("--no_legend", help="do not display a plot legend", action="store_true",default=False)
     args = parser.parse_args()
 
     linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.'}

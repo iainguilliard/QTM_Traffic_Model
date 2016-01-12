@@ -9,6 +9,8 @@ import argparse
 import json as json
 import pandas as  pd
 
+DEBUG_PLOT = False
+
 def random():
     return 0 #np.random.uniform()
 
@@ -35,6 +37,11 @@ class signal():
         self.scedule_state = scedule_state
         self.position = position
         self.amber_time = amber_time
+        sced = interp.interp1d(scedule_time,self.scedule_state,kind='zero')
+        sced_t = np.linspace(self.scedule_time[0],self.scedule_time[-1],10000)
+        if DEBUG_PLOT:
+            plt.figure(figsize=(20,2))
+            plt.plot(sced_t,sced(sced_t))
 
     def red(self,t):
         return self.state(t) > 0 or (t+self.amber_time < self.scedule_time[-1] and self.state(t+self.amber_time) > 0)
@@ -380,21 +387,27 @@ def find_paths(data):
 
 class microsim:
 
-    def __init__(self,data,free_flow_speed,time_factor=1,amber_time=5,road_width=0):
+    def __init__(self,data,free_flow_speed,time_factor=1,amber_time=5,road_width=0, lost_time = 0,
+                 no_lost_time = False):
         self.cars = []
         self.time = []
         self.amber_time = amber_time
         self.free_flow_speed = free_flow_speed
         self.time_factor = time_factor
-        self.load_file(data,free_flow_speed,time_factor=time_factor,road_width=road_width)
+        self.load_file(data,free_flow_speed,time_factor=time_factor,road_width=road_width, lost_time=lost_time,
+                       no_lost_time=no_lost_time)
 
 
-    def load_file(self,data,free_flow_speed,time_factor = 1,road_width=0):
+    def load_file(self,data,free_flow_speed,time_factor = 1,road_width=0,lost_time = 0, no_lost_time = False):
         data_DT = [x * time_factor for x in data['Out']['DT']]
         self.data_time = [x * time_factor for x in data['Out']['t']]
         q_paths = find_paths(data)
         self.paths = []
         self.links = [None for i in range(len(data['Queues']))]
+        if 'lost_time' in data['Out'] and no_lost_time == False:
+            lost_time = data['Out']['lost_time']  * time_factor
+        print 'lost_time :', lost_time
+        print 'amber_time:', self.amber_time
         for q_path in q_paths:
 
             distance = 0
@@ -411,23 +424,60 @@ class microsim:
                 if queue['Q_P'] is not None:
                     l = queue['Q_P'][0]
                     ph = queue['Q_P'][1]
+                    print (l,ph)
                     p_state = [1 if x < 0.5 else 0 for x in data['Out']['p_{%d,%d}' % (l,ph)]]
-                    t = 0
+
                     if p_state[0] == 0:
                         state = 0
                     else:
                         state = 1
                     schedule = []
+                    schedule_t = []
+                    a_t = []
+                    active = False
+                    t = 0
                     if state == 1:
                         schedule.append(0)
+                        #schedule.append( -lost_time * 0.5)
+                        schedule_t.append(0)
+                        active = True
+                        t = 0 #- lost_time * 0.5
                     for j,x in enumerate(p_state[1:]):
-                        t += data_DT[j-1]
+                        t += data_DT[j]
                         if x != state:
-                            schedule.append(t)
-                            t = 0
+                            a_t.append(active)
+                            schedule_t.append(t)
+                            # if state == 1:
+                            schedule.append(t - lost_time * 0.5)
+                            t = lost_time * 0.5
+                            # else:
+                            #     schedule.append(t)
+                            #     t=0
+                            #     active = True
+                            # elif state == 1 and active == True:
+                            #     schedule.append(t)
+                            #     active = True
+                            # elif state == 0 and active == True:
+                            #     schedule.append(t + lost_time)
+                            #     active == False
+                            # else:
+                            #     schedule.append(t)
+                            #     active = False
+                            #     print state,active
+                            # #t =  lost_time * 0.5
                         state = x
-                    #print schedule
+                    #print 's__t:',schedule_t
+                    #print 's_lt:',schedule
+                    #print 'a__t:',a_t
                     sig = signal(schedule,distance - road_width,self.amber_time)
+                    sced_p = interp.interp1d(self.data_time,p_state,kind='zero')
+                    sced_t = np.linspace(self.data_time[0],self.data_time[-1],10000)
+                    if DEBUG_PLOT:
+                        plt.plot(sced_t,sced_p(sced_t))
+                        plt.ylim(-0.1,1.1)
+                        plt.grid(True)
+                        plt.xlim(0,100)
+                        plt.show()
                     signals.append(sig)
                 l = link(i,signal)
                 links.append(l)
@@ -603,6 +653,9 @@ if __name__ == '__main__':
     parser.add_argument("--xlim", help="range of x axis", nargs = 2, type=float)
     parser.add_argument("--title", help="array of titles for the plots", nargs = '*')
     parser.add_argument("--road_width", help="set road_width", type=float, default = 0) # default = 10
+    parser.add_argument("--no_lost_time", help="do not add lost time", action='store_true', default = False)
+    parser.add_argument("--lost_time", help="Add lost time to phase time", type = float, default = 0)
+    parser.add_argument("--amber_time", help="Amber light duration", type = float, default = 2.5)
 
     args = parser.parse_args()
 
@@ -616,7 +669,9 @@ if __name__ == '__main__':
         for l,data in enumerate(files):
             #data = file[0][0]
 
-            sim = microsim(data,free_flow_speed,time_factor=time_factor,road_width=args.road_width)
+            sim = microsim(data,free_flow_speed,time_factor=time_factor,
+                           road_width=args.road_width, lost_time = args.lost_time,
+                           no_lost_time=args.no_lost_time, amber_time=args.amber_time)
             sim.simulate(DT,indexes = args.index)
             average_delay = sim.average_delay()
             delay = sim.delay()

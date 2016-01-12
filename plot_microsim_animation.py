@@ -49,7 +49,7 @@ def calc_traffic(data,time_factor):
     Q_DELAY = [qk['Q_DELAY'] * time_factor for qk in data['Queues']]
     q_max=[qk['Q_MAX'] if qk['Q_MAX'] < 60 else 60 for qk in data['Queues']]
     q=[[results['q_%d' %i ][j]/q_max[i] for j in range(len(results['q_%d' %i ]))] for i in range(Q)]
-    q_in=[[results['q_{%d,in}' %i ][j]/(q_flow_max[i] * DT[j]) for j in range(len(results['q_%d' %i ]))] for i in range(Q)]
+    q_in=[[results['q_{%d,in}' %i ][j]/(q_flow_max[i] * DT[j]) if q_flow_max[i] > 0 else 0 for j in range(len(results['q_%d' %i ]))] for i in range(Q)]
     print q_in[5]
     q_out=[[results['q_{%d,out}' %i ][j]/q_max[i] for j in range(len(results['q_%d' %i ]))] for i in range(Q)]
     q_sig=[[] for qk in data['Queues']]
@@ -81,13 +81,187 @@ def test_point(x0, x1,px):
     else:
         return x1 <= px <= x0
 
+def cosine(rx0,ry0,rx1,ry1):
+    return rx0 * rx1 + ry0 * ry1
+
+def label_distance(theta,i):
+    dx = 0
+    dy = 0
+    if theta > 155 or theta < -155: # Vertical down
+        if i>9: dx = -3
+        else: dx = 3
+    elif theta > -25 and theta < 25: # Vertical up
+        dx = -13
+    elif theta > -115 and theta < -65: # horizontal left
+        dy = 10
+    elif theta > 65 and theta < 115: # horzontal right
+        dy = -6
+    else: # Default
+        dx =  -7
+    return dx,dy
+
+def plot_arrow(ax,i,q,nodes,edges,r,ext,alpha):
+
+    line_width = 1
+    tail_width = 0
+    head_width = 5
+    line_color = 'k'
+    edge_color = 'k'
+    light_color = 'w'
+    text_color = 'k'
+    font_size = 16
+    # r=15 # radius of intersection nodes
+    label_space=15 # label spacing from line
+    d=5 # distance to space two edges that share a pair of nodes
+    width = 3 # width of bar
+    track_width = 2 # width of track
+    track_spacing = 5 # spacing between sleepers along track
+    lx = 3 # light label x offset
+    ly = 3 # light label y offset
+    index_label_base = 0
+
+    pair = edges[q['pair']] > 1
+    if 'label' in q:
+        label = q['label']
+    else:
+        label = ''
+    n0= nodes[q['edge'][0]]
+    n1= nodes[q['edge'][1]]
+    rx0=n0['p'][0]
+    ry0=n0['p'][1]
+    rx1=n1['p'][0]
+    ry1=n1['p'][1]
+
+    rx = rx0-rx1
+    ry = ry0-ry1
+    lth = math.sqrt(rx*rx+ry*ry)
+    rx/=lth
+    ry/=lth
+    trx0=rx0
+    try0=ry0
+    if 'light' in n0:
+        if pair and 'transit' not in q:
+
+            theta = -math.asin(d/r)
+            trx = rx * math.cos(theta) - ry * math.sin(theta);
+            ry = rx * math.sin(theta) + ry * math.cos(theta);
+            rx=trx
+        trx0-=rx * r; try0-=ry * r
+    elif pair and 'transit' not in q:
+        trx0-=ry * d; try0+=rx * d
+    rx = rx1-rx0
+    ry = ry1-ry0
+    lth = math.sqrt(rx*rx+ry*ry)
+    rx/=lth
+    ry/=lth
+    if 'light' in n1:
+        if pair and 'transit' not in q:
+            theta = math.asin(d/r)
+            trx = rx * math.cos(theta) - ry * math.sin(theta);
+            ry = rx * math.sin(theta) + ry * math.cos(theta);
+            rx=trx
+        rx1-=rx * (r+line_width); ry1-=ry * (r+line_width)
+        #else:
+        #    rx1-=rx * (r); ry1-=ry * (r)
+    elif pair and 'transit' not in q:
+        rx1+=ry * d; ry1-=rx * d
+    rx0=trx0
+    ry0=try0
+    rx = rx1-rx0
+    ry = ry1-ry0
+    lth = math.sqrt(rx*rx+ry*ry)
+    theta = math.degrees(math.atan2(rx,ry))
+    dx,dy = label_distance(theta,i)
+    #if debug:
+    #    dx *= 3
+    #    dy *= 3
+    tx=ry/lth * label_space + dx; ty=rx/lth * label_space + dy
+    tc = 0.5
+    if 'text_pos' in q:
+        tc = q['text_pos']
+    rx = rx0+(rx1-rx0)*tc
+    ry = ry0+(ry1-ry0)*tc
 
 
-def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = None, qtm_data=None, cmap = None):
+    qtext_color = text_color
+    qline_width = line_width
+    qhead_width = head_width
+    qtail_width = tail_width
+    qedge_color = edge_color
+    qline_color = line_color
+    qfont_weight = None
+    qfont_size = font_size
+    qoutline = None
+    qtrack_width = track_width
+    qtrack_spacing = track_spacing
+    if 'text_color' in q:
+        qtext_color = q['text_color']
+    # if 'line_width' in q:
+    #     qline_width = q['line_width']
+    # if 'head_width' in q:
+    #     qhead_width = q['head_width']
+    # if 'tail_width' in q:
+    #     qtail_width = q['tail_width']
+    # if 'edge_color' in q:
+    #     qedge_color = q['edge_color']
+    # if 'line_color' in q:
+    #     qline_color = q['line_color']
+    # if 'font_weight' in q:
+    #     qfont_weight = q['font_weight']
+    # if 'font_size' in q:
+    #     qfont_size = q['font_size']
+    # if 'outline' in q:
+    #     qoutline = q['outline']
+    if qfont_weight == 'bold':
+        qlabel = r'$\mathbf{q_{%d}}$' % int(i+index_label_base)
+    else:
+        qlabel = r'$q_{%d}$' % int(i+index_label_base)
+    if 'track_width' in q:
+        qtrack_width = q['track_width']
+    if 'track_spacing' in q:
+        qtrack_spacing = q['track_spacing']
+
+    # if 'transit' in q:
+    #     rx = rx1-rx0
+    #     ry = ry1-ry0
+    #     tx=(rx/lth) * qtrack_width; ty=(ry/lth) * qtrack_width
+    #     N = int(lth / qtrack_spacing)
+    #     dt = 1.0 / N
+    #     t=0
+    #     for j in range(N):
+    #         qrx0 = rx0 + t * rx
+    #         qry0 = ry0 + t * ry
+    #         qrx1 = rx0 + (t+dt) * rx
+    #         qry1 = ry0 + (t+dt) * ry
+    #         ax.plot([qrx0+ty,qrx0-ty],[qry0-tx,qry0+tx], lw=qline_width,color=qline_color)
+    #         t += dt
+    #     ax.plot([rx0,rx1],[ry0,ry1], lw=qline_width*2,color=qline_color)
+
+
+    text_x = rx+(tx)
+    text_y = ry-(ty)
+    if ext[0] <= text_x <= ext[1] and ext[2] <= text_y <= ext[3]:
+        if qoutline != None:
+            ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size+1, color=qoutline,alpha = alpha)
+        ax.text(text_x,text_y,qlabel,fontsize=qfont_size, color=qtext_color,alpha = alpha)
+    # ax.text(rx+(tx),ry-(ty), qlabel, fontsize=qfont_size, color=qtext_color)
+    rx = rx1-rx0
+    ry = ry1-ry0
+    rx=(rx/lth); ry=(ry/lth)
+    # ax.plot([rx0,rx1],[ry0,ry1],lw=qline_width,color=qline_color)
+    arrow = ax.arrow(rx0,ry0,rx1-rx0,ry1-ry0, shape='full', lw=qline_width,color=qline_color,length_includes_head=True,
+                     head_width=qhead_width, width=qtail_width, alpha = alpha)
+    arrow.set_ec(qedge_color)
+    arrow.set_fc(qline_color)
+    arrow.set_alpha(alpha)
+    arrow.set_zorder(0)
+
+def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = None, qtm_data=None, cmap = None,
+                 q_sig = None, symbol_overlay = 0, fine_adjust = True):
 
     radius_light=15 # radius of intersection nodes
     r_s=4 # radius of light signals
-    dist_para_edges=5 # distance to space two edges that share a pair of nodes
+    dist_para_edges=5 # 5 # distance to space two edges that share a pair of nodes
     width = 2 # width of bar
     line_width = 1
     track_width = 2 # width of track
@@ -99,18 +273,20 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
     light_color = 'w'
     text_color = 'k'
     ext = [-200,200,-110,110]
+    bg_ext = ext
     if 'Plot' in data:
+        if 'extent' in data['Plot']:
+            ext = data['Plot']['extent']
         if 'bg_image' in data['Plot']:
             if data['Plot']['bg_image'] != None:
                 img = mpimg.imread(data['Plot']['bg_image'])
+                if 'bg_extent' in data['Plot']:
+                    bg_ext = data['Plot']['bg_extent']
                 bg_alpha = 1.0
                 if 'bg_alpha' in data['Plot']:
                     if data['Plot']['bg_alpha'] != None:
                         bg_alpha = data['Plot']['bg_alpha']
-                ax.imshow(img,extent=ext,alpha=bg_alpha)
-        if 'extent' in data['Plot']:
-            ext = data['Plot']['extent']
-
+                ax.imshow(img,extent=bg_ext,alpha=bg_alpha)
         if 'line_color' in data['Plot']:
                 line_color = data['Plot']['line_color']
         if 'line_width' in data['Plot']:
@@ -127,6 +303,7 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
     transits = []
     qtm_q_in_polys = []
     qtm_q_polys = []
+    q_sig_polys = []
 
     time = data['Out']['t']
 
@@ -136,7 +313,7 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
     y_max=y_min
 
     for i,n in enumerate(data['Nodes']):
-        nodes.append({'n':n,'e':0,'l':None,'p':n['p'],'queues':[]})
+        nodes.append({'n':n,'e':0,'l':None,'p':n['p'],'queues':set()})
         x=n['p'][0]
         y=n['p'][1]
         x_min=min(x_min,x)
@@ -148,8 +325,8 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
     for i,q in enumerate(data['Queues']):
         n0 = q['edge'][0]
         n1 = q['edge'][1]
-        q['n0'] = nodes[n0]
-        q['n1'] = nodes[n1]
+        q['n0'] = nodes[n0] # copy.deepcopy(nodes[n0])
+        q['n1'] = nodes[n1] # copy.deepcopy(nodes[n1])
         pair = (n0, n1)
         if n1 < n0 : pair = (n1, n0)
         if pair in edges:
@@ -157,13 +334,22 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
         else:
             edges[pair] = 1
         q['pair'] = pair
-        nodes[n0]['queues'].append(i)
-        nodes[n1]['queues'].append(i)
+        nodes[n0]['queues'].add(i)
+        nodes[n1]['queues'].add(i)
+        #q['n0']['queues'].add(i)
+        #q['n1']['queues'].add(i)
         q['rx0'] = nodes[n0]['p'][0]
         q['ry0'] = nodes[n0]['p'][1]
         q['rx1'] = nodes[n1]['p'][0]
         q['ry1'] = nodes[n1]['p'][1]
         q['rx'],q['ry'] = norm(q['rx0'],q['ry0'],q['rx1'],q['ry1'])
+        q['flows'] = []
+        for flow in data['Flows'].keys():
+            f_i = int(flow.split('_')[0])
+            f_j = int(flow.split('_')[1])
+            if f_i == i:
+                q['flows'].append(f_j)
+
 
     transit_nodes = copy.deepcopy(nodes)
     # for i,n in enumerate(nodes):
@@ -275,11 +461,15 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
         n=nodes[l['node']]
         nodes[l['node']]['l']=i
         n['light']=i
-    #     x=n['p'][0]
-    #     y=n['p'][1]
-    #     p = Circle((x,y), radius_light, fc="w",lw=1)
-    #     ax.add_patch(p)
-    #     ax.text(x-3,y-3,r'$l_{%d}$' % i,fontsize=16)
+        x=n['p'][0]
+        y=n['p'][1]
+        if symbol_overlay > 0:
+            p = Circle((x,y), radius_light, ec = 'k', fc="none",lw=1,alpha = symbol_overlay)
+            ax.add_patch(p)
+            ax.text(x + radius_light - 3,y - radius_light - 3,r'$l_{%d}$' % i, fontsize=16, alpha = symbol_overlay)
+    if symbol_overlay > 0:
+        for i,q in enumerate(data['Queues']):
+            plot_arrow(ax,i,q,nodes,edges,radius_light,ext,symbol_overlay)
 
     sim = data['Out']['Microsim']
     sim_time=sim['time']
@@ -287,14 +477,16 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
     sim_time_factor = sim['time_factor']
     sim_duration = sim_time[-1] - sim_time[0]
 
+
+
     for i,q in enumerate(data['Queues']):
         pair = edges[q['pair']] > 1
         n0= q['n0']
         n1= q['n1']
-        rx0=n0['p'][0]
-        ry0=n0['p'][1]
-        rx1=n1['p'][0]
-        ry1=n1['p'][1]
+        rx0=q['rx0'] # n0['p'][0]
+        ry0=q['ry0'] # n0['p'][1]
+        rx1=q['rx1'] # n1['p'][0]
+        ry1=q['ry1'] # n1['p'][1]
 
         rx = rx0-rx1
         ry = ry0-ry1
@@ -313,13 +505,14 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
         #     trx0-=rx * radius_light; try0-=ry * radius_light
         # elif pair and 'transit' not in q:
         #     trx0-=ry * dist_para_edges; try0+=rx * dist_para_edges
-        #if pair and 'transit' not in q:
-        #    trx0-=ry * dist_para_edges; try0+=rx * dist_para_edges
-        rx = rx1-rx0
-        ry = ry1-ry0
-        lth = math.sqrt(rx*rx+ry*ry)
-        rx/=lth
-        ry/=lth
+        if pair and 'transit' not in q:
+            rx0-=ry * dist_para_edges; ry0+=rx * dist_para_edges
+
+        #rx = rx1-rx0
+        #ry = ry1-ry0
+        #lth = math.sqrt(rx*rx+ry*ry)
+        #rx/=lth
+        #ry/=lth
         # if 'light' in n1:
         #     if pair and 'transit' not in q:
         #         theta = math.asin(dist_para_edges/radius_light)
@@ -329,22 +522,29 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
         #     rx1-=rx * radius_light; ry1-=ry * radius_light
         # elif pair and 'transit' not in q:
         #     rx1+=ry * dist_para_edges; ry1-=rx * dist_para_edges
-        #if pair and 'transit' not in q:
-        #    rx1+=ry * dist_para_edges; ry1-=rx * dist_para_edges
-        rx0=trx0
-        ry0=try0
+        if pair and 'transit' not in q:
+            rx1-=ry * dist_para_edges; ry1+=rx * dist_para_edges
+
         n0['p'][0]=rx0
         n0['p'][1]=ry0
         n1['p'][0]=rx1
         n1['p'][1]=ry1
+        q['rx0'] = rx0
+        q['ry0'] = ry0
+        q['rx1'] = rx1
+        q['ry1'] = ry1
         rx = rx1-rx0
         ry = ry1-ry0
         lth = math.sqrt(rx*rx+ry*ry)
         tx=rx/lth * radius_light; ty=ry/lth * radius_light
         rx = rx0+(rx1-rx0)/2
         ry = ry0+(ry1-ry0)/2
-        if not pair or (pair and 'transit' not in q):
-            ax.text(rx+(ty-7),ry-(tx),r'$q_{%d}$' % i,fontsize=16)
+        # if not pair or (pair and 'transit' not in q):
+        #     text_x = rx+(ty-7)
+        #     text_y = ry-(tx)
+        #     if ext[0] <= text_x <= ext[1] and ext[2] <= text_y <= ext[3]:
+        #         ax.text(text_x,text_y,r'$q_{%d}$' % i,fontsize=16)
+
         #plot([rx,rx+ty],[ry,ry-tx])
         qline_width = line_width
         qline_color = line_color
@@ -389,8 +589,35 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
                 if 'track_width' in q['stop_transit']:
                     qtrack_width = q['stop_transit']['track_width']
                 #print i,'stop_transit',rx * 10,ry * 10
-                rx1 += q['rx'] * 2 * qtrack_width
+                rx1 += q + pair_width['rx'] * 2 * qtrack_width
                 ry1 += q['ry'] * 2 * qtrack_width
+            pair_width = 0
+            #print 'queue %d %s:' % (i,n1['queues'])
+            for k in n1['queues']:
+                q_k = data['Queues'][k]
+                #print '\t', k, cosine(q['rx'],q['ry'],q_k['rx'],q_k['ry'])
+                if -0.5 < cosine(q['rx'],q['ry'],q_k['rx'],q_k['ry']) < 0.5:
+                    if edges[q_k['pair']] > 1:
+                        pair_width = dist_para_edges
+                        #print 'pair at 90'
+                        break
+
+
+            rx1 += q['rx'] * pair_width
+            ry1 += q['ry'] * pair_width
+
+            pair_width = 0
+            for k in n0['queues']:
+                q_k = data['Queues'][k]
+                if -0.5 < cosine(q['rx'],q['ry'],q_k['rx'],q_k['ry']) < 0.5:
+                    if edges[q_k['pair']] > 1:
+                        pair_width = dist_para_edges
+                        #print 'pair at 90'
+                        break
+
+            rx0 += q['rx'] * pair_width
+            ry0 += q['ry'] * pair_width
+
             if n1['l'] is not None:
                 rx1 += q['rx'] * 2 * width
                 ry1 += q['ry'] * 2 * width
@@ -399,11 +626,54 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
                 ry0 += q['ry'] * 2 * width
             rx = rx1-rx0
             ry = ry1-ry0
+            q['rx0'] = rx0
+            q['ry0'] = ry0
+            q['rx1'] = rx1
+            q['ry1'] = ry1
+            q['tx'] = tx
+            q['ty'] = ty
+
+    if fine_adjust:
+        for flow in data['Flows'].keys():
+
+            f_i = int(flow.split('_')[0])
+            f_j = int(flow.split('_')[1])
+            #print flow,f_i,f_j
+            q_i = data['Queues'][f_i]
+            q_j = data['Queues'][f_j]
+            rx_i=q_i['rx1']
+            ry_i=q_i['ry1']
+            rx_j=q_j['rx0']
+            ry_j=q_j['ry0']
+
+            nx = 0.5 * (rx_i + rx_j)
+            ny = 0.5 * (ry_i + ry_j)
+            q_i['rx1'] = nx
+            q_i['ry1'] = ny
+            q_j['rx0'] = nx
+            q_j['ry0'] = ny
+
+            q_i['rx'],q_i['ry'] = norm(q_i['rx0'],q_i['ry0'],q_i['rx1'],q_i['ry1'])
+        q_j['rx'],q_j['ry'] = norm(q_j['rx0'],q_j['ry0'],q_j['rx1'],q_j['ry1'])
+
+    for i,q in enumerate(data['Queues']):
+        if 'transit' not in q:
+            rx0=q['rx0']
+            ry0=q['ry0']
+            rx1=q['rx1']
+            ry1=q['ry1']
+            rx=q['rx']
+            ry=q['ry']
+            tx=q['tx']
+            ty=q['ty']
+            rx = rx1-rx0
+            ry = ry1-ry0
             xy_data.append([[rx0,ry0],[rx1,ry1],[rx,ry],[tx,ty]])
             #print [[rx0,ry0],[rx1,ry1],[rx,ry]]
             #pl.plot([rx0,rx1],[ry0,ry1],'.',c='g')
             ax.add_patch( plt.Polygon([[rx0-ty,ry0+tx],[rx1-ty,ry1+tx],[rx1+ty,ry1-tx],[rx0+ty,ry0-tx]],
-                                     closed=True,fill='y',color=road_color,ec=road_color,lw=1))
+                                     closed=True,fill='y',color=road_color,ec=road_color,lw=1,alpha=0.5))
+
 
     for i,q in enumerate(data['Queues']):
         if 'transit' not in q:
@@ -420,6 +690,34 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
                     delay_col = cmap.to_rgba(q_delay_f[i](t0))
                     ax.add_patch( plt.Polygon([[qrx0-ty,qry0+tx],[qrx1-ty,qry1+tx],[qrx1+ty,qry1-tx],[qrx0+ty,qry0-tx]],
                                      closed=True,fill='y',color=delay_col,ec=delay_col,lw=1))
+
+            if q_sig is not None and len(q_sig[i]) > 0:
+                srx=q['rx']
+                sry=q['ry']
+                stop_line_width = 1
+                srx1 = rx1 - srx * stop_line_width
+                sry1 = ry1 - sry * stop_line_width
+                srx0 = rx1
+                sry0 = ry1
+                p = ax.add_patch( plt.Polygon([[srx0-ty,sry0+tx],[srx1-ty,sry1+tx],[srx1+ty,sry1-tx],[srx0+ty,sry0-tx]],
+                                     closed=True,fill='y',color='none',ec='none',lw=0, alpha = 0.8))
+                q_sig_polys.append(p)
+                # for j in range(5):
+                #     # srx0 = rx1 + srx * (j - 1) * stop_line_width
+                #     # sry0 = ry1 + sry * (j - 1) * stop_line_width
+                #     # srx1 = rx1 + srx * (j) * stop_line_width
+                #     # sry1 = ry1 + sry * (j) * stop_line_width
+                #     # p = ax.add_patch( plt.Polygon([[srx0-ty,sry0+tx],[srx1-ty,sry1+tx],[srx1+ty,sry1-tx],[srx0+ty,sry0-tx]],
+                #     #                      closed=True,fill='y',color='red',ec='red',lw=0, alpha = 1.0 - (j + 1) / 6.0))
+                #     p = Circle((srx1,sry1), (1.2 - (j+1) / 6.0) * width * 1.8,
+                #             ec = 'none', fc='red',lw=0,alpha = (j + 1) / 6.0)
+                #     ax.add_patch(p)
+                #     q_sig_polys.append(p)
+                srx0 = rx1 - srx * stop_line_width * 2
+                sry0 = ry1 - sry * stop_line_width * 2
+                p = ax.add_patch( plt.Polygon([[rx1-ty*0.5,ry1+tx*0.5],[rx1+ty*0.5,ry1-tx*0.5],[srx0,sry0]],
+                                     closed=True,fill='y',color='none',ec='none', lw=0.1, alpha = 0.8))
+                q_sig_polys.append(p)
 
             if qtm_data is not None:
                 bins = qtm_data['bins'] #len(q_delay[i])
@@ -547,7 +845,8 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
 
     ax.axis('scaled')
     ax.axis('off')
-
+    #ax.get_xaxis().set_major_locator(mp.ticker.NullLocator())
+    #ax.get_yaxis().set_major_locator(mp.ticker.NullLocator())
 
     #ax.set_ylim([x_min-10,x_max+10])
     #ax.set_xlim([y_min-10,y_max+10])
@@ -559,13 +858,13 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
     #cb1 = mp.colorbar.ColorbarBase(ax_bar, cmap=cmap,norm=cNorm,orientation='vertical')
 
     #pl.show()
-    return cars, car_polys, xy_data, transits, qtm_q_in_polys, qtm_q_polys
+    return cars, car_polys, xy_data, transits, qtm_q_in_polys, qtm_q_polys, q_sig_polys
 
 
 
 # animation function.  This is called sequentially
 def draw_frame(frame, time_lu, car_color, scalar_cmap, cars, car_polys, xy_data, transits,
-               qtm_q_in_polys, qtm_q_polys, qtm_data):
+               qtm_q_in_polys, qtm_q_polys, qtm_data, q_sig_f, q_sig_polys):
     #frame_start_time = clock_time.time()
     updated_polys = []
     t = time_lu[frame]
@@ -683,6 +982,23 @@ def draw_frame(frame, time_lu, car_color, scalar_cmap, cars, car_polys, xy_data,
             qtm_q_polys[i].set_alpha(1.0)
             updated_polys.append(qtm_q_polys[i])
 
+    if len(q_sig_polys) > 0:
+        j = 0
+        for i,q_sig_f_i in enumerate(q_sig_f):
+            if q_sig_f_i is not None:
+                if q_sig_f_i(t) > 0.5:
+                    q_sig_polys[ j].set_facecolor('none')
+                    q_sig_polys[ j].set_edgecolor('none')
+                    q_sig_polys[ j + 1].set_facecolor('green')
+                    q_sig_polys[ j + 1].set_edgecolor('green')
+                else:
+                    q_sig_polys[ j].set_facecolor('red')
+                    q_sig_polys[ j].set_edgecolor('red')
+                    q_sig_polys[ j + 1].set_facecolor('none')
+                    q_sig_polys[ j + 1].set_edgecolor('none')
+                updated_polys.append(q_sig_polys[j])
+                updated_polys.append(q_sig_polys[j + 1])
+                j += 2
     return updated_polys
 
 def animate(frame, time_lu, car_color, scalar_cmap,plots):
@@ -705,9 +1021,13 @@ if __name__ == '__main__':
     parser.add_argument("--titles", help="titles to display under plots", nargs='*')
     parser.add_argument("--transit_safe_time", type = float, help="amount of dafe time before and after transit crossing intersection",default = 5.0)
     parser.add_argument("--save_fig", help="sve_fig to file")
+    parser.add_argument("--save_gif", help="save animation as a GIF file", action="store_true", default=False)
     parser.add_argument("--dpi", help="DPI to save plots in", type=int, default = 300)
     parser.add_argument("--delay_plot", help="plot of delay", action="store_true", default=False)
     parser.add_argument("--model_overlay", help="overlay the model data with the microsimulation", action="store_true", default=False)
+    parser.add_argument("--symbol_overlay", help="overlay the qtm network symbols", type=float, default=0)
+    parser.add_argument("--plot_frame", help="plot a single frame of the animation", type=int)
+    parser.add_argument("--no_sig_plot", help="don't plot signals", action="store_true", default=False)
 
     args = parser.parse_args()
 
@@ -752,10 +1072,15 @@ if __name__ == '__main__':
         f.close()
 
     if args.format is None:
-        if 'Plot' in plot_data[0] and 'fig_size' in plot_data[0]['Plot']:
+        dpi = args.dpi
+        if 'Plot' in plot_data[0] and 'fig_size' in plot_data[0]['Plot'] and False:
             fig_size = tuple(plot_data[0]['Plot']['fig_size'])
         else:
-            fig_size = (10,5)
+            if 'Plot' in plot_data[0] and 'extent' in plot_data[0]['Plot']:
+                ext = plot_data[0]['Plot']['extent']
+                fig_size = ((ext[1] - ext[0]) / 50, (ext[3] - ext[2]) / 50)
+            else:
+                fig_size = (10,5)
 
     data_time=plot_data[0]['Out']['t']
     sim = plot_data[0]['Out']['Microsim']
@@ -781,6 +1106,8 @@ if __name__ == '__main__':
     time_lu = frame_f(range(total_frames))
 
     fig, ax = plt.subplots(nrows=1, ncols=len(args.file), sharex=False, sharey=False)
+    fig.tight_layout()
+    fig.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
     if len(args.file) == 1:
         ax = [ax]
     print ax
@@ -886,6 +1213,7 @@ if __name__ == '__main__':
             qtm_data = {'q_in_f': q_in_f, 'q_f': q_f, 'Q_DELAY': Q_DELAY, 'bins': bins}
         else:
             qtm_data = None
+        q_sig_f = [interp.interp1d(data_time,q_sig[i],kind='zero') if len(q_sig[i]) > 0 else None for i in range(len(data['Queues']))]
         #print 'q_delay',q_delay[0]
         # print cars[0]['delay_f'](sim_time)[0:20]
 
@@ -905,23 +1233,31 @@ if __name__ == '__main__':
 
         start_time = clock_time.time()
 
-        cars, car_polys, xy_data, transits, qtm_q_in_polys, qtm_q_polys = plot_network(data,ax[ax_i],cars,args.road_color,args.transit_safe_time,
-                                                          q_delay_f,qtm_data, scalar_cmap)
+        cars, car_polys, xy_data, transits, qtm_q_in_polys, qtm_q_polys, q_sig_polys = plot_network(data,ax[ax_i],cars,
+                                                                args.road_color,args.transit_safe_time,
+                                                                q_delay_f,qtm_data, scalar_cmap,q_sig,args.symbol_overlay,
+                                                                fine_adjust = not args.delay_plot)
         #plt.axis('scaled')
 
         car_color = args.car_color
         print "plot_network() completed at: %s seconds" % (clock_time.time() - start_time)
+        if args.delay_plot or args.no_sig_plot:
+            q_sig_polys = []
         sub_plots.append({'cars': cars, 'car_polys': car_polys, 'xy_data': xy_data, 'transits': transits,
                           'qtm_q_in_polys': qtm_q_in_polys, 'qtm_q_polys': qtm_q_polys,
-                          'qtm_data': qtm_data})
+                          'qtm_data': qtm_data, 'q_sig_f': q_sig_f, 'q_sig_polys': q_sig_polys})
         if args.titles is not None and len(args.titles) > ax_i:
             ax[ax_i].set_title(args.titles[ax_i])
 
         length = len(data['Out']['t'])
 
+    if args.plot_frame:
+        for plot in sub_plots:
+            draw_frame(args.plot_frame,time_lu,car_color, scalar_cmap, **plot)
+
     #plt.axis('off')
     if args.save_fig is not None:
-        plt.savefig(args.save_fig,bbox_inches='tight',dpi=args.dpi)
+        plt.savefig(args.save_fig,bbox_inches='tight',dpi=args.dpi,pad_inches = 0)
     plt.show()
 
     def init():
@@ -934,7 +1270,7 @@ if __name__ == '__main__':
         return tuple(updated_polys)
 
 
-    if not args.delay_plot:
+    if not args.delay_plot and not args.plot_frame:
         # call the animator.  blit=True means only re-draw the parts that have changed.
         anim = animation.FuncAnimation(fig, animate, fargs = (time_lu, car_color, scalar_cmap,sub_plots), init_func=init,
                                        frames=total_frames, interval=1000/frames_per_second, blit=True)
@@ -947,6 +1283,9 @@ if __name__ == '__main__':
         # your system: for more information, see
         # http://matplotlib.sourceforge.net/api/animation_api.html
         #FFwriter = animation.FFMpegWriter()
-        anim.save('%s.mp4' % sys.argv[1].split('.')[0], fps=frames_per_second, dpi = dpi, extra_args=['-vcodec', 'h264', '-pix_fmt', 'yuv420p'])
+        if not args.save_gif:
+            anim.save('%s.mp4' % sys.argv[1].split('.')[0], fps=frames_per_second, dpi = dpi, extra_args=['-vcodec', 'h264', '-pix_fmt', 'yuv420p'])
+        else:
+            anim.save('%s.gif' % sys.argv[1].split('.')[0], fps=frames_per_second, dpi = args.dpi, writer='imagemagick')
 
         print "Animation completed at: %s seconds" % (clock_time.time() - start_time)

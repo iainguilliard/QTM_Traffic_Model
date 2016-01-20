@@ -12,9 +12,9 @@
 \label{subfig:example}
 %\includegraphics[width=0.45\textwidth,trim={0cm 0cm 0cm 0cm},clip]{map_example.png}
 \hspace{-3mm}\includegraphics[width=\textwidth,trim={0cm 0cm 0cm 0cm},clip]{pw_queues_homogenous.pdf}
-\vspace{-2mm}
 \end{subfigure}
 % NOTE: Reviewers like to skim a paper by reading captions so I intentionally
+\vspace{-5mm}
 \caption{(a) Example of a real traffic network with a central light rail modeled
   using the
   QTM. (b) \Omit{A preview of different QTM model parameters as a function
@@ -36,6 +36,7 @@
   We refer to the QTM model section for
   precise notation and technical definitions.}
 \label{fig:qtm}
+\vspace{-3mm}
 %
 \end{figure*}
 
@@ -73,7 +74,7 @@ at time $n$.
 A \textbf{traffic light} $\tl \in \Lset$ is defined as the tuple $(\CTMIN{\tl},
 \CTMAX{\tl},$ $\Pset_\tl, \VecPTMIN{\tl}, \VecPTMAX{\tl})$, where:
 %
-\begin{itemize}
+\begin{itemize*}[label={}]
 %
 \item $\Pset_\tl$ is the set of phases of $\tl$;
 %
@@ -84,7 +85,7 @@ A \textbf{traffic light} $\tl \in \Lset$ is defined as the tuple $(\CTMIN{\tl},
   \PTMIN{\tl}{k} (\PTMAX{\tl}{k}) is the minimum (maximum) allowed time for
   phase $k \in \Pset_\tl$. 
 %
-\end{itemize}
+\end{itemize*}
 
 
 A \textbf{queue} $i \in \Qset$ represents a segment of road that vehicles
@@ -95,7 +96,7 @@ in a stop line queue.
 Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 \Fvec_i, \Prvec_i, \QPset{i})$ where:
 %
-\begin{itemize}
+\begin{itemize*}[label={}]
 %
 %% TODO(fwt): clarify that this is the capacity of stop line queue
 \item \QMAX{i} is the maximum capacity of $i$;
@@ -113,7 +114,7 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 \item \QPset{i} denotes the set of traffic light phases controlling the outflow
   of queue $i$.
 %
-\end{itemize}
+\end{itemize*}
 
 %
 %% TODO(fwt): Not sure if still need to talk about CTM or simply say 
@@ -160,7 +161,7 @@ capacity-constrained queues as a Linear Program~(LP) over the following
 variables defined for all interval $n \in \{1,\dots,\Nn\}$ and queues $i$ and
 $j$:
 %
-\begin{itemize}
+\begin{itemize*}[label={}]
 %
 \item $\q{i} \in [0,\QMAX{i}]$, traffic volume waiting in the stop line of queue
   $i$ at the beginning of interval~$n$;
@@ -174,7 +175,7 @@ $j$:
 \item $\f{i}{j} \in [0,\FMAX{i}{j}]$, flow from queue $i$ into queue $j$ during
   interval $n$.
 %
-\end{itemize}
+\end{itemize*}
 
 
 
@@ -199,22 +200,22 @@ $\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 %\eqref{c:turnProbAndMaxFlow} is subsumed by the domain upper bound of
 %$\f{i}{j}$.
 %
-%\noindent\begin{minipage}{0.5\linewidth}
+\noindent\begin{minipage}{0.5\linewidth}
 \begin{cAlign} 
 %
-\f{i}{j}\!\le\!\FTURN{i}{j}\!\sum_{k=1}^{\Qn}\!\f{i}{k}\tagconstrain{c:turnProb}\\
+\f{i}{j}\!\le\!\FTURN{i}{j}\!\sum_{k=1}^{\Qn}\!\f{i}{k}\tagconstrain{c:turnProb}
 %
-%\end{cAlign}
-%%\end{minipage}%
-%%\begin{minipage}{0.5\linewidth}
-%\begin{cAlign} 
+\end{cAlign}
+\end{minipage}%
+\begin{minipage}{0.5\linewidth}
+\begin{cAlign} 
 %
 \f{i}{j}\!\le\!\FMAX{i}{j}\!\sum^{\phantom{\Qn}}_{\makebox[0pt]{$\scriptstyle
 \p{\ell}{k}\!\in\!\QPset{i}$}}\p{\ell}{k}
 \tagconstrain{c:maxFlow}
 %
 \end{cAlign}
-%\end{minipage}\par\vspace{\belowdisplayskip}
+\end{minipage}%\par\vspace{\belowdisplayskip}
 
 %\begin{cAlign} 
 %%
@@ -231,21 +232,21 @@ $\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 
 %% TODO(fwt): improve the beginning of this paragraph
 
-To simplify the presentation of the remainder of the LP, we define the helper
-variables \qin{i}~\eqref{def:qin} and \qout{i}~\eqref{def:qout} to,
+To simplify the presentation of the remainder of the LP, we define
+\qin{i}~\eqref{def:qin} and \qout{i}~\eqref{def:qout} to,
 respectively, represent the volume of traffic to enter and leave queue $i$
 during interval~$n$, and  $\tn[n] = \sum_{x=1}^{n} \DT[x]$ to represent the time
 elapsed since the beginning of the problem until the end of interval \DT[n].
-%
+
 %
 %\tn[n]~\eqref{def:tn}
 %
 %
 \begin{cAlign}
 %
-\qin{i} &= \DT (\inq{i} + \Omit{\textstyle} \sum_{j=1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
+\qin{i} &= \DT (\inq{i} + \textstyle \sum_{j=1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
 %
-\qout{i} &= \DT (\outq{i} + \Omit{\textstyle}  \sum_{j=1}^{\Qn} \f{i}{j})
+\qout{i} &= \DT (\outq{i} + \textstyle  \sum_{j=1}^{\Qn} \f{i}{j})
 \tagconstrain{def:qout}
 %\\
 %
@@ -257,16 +258,16 @@ elapsed since the beginning of the problem until the end of interval \DT[n].
 
 % Introduce the idea of V_i
 In order to account for the case where \QDELAY{i} is larger than \DT[], we need to
-find the volume of traffic that entered queue~$i$ between two points
-in time $x$ and $y$.
+find the volume of traffic that entered queue~$i$ between two time points
+$x$ and $y$.
 %
 This volume of traffic, denoted as $\Vol_i(x,y)$, is obtained by integrating
 \qin{i} over $[x,y]$ and is defined in~\eqref{eq:vol} where $T^{-1}(x)$ is the
-function that returns $j \in \{0,\dots,N\}$ such that $x$ equals $t_j$ (i.e.,
+function that returns $j \in \{0,\dots,N\}$ s.t.\ $x$ equals $t_j$ (i.e.,
 the $j$-th time step).
 %
 Since we assumed that \QDELAY{i} is divisible by the different \QDELAY{i},
-$T^{-1}(x)$ is always well-defined, i.e., there always exists $j$ such that $x$
+$T^{-1}(x)$ is well-defined, i.e., there always exists $j$ such that $x$
 equals $t_j$.
 %
 Because the QTM dynamics are \emph{piecewise linear}, \qin{i} is a step function
@@ -275,7 +276,7 @@ between $T^{-1}(x)$ and $T^{-1}(y)$.
 %
 \begin{equation} \label{eq:vol}
 %
-\Vol_{i}(x,y) = \Omit{\textstyle} \sum_{k=T^{-1}(x)}^{T^{-1}(y)} \qin[k]{i}
+\Vol_{i}(x,y) = \textstyle \sum_{k=T^{-1}(x)}^{T^{-1}(y)} \qin[k]{i}
 %
 \end{equation}
 
@@ -342,9 +343,10 @@ possible.
 %arrival curves at the origin and destination. However, such an approach
 %requires the network to be cleared at the end of the optimization period.
 
+\vspace{-3mm}
 
 \begin{equation}
-\max 
+\textstyle \max 
  \sum_{n=1}^{\Nn} \sum_{i=1}^{\Qn} (\TMAX - \tn + 1) (\outq{i} + \inq{i})
 \tag{O1}\label{eq:objFunc}
 \end{equation}
@@ -366,7 +368,7 @@ The objective \eqref{eq:objFunc} corresponds to minimizing delay in CTM models,
 e.g., \eqref{eq:objFunc} is equivalent to the objective function (O3) in
 \trbcite{lin2004enhanced} for their parameters
 parameters $\alpha = 1$, $\beta = 1$ for the origin cells, and
-$\beta = 0$ for all other cells.
+$\beta = 0$ otherwise.
 
 %
 %
@@ -464,8 +466,7 @@ indexed by $k$~\eqref{c:seqPhases}
 %
 \begin{cAlign}
 %
-\Omit{\textstyle} \sum_{k=1}^{\Pn} \p{\ell}{k} &=
-1\tagconstrain{c:onlyOnePhaseOn}\\
+\textstyle \sum_{k=1}^{\Pn} \p{\ell}{k} &= 1\tagconstrain{c:onlyOnePhaseOn}\\
 %
 \p[n-1]{\ell}{k} &\le \p{\ell}{k} + \p{\ell}{k+1}\tagconstrain{c:seqPhases}
 %
@@ -563,13 +564,13 @@ not enforced while $k$ is still active.
 %
 \begin{cAlign}
 %
-\pd{\ell}{k} &\le
-  \pd[n-1]{\ell}{k} + \DT[n-1] \p[n-1]{\ell}{k} 
-  + \PTMAX{\ell}{k} (1 - \p[n-1]{\ell}{k})\tagconstrain{c:pd:incUB}\\
+\pd{\ell}{k}\!&\le\!
+  \pd[n\!-\!1]{\ell}{k}\!+\!\DT[n\!-\!1]\p[n\!-\!1]{\ell}{k}\!+%
+\!\PTMAX{\ell}{k}\!(1\!-\! \p[n\!-\!1]{\ell}{k}\!)\tagconstrain{c:pd:incUB}\\
 %
-\pd{\ell}{k} &\ge
-  \pd[n-1]{\ell}{k} + \DT[n-1] \p[n-1]{\ell}{k}
-  - \PTMAX{\ell}{k} (1 - \p[n-1]{\ell}{k})\tagconstrain{c:pd:incLB}\\
+\pd{\ell}{k}\!&\ge\!
+  \pd[n\!-\!1]{\ell}{k}\!+\!\DT[n\!-\!1]\p[n\!-\!1]{\ell}{k}\!-%
+\!\PTMAX{\ell}{k}\!(1\!-\!\p[n\!-\!1]{\ell}{k}\!)\tagconstrain{c:pd:incLB}\\
 %
 \pd{\ell}{k} &\le \pd[n-1]{\ell}{k} + \PTMAX{\ell}{k} \p[n-1]{\ell}{k}
   \tagconstrain{c:pd:inactiveUB}\\
@@ -608,10 +609,10 @@ cycle, i.e., when its first phase is changed from inactive to active.
 %
 \begin{cAlign}
 %
-\pd[n-1]{\ell}{1} + \sum\limits_{k=2}^{\Pn} \pd{\ell}{k} &\ge \CTMIN{\ell}
+\textstyle \pd[n-1]{\ell}{1} + \sum_{k=2}^{\Pn} \pd{\ell}{k} &\ge \CTMIN{\ell}
 (\p{k}{1} - \p[n-1]{k}{1}) \tagconstrain{c:cycleLB}\\
 %
-\pd[n-1]{\ell}{1} + \sum\limits_{k=2}^{\Pn} \pd{\ell}{k} &\le \CTMAX{\ell}
+\textstyle \pd[n-1]{\ell}{1} + \sum_{k=2}^{\Pn} \pd{\ell}{k} &\le \CTMAX{\ell}
 \tagconstrain{c:cycleUB}
 %
 \end{cAlign}
@@ -623,7 +624,7 @@ plan in a QTM network without light rail.
 \paragraph{Light Rail Constraints}
 %
 To incorporate a fixed-schedule light rail in our model, we post-process our
-MILP model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ such that the
+MILP model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ s.t.\ the
 light rail uses phase $k$ of \tl at time $n$.
 %
 Formally, given a schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$ represents that
@@ -637,17 +638,21 @@ the light rail uses phase $k$ of \tl at time $n$, we replace
 %%
 %\pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
 %%
-%\end{cAlign} \noindent\begin{minipage}{0.5\linewidth}
+%\end{cAlign}
+\noindent\begin{minipage}{0.5\linewidth}
 \begin{cAlign} 
 %
-\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
+\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}
 %
-%\end{cAlign} \end{minipage}% \begin{minipage}{0.5\linewidth} \begin{cAlign} 
+\end{cAlign}
+\end{minipage}%
+\begin{minipage}{0.5\linewidth}
+\begin{cAlign} 
 %
 \pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
 %
 \end{cAlign}
-%\end{minipage}\par\vspace{\belowdisplayskip}
+\end{minipage}\par\vspace{\belowdisplayskip}
 %
 \noindent \eqref{c:forceTransit} enforces that the correct phase $k$ is active
 when the light rail reaches the traffic light $l$, and

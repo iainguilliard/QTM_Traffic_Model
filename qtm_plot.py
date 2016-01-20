@@ -554,6 +554,7 @@ def plot_network_figure(data,figsize=None,type='arrow',index_label_base=0,delay=
 
     if figsize is None:
         figsize = (10,5)
+    print figsize
     fig, ax = pl.subplots(nrows=1, ncols=1, sharex=True, sharey=False,figsize=figsize)
     if img is not None:
         pl.imshow(img,extent=bg_ext,alpha=bg_alpha)

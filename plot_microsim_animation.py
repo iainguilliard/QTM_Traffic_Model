@@ -400,7 +400,7 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
                     nodes[n1]['p'][1]=ry1
                 data['Queues'].append({'transit': True, 'edge': [n0,n1], 'pair': pair, 'p':n['p'],
                                        'n0': transit_nodes[n0], 'n1': transit_nodes[n1],
-                                       'rx': rx, 'ry': ry})
+                                       'rx': rx, 'ry': ry, 'rx0': rx0, 'ry0': ry0, 'rx1': rx1, 'ry1': ry1})
                 transit['queues'].append(data['Queues'][-1])
 
 
@@ -507,7 +507,8 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
         #     trx0-=ry * dist_para_edges; try0+=rx * dist_para_edges
         if pair and 'transit' not in q:
             rx0-=ry * dist_para_edges; ry0+=rx * dist_para_edges
-
+        elif 'transit' in q:
+            rx0+=ry * 2 * dist_para_edges; ry0-=rx * 2 * dist_para_edges
         #rx = rx1-rx0
         #ry = ry1-ry0
         #lth = math.sqrt(rx*rx+ry*ry)
@@ -524,6 +525,8 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
         #     rx1+=ry * dist_para_edges; ry1-=rx * dist_para_edges
         if pair and 'transit' not in q:
             rx1-=ry * dist_para_edges; ry1+=rx * dist_para_edges
+        elif 'transit' in q:
+            rx1+=ry * 2 * dist_para_edges; ry1-=rx * 2 * dist_para_edges
 
         n0['p'][0]=rx0
         n0['p'][1]=ry0
@@ -589,7 +592,7 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
                 if 'track_width' in q['stop_transit']:
                     qtrack_width = q['stop_transit']['track_width']
                 #print i,'stop_transit',rx * 10,ry * 10
-                rx1 += q + pair_width['rx'] * 2 * qtrack_width
+                rx1 += q['rx'] * 2 * qtrack_width
                 ry1 += q['ry'] * 2 * qtrack_width
             pair_width = 0
             #print 'queue %d %s:' % (i,n1['queues'])
@@ -1019,7 +1022,7 @@ if __name__ == '__main__':
     parser.add_argument("--t1", type=float, help="end of simulation time to animate up to")
     parser.add_argument("--format", help="Video format to use. Options: vga, ,svga, xga, 720p, 1080p")
     parser.add_argument("--titles", help="titles to display under plots", nargs='*')
-    parser.add_argument("--transit_safe_time", type = float, help="amount of dafe time before and after transit crossing intersection",default = 5.0)
+    parser.add_argument("--transit_safe_time", type = float, help="amount of safe time before and after transit crossing intersection",default = 5.0)
     parser.add_argument("--save_fig", help="sve_fig to file")
     parser.add_argument("--save_gif", help="save animation as a GIF file", action="store_true", default=False)
     parser.add_argument("--dpi", help="DPI to save plots in", type=int, default = 300)
@@ -1028,6 +1031,7 @@ if __name__ == '__main__':
     parser.add_argument("--symbol_overlay", help="overlay the qtm network symbols", type=float, default=0)
     parser.add_argument("--plot_frame", help="plot a single frame of the animation", type=int)
     parser.add_argument("--no_sig_plot", help="don't plot signals", action="store_true", default=False)
+    parser.add_argument("--fine_adjust", help="auto fine adjustment of road links", action="store_true", default=False)
 
     args = parser.parse_args()
 
@@ -1236,7 +1240,7 @@ if __name__ == '__main__':
         cars, car_polys, xy_data, transits, qtm_q_in_polys, qtm_q_polys, q_sig_polys = plot_network(data,ax[ax_i],cars,
                                                                 args.road_color,args.transit_safe_time,
                                                                 q_delay_f,qtm_data, scalar_cmap,q_sig,args.symbol_overlay,
-                                                                fine_adjust = not args.delay_plot)
+                                                                fine_adjust = (not args.delay_plot) and args.fine_adjust)
         #plt.axis('scaled')
 
         car_color = args.car_color

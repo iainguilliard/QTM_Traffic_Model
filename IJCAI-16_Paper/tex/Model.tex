@@ -69,8 +69,7 @@ and \MatQIN is a matrix $|\Qset| \times \TMAX$ in which \QIN{i}{n} represents
 the flow of cars requesting to enter queue $i$ from the outside of the network
 at time $n$.
 
-
-
+\parskip=0pt
 A \textbf{traffic light} $\tl \in \Lset$ is defined as the tuple $(\CTMIN{\tl},
 \CTMAX{\tl},$ $\Pset_\tl, \VecPTMIN{\tl}, \VecPTMAX{\tl})$, where:
 %
@@ -122,12 +121,12 @@ Formally, a queue~$i$ is defined by the tuple~$(\QMAX{i}, \QDELAY{i}, \QOUT{i},
 %Differently than the CTM \cite{daganzo1994cell,lin2004enhanced}, the QTM does
 %not assume that $\DT[n] = \QDELAY{i}$ for all $n$ and $i$.
 %
-For this work, we assume that \QDELAY{i} is divisible by every different value
-of $\DT[n]$.
+%For this work, we assume that \QDELAY{i} is divisible by every different value
+%of $\DT[n]$.
+%%
+%This allow us to have queues with different travel time at free flow speed
+%resulting in a non-first order Markovian model as explained in next section.
 %
-This allow us to have queues with different travel time at free flow speed
-resulting in a non-first order Markovian model as explained in next section.
-
 %that is, the QTM can represent non-homogeneous time intervals.
 %%
 %%%(\cref{subfig:example}).
@@ -200,7 +199,10 @@ $\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 %\eqref{c:turnProbAndMaxFlow} is subsumed by the domain upper bound of
 %$\f{i}{j}$.
 %
+%\setlength{\belowdisplayskip}{0pt} \setlength{\belowdisplayshortskip}{0pt}
+%\setlength{\abovedisplayskip}{0pt} \setlength{\abovedisplayshortskip}{0pt}
 \noindent\begin{minipage}{0.5\linewidth}
+\vspace{-8pt}
 \begin{cAlign} 
 %
 \f{i}{j}\!\le\!\FTURN{i}{j}\!\sum_{k=1}^{\Qn}\!\f{i}{k}\tagconstrain{c:turnProb}
@@ -208,6 +210,7 @@ $\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 \end{cAlign}
 \end{minipage}%
 \begin{minipage}{0.5\linewidth}
+\vspace{-8pt}
 \begin{cAlign} 
 %
 \f{i}{j}\!\le\!\FMAX{i}{j}\!\sum^{\phantom{\Qn}}_{\makebox[0pt]{$\scriptstyle
@@ -237,11 +240,8 @@ To simplify the presentation of the remainder of the LP, we define
 respectively, represent the volume of traffic to enter and leave queue $i$
 during interval~$n$, and  $\tn[n] = \sum_{x=1}^{n} \DT[x]$ to represent the time
 elapsed since the beginning of the problem until the end of interval \DT[n].
-
 %
-%\tn[n]~\eqref{def:tn}
-%
-%
+\vspace{-3pt}
 \begin{cAlign}
 %
 \qin{i} &= \DT (\inq{i} + \textstyle \sum_{j=1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
@@ -253,41 +253,65 @@ elapsed since the beginning of the problem until the end of interval \DT[n].
 %\tn[n] &= \sum_{x=1}^{n} \DT[x] \tagconstrain{def:tn}
 %
 \end{cAlign}
-
+%%
+%\noindent\begin{minipage}{0.5\linewidth}
+%\begin{cAlign} 
+%%
+%\qin{i}\!&=\! \DT (\inq{i}\! +\!  \sum_{j\!=\!1}^{\Qn} \f{j}{i}) \tagconstrain{def:qin} \\
+%%
+%\end{cAlign}
+%\end{minipage}%
+%\begin{minipage}{0.5\linewidth}
+%\begin{cAlign} 
+%%
+%\qout{i} \!&=\! \DT (\outq{i} +   \sum_{j\!=\!1}^{\Qn} \f{i}{j})
+%\tagconstrain{def:qout}
+%%
+%\end{cAlign}
+%\end{minipage}%\par\vspace{\belowdisplayskip}
+%%
 
 
 % Introduce the idea of V_i
-In order to account for the case where \QDELAY{i} is larger than \DT[], we need to
-find the volume of traffic that entered queue~$i$ between two time points
-$x$ and $y$.
+%In order to account for the case where \QDELAY{i} is larger than \DT[], we need to
+%find the volume of traffic that entered queue~$i$ between two time points
+%$x$ and $y$.
+%%
+%This volume of traffic, denoted as $\Vol_i(x,y)$, is obtained by integrating
+%\qin{i} over $[x,y]$ and is defined in~\eqref{eq:vol} where $T^{-1}(x)$ is the
+%function that returns $j \in \{0,\dots,N\}$ s.t.\ $x$ equals $t_j$ (i.e.,
+%the $j$-th time step).
+%%
+%Since we assumed that \QDELAY{i} is divisible by the different \QDELAY{i},
+%$T^{-1}(x)$ is well-defined, i.e., there always exists $j$ such that $x$
+%equals $t_j$.
+%%
+%Because the QTM dynamics are \emph{piecewise linear}, \qin{i} is a step function
+%w.r.t.~time and this integral reduces to the sum of \qin{i} over the intervals
+%between $T^{-1}(x)$ and $T^{-1}(y)$.
 %
-This volume of traffic, denoted as $\Vol_i(x,y)$, is obtained by integrating
-\qin{i} over $[x,y]$ and is defined in~\eqref{eq:vol} where $T^{-1}(x)$ is the
-function that returns $j \in \{0,\dots,N\}$ s.t.\ $x$ equals $t_j$ (i.e.,
-the $j$-th time step).
-%
-Since we assumed that \QDELAY{i} is divisible by the different \QDELAY{i},
-$T^{-1}(x)$ is well-defined, i.e., there always exists $j$ such that $x$
-equals $t_j$.
-%
-Because the QTM dynamics are \emph{piecewise linear}, \qin{i} is a step function
-w.r.t.~time and this integral reduces to the sum of \qin{i} over the intervals
-between $T^{-1}(x)$ and $T^{-1}(y)$.
-%
-\begin{equation} \label{eq:vol}
-%
-\Vol_{i}(x,y) = \textstyle \sum_{k=T^{-1}(x)}^{T^{-1}(y)} \qin[k]{i}
-%
-\end{equation}
+The volume of traffic that entered queue~$i$ between two time points
+$x$ and $y$ is denoted as $\Vol_i(x,y)$, and is obtained by summing
+the piecewise linear segments of \qin{i} over $[x,y]$ (see \cite{guilliard2016trb}).
 
-
+%%
+%\begin{equation} \label{eq:vol}
+%%
+%\Vol_{i}(x,y) = \textstyle \sum_{k=T^{-1}(x)}^{T^{-1}(y)} \qin[k]{i}
+%%
+%\end{equation}
+%
+%
 Using these helper variables, \eqref{c:qUpdate} represents the flow conservation
 principle for queue $i$ where $\Vol_i(\tn[n-1]-\QDELAY{i},\tn[n]-\QDELAY{i})$ is
 the volume of cars that reached the stop line during \DT[n].
 %
 Notice that \eqref{c:qUpdate} represents a non-first order Markovian update
-because the update considers the previous $n - T^{-1}(t_{n}-\QDELAY{i})$ time
-steps, i.e., the number of $\DT[n]$ spanned in \QDELAY{i}.
+because the update considers the 
+%previous $n - T^{-1}(t_{n}-\QDELAY{i})$ time
+%steps, i.e., 
+the number of %$\DT[n]$ 
+time steps spanned by \QDELAY{i}.
 %
 To ensure that the total volume of traffic traversing $i$ (i.e.,
 $\Vol_i(\tn[n] - \QDELAY{i}, \tn[n])$) and waiting at the stop line does not
@@ -464,13 +488,29 @@ indexed by $k$~\eqref{c:seqPhases}
 %Note that there could be more than one queue mapped to each $\p[]{\ell}{k}$, or
 %their could be none
 %
-\begin{cAlign}
+%\begin{cAlign}
+%%
+%\textstyle \sum_{k=1}^{\Pn} \p{\ell}{k} &= 1\tagconstrain{c:onlyOnePhaseOn}\\
+%%
+%\p[n-1]{\ell}{k} &\le \p{\ell}{k} + \p{\ell}{k+1}\tagconstrain{c:seqPhases}
+%%
+%\end{cAlign}
+
+\noindent\begin{minipage}{0.4\linewidth}
+\begin{cAlign} 
 %
-\textstyle \sum_{k=1}^{\Pn} \p{\ell}{k} &= 1\tagconstrain{c:onlyOnePhaseOn}\\
-%
-\p[n-1]{\ell}{k} &\le \p{\ell}{k} + \p{\ell}{k+1}\tagconstrain{c:seqPhases}
+\textstyle \sum_{k\!=\!1}^{\Pn} \p{\ell}{k} &\!=\! 1\tagconstrain{c:onlyOnePhaseOn}
 %
 \end{cAlign}
+\end{minipage}%
+\begin{minipage}{0.6\linewidth}
+\begin{cAlign} 
+%
+\p[n\!-\!1]{\ell}{k}\! &\le\! \p{\ell}{k}\!+\!\p{\ell}{k\!+\!1}\tagconstrain{c:seqPhases}
+%
+\end{cAlign}
+\end{minipage}\par\vspace{\belowdisplayskip}
+%
 
 
 %\begin{figure*}[t!]
@@ -512,20 +552,19 @@ $\PTMIN{\ell}{k}$ and $\PTMAX{\ell}{k}$) for each phase $k \in \Pset_\tl$ of
 traffic light \tl.
 %
 To encode these constraints, we use the helper variable $\pd{\ell}{k} \in
-[0,\PTMAX{\ell}{k}]$, defined by constraints
-(\ref{c:pd:incUB}--\ref{c:pd:reset}), that:
+[0,\PTMAX{\ell}{k}]$, defined by constraint (\ref{c:pd}), that:
 %
 (i) holds the elapsed time since the start of phase $k$ when $\p[n]{\ell}{k}$ is
-active~(\ref{c:pd:incUB},\ref{c:pd:incLB});
+active; %~(\ref{c:pd:incUB},\ref{c:pd:incLB});
 %
 (ii) is constant and holds the duration of the last phase until the next
 activation when $\p[n]{\ell}{k}$ is
-inactive~(\ref{c:pd:inactiveUB},\ref{c:pd:inactiveLB}); and
+inactive; and %~(\ref{c:pd:inactiveUB},\ref{c:pd:inactiveLB}); and
 %
 (iii) is restarted when phase~$k$ changes from inactive to
-active~\eqref{c:pd:reset}.
+active. %~\eqref{c:pd:reset}.
 %
-Notice that (\ref{c:pd:incUB}--\ref{c:pd:reset}) employs the \textit{big-M}
+Notice that (\ref{c:pd}) can be encoded by employing the \textit{big-M}
 method to turn the cases that should not be active into subsumed constraints
 based on the value of $\p[n]{\tl}{k}$.
 %
@@ -562,74 +601,101 @@ not enforced while $k$ is still active.
 %% FWT: this constraint is define as the variable domain
 %\pd{\ell}{k} &\le \PTMAX{\ell}{k}\tag{C19}\label{eq:C19}\\
 %
-\begin{cAlign}
-%
-\pd{\ell}{k}\!&\le\!
-  \pd[n\!-\!1]{\ell}{k}\!+\!\DT[n\!-\!1]\p[n\!-\!1]{\ell}{k}\!+%
-\!\PTMAX{\ell}{k}\!(1\!-\! \p[n\!-\!1]{\ell}{k}\!)\tagconstrain{c:pd:incUB}\\
-%
-\pd{\ell}{k}\!&\ge\!
-  \pd[n\!-\!1]{\ell}{k}\!+\!\DT[n\!-\!1]\p[n\!-\!1]{\ell}{k}\!-%
-\!\PTMAX{\ell}{k}\!(1\!-\!\p[n\!-\!1]{\ell}{k}\!)\tagconstrain{c:pd:incLB}\\
-%
-\pd{\ell}{k} &\le \pd[n-1]{\ell}{k} + \PTMAX{\ell}{k} \p[n-1]{\ell}{k}
-  \tagconstrain{c:pd:inactiveUB}\\
-\pd{\ell}{k} &\ge \pd[n-1]{\ell}{k} - \PTMAX{\ell}{k} \p{\ell}{k}
-  \tagconstrain{c:pd:inactiveLB}\\
-%\end{cAlign}
-%%
 %\begin{cAlign}
 %%
-\pd{\ell}{k} &\le \PTMAX{\ell}{k}(1 - \p{\ell}{k} + \p[n-1]{\ell}{k})
-  \tagconstrain{c:pd:reset}\\
+%\pd{\ell}{k}\!&\le\!
+%  \pd[n\!-\!1]{\ell}{k}\!+\!\DT[n\!-\!1]\p[n\!-\!1]{\ell}{k}\!+%
+%\!\PTMAX{\ell}{k}\!(1\!-\! \p[n\!-\!1]{\ell}{k}\!)\tagconstrain{c:pd:incUB}\\
+%%
+%\pd{\ell}{k}\!&\ge\!
+%  \pd[n\!-\!1]{\ell}{k}\!+\!\DT[n\!-\!1]\p[n\!-\!1]{\ell}{k}\!-%
+%\!\PTMAX{\ell}{k}\!(1\!-\!\p[n\!-\!1]{\ell}{k}\!)\tagconstrain{c:pd:incLB}\\
+%%
+%\pd{\ell}{k} &\le \pd[n-1]{\ell}{k} + \PTMAX{\ell}{k} \p[n-1]{\ell}{k}
+%  \tagconstrain{c:pd:inactiveUB}\\
+%\pd{\ell}{k} &\ge \pd[n-1]{\ell}{k} - \PTMAX{\ell}{k} \p{\ell}{k}
+%  \tagconstrain{c:pd:inactiveLB}\\
+%%\end{cAlign}
+%%%
+%%\begin{cAlign}
+%%%
+%\pd{\ell}{k} &\le \PTMAX{\ell}{k}(1 - \p{\ell}{k} + \p[n-1]{\ell}{k})
+%  \tagconstrain{c:pd:reset}\\
+%%
+%\pd{\ell}{k} &\ge \PTMIN{\ell}{k}(1 - \p{\ell}{k}) \tagconstrain{c:minPhase}
+%%
+%\end{cAlign}
+%%
+\begin{cAlign}
 %
-\pd{\ell}{k} &\ge \PTMIN{\ell}{k}(1 - \p{\ell}{k}) \tagconstrain{c:minPhase}
+\pd{\ell}{k}\!&=\!
+\begin{cases}
+\pd[n\!-\!1]{\ell}{k}\!+\!\DT[n\!-\!1], & \p[n\!-\!1]{\ell}{k}\!= \!\p[n]{\ell}{k}\!=\!1\\
 %
+0, & \p[n\!-\!1]{\ell}{k}\!=\!0,\p[n]{\ell}{k}\!=\!1\\
+%
+\pd[n\!-\!1]{\ell}{k}, &\text{otherwise}
+%
+\end{cases} \tagconstrain{c:pd} \\
+ \pd{\ell}{k} &\ge \PTMIN{\ell}{k}(1 - \p{\ell}{k}) \tagconstrain{c:minPhase}
 \end{cAlign}
 %
 
 
 Lastly, we constrain the sum of all the phase durations for light \tl to be
-within the cycle time limits \CTMIN{\tl}~\eqref{c:cycleLB} and
-\CTMAX{\tl}~\eqref{c:cycleUB}.
+within the cycle time limits \CTMIN{\tl}and
+\CTMAX{\tl}~\eqref{c:cyclelimits}.
 %
-In both \eqref{c:cycleLB} and \eqref{c:cycleUB}, we use the duration of phase 1
-of \tl from the previous interval $n-1$ instead of the current interval $n$
-because \eqref{c:pd:reset} forces \pd[n]{\tl}{1} to be 0 at the beginning of
-each cycle;
-%
-however, from the previous end of phase 1 until $n-1$, \pd[n-1]{\tl}{1} holds
-the correct elapse time of phase 1.
-%
-Additionally, \eqref{c:cycleLB} is enforced right after the end of the each
+%In both \eqref{c:cycleLB} and \eqref{c:cycleUB}, we use the duration of phase 1
+%of \tl from the previous interval $n-1$ instead of the current interval $n$
+%because \eqref{c:pd} forces \pd[n]{\tl}{1} to be 0 at the beginning of
+%each cycle;
+%%
+%however, from the previous end of phase 1 until $n-1$, \pd[n-1]{\tl}{1} holds
+%the correct elapse time of phase 1.
+%%
+Additionally, \eqref{c:cyclelimits} is enforced right after the end of the each
 cycle, i.e., when its first phase is changed from inactive to active.
 %
 %%The value \eqref{c:cycleLB} and \eqref{c:cycleUB} over time for a traffic light
 %%\tl is illustrated in Figure (fig:cycleTimeC).
-%
+%%
+%\begin{cAlign}
+%%
+%\textstyle \pd[n\!-\!1]{\ell}{1}\! +\! \sum_{k\!=\!2}^{\Pn} \pd{\ell}{k}\! &\ge\! \CTMIN{\ell}
+%(\p[n]{\ell}{1}\! -\! \p[n\!-\!1]{\ell}{1}) \tagconstrain{c:cycleLB}\\
+%%
+%\textstyle \pd[n\!-\!1]{\ell}{1}\! +\! \sum_{k\!=\!2}^{\Pn} \pd{\ell}{k}\! &\le\! \CTMAX{\ell}
+%\tagconstrain{c:cycleUB}
+%%
+%\end{cAlign}
+%%
+\small
 \begin{cAlign}
 %
-\textstyle \pd[n-1]{\ell}{1} + \sum_{k=2}^{\Pn} \pd{\ell}{k} &\ge \CTMIN{\ell}
-(\p{k}{1} - \p[n-1]{k}{1}) \tagconstrain{c:cycleLB}\\
+ \CTMIN{\ell}(\p[n]{\ell}{1}\! -\! \p[n\!-\!1]{\ell}{1}) \le
 %
-\textstyle \pd[n-1]{\ell}{1} + \sum_{k=2}^{\Pn} \pd{\ell}{k} &\le \CTMAX{\ell}
-\tagconstrain{c:cycleUB}
+\pd[n\!-\!1]{\ell}{1}\!+\! \textstyle \sum_{k\!=\!2}^{\Pn} \pd{\ell}{k} \le \CTMAX{\ell}
+\tagconstrain{c:cyclelimits}
 %
 \end{cAlign}
+\normalsize
 %
-The MILP~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cycleUB}) encodes
+
+The MILP~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:cyclelimits}) encodes
 the problem of finding the optimized adaptive traffic control
 plan in a QTM network without light rail.
-
+\parskip=0pt
 \paragraph{Light Rail Constraints}
 %
+\parskip=0pt
 To incorporate a fixed-schedule light rail in our model, we post-process our
 MILP model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ s.t.\ the
 light rail uses phase $k$ of \tl at time $n$.
 %
 Formally, given a schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$ represents that
 the light rail uses phase $k$ of \tl at time $n$, we replace
-(\ref{c:pd:incUB}--\ref{c:minPhase}) by \eqref{c:forceTransit} and
+(\ref{c:pd}) and (\ref{c:minPhase}) by \eqref{c:forceTransit} and
 \eqref{c:pd:holdTransit} when $\sum_{k \in \Pset_\tl} S_{\tl}(k,n) > 0$.
 %
 %\begin{cAlign}
@@ -673,17 +739,22 @@ For all~$\tl \in \Lset$, $k \in \Pset_\tl$, we introduce the new variable
 $\PTFIXED{\ell}{k} \in [\PTMIN{\ell}{k}, \PTMAX{\ell}{k}]$ and replace the
 bounds constraints on $\pd[n]{\ell}{k}$ (that is, $\pd[n]{\ell}{k} \le
 \PTMAX{\ell}{k}$ and \ref{c:minPhase}) with fixed the duration
-constraints~(\ref{c:pd:fixedUB}-\ref{c:pd:fixedLB}).
+constraint~(\ref{c:pd:fixed}).
+%%
+%\begin{cAlign} \pd{\ell}{k} &\le \PTFIXED{\ell}{k} + \PTMAX{\ell}{k}
+%  \p[n]{\ell}{k} \tagconstrain{c:pd:fixedUB}\\
+%%
+%  \pd{\ell}{k} &\ge \PTFIXED{\ell}{k} - \PTMAX{\ell}{k} \p[n]{\ell}{k}
+%  \tagconstrain{c:pd:fixedLB} \end{cAlign}
 %
-\begin{cAlign} \pd{\ell}{k} &\le \PTFIXED{\ell}{k} + \PTMAX{\ell}{k}
-  \p[n]{\ell}{k} \tagconstrain{c:pd:fixedUB}\\
+\begin{cAlign} 
 %
-  \pd{\ell}{k} &\ge \PTFIXED{\ell}{k} - \PTMAX{\ell}{k} \p[n]{\ell}{k}
-  \tagconstrain{c:pd:fixedLB} \end{cAlign}
-
-
+\pd{\ell}{k} = \PTFIXED{\ell}{k} \text{ if } \p[n]{\ell}{k}=0 \tagconstrain{c:pd:fixed}
+%
+\end{cAlign}
+%
 Similarly to the variable phase duration constraints, the \textit{big-M} method
-is employed to enforce (\ref{c:pd:fixedUB}-\ref{c:pd:fixedLB}) only while the
+is employed, using \PTMAX{\ell}{k} as the constant, to enforce (\ref{c:pd:fixed}) only while the
 phase is inactive.
 %
 Furthermore, these constraints are only applied over time intervals $n$ such

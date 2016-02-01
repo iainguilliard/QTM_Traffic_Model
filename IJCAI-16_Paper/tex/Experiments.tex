@@ -178,7 +178,7 @@ networks, respectively.
 Due to Gurobi's stochastic strategies, runtimes for the solver can vary, and we
 do not set a time limit.
 %
-The optimized adaptive solution are typically found in real time (less than
+The optimized adaptive solutions are typically found in real time (less than
 200s), while fixed-time plans can take significantly longer (on average 4000s
 for a 1000s horizon); however, once the fixed-time solution is found, it can be
 deployed indefinitely.
@@ -200,28 +200,33 @@ deployed indefinitely.
 %% TODO(fwt): add to the delay plots and boxplots their corresponding number. We
 %% need to do this in the figure to save space.
 %
+\vspace{-5mm}
 \begin{subfigure}{0.49\textwidth}
+  \footnotesize{(a)}
+  
 \includegraphics[keepaspectratio,width=\linewidth]{network1_delay.pdf}
 \phantomcaption \label{fig:arterial:delayCurve}
 \end{subfigure}
 \begin{subfigure}{0.49\textwidth}
+  \footnotesize{(b)}
+  
 \includegraphics[keepaspectratio,width=\linewidth]{network2_delay.pdf}
 \phantomcaption \label{fig:grid:delayCurve}
 \end{subfigure}
-
-\vspace{-5mm}
-
+%\vspace{-10mm}
 \begin{subfigure}{0.49\textwidth}
+  \footnotesize{(c)}
+  
 \includegraphics[keepaspectratio,width=\linewidth]{network1_boxplots.pdf}
 \phantomcaption \label{fig:arterial:boxplot}
 \end{subfigure}
 \begin{subfigure}{0.49\textwidth}
+  \footnotesize{(d)}  
+  
 \includegraphics[keepaspectratio,width=\linewidth]{network2_boxplots.pdf}
 \phantomcaption \label{fig:grid:boxplot}
 \end{subfigure}
-
-\vspace{-3mm}
-
+%\vspace{-5mm}
 \begin{subfigure}{0.49\textwidth}
   \centering
   \footnotesize{(e) Fixed Controller Side Street $q_5$ to $q_6$}
@@ -259,18 +264,42 @@ deployed indefinitely.
 \phantomcaption \label{fig:microsim1:adapt:arterial}
 \end{subfigure}
 %
-\vspace{-5mm}
-\caption{Average delay by the network demand for the arterial (a) and grid (b)
+\begin{subfigure}{1.0\textwidth}
+\centering
+  \footnotesize{(i) Impact of light rail on average delay as \% increase (decrease) by controller type}
+  
+\begin{tabular}{@{}lllll@{}}
+\toprule
+     & \multicolumn{2}{l}{Arterial @ 3900 V/h} ($\clubsuit$) & \multicolumn{2}{l}{Grid @ 4800 V/h}  ($\clubsuit$) \\
+ & slow l. rail               & fast l. rail               & slow l. rail             & fast l. rail             \\ \midrule
+Fixed   & ~35\%              & ~7.5\%             & ~40\%            & ~17.5\%          \\
+Optimized   & ~2.5\%             & ~(5)\%              & ~10\%            & ~(0.5)\%          \\ \midrule
+Improvement (per vehicle) & 32.5\%          & 12.5\%          & 30\%         & 18\%          \\ \bottomrule
+\end{tabular}
+\phantomcaption \label{fig:table}
+\end{subfigure}
+%\vspace{-5mm}
+\caption{Average delay by network demand for the arterial (a) and grid (b)
 networks.
 %
-Box plots representing the observed distribution of delay for 3
-different values of demand for each network (c,d).
+(c,d): Box plots representing the observed distribution of delay for 3
+different values of demand for each network, comparing delay distribution
+without the light rail with the impact of the fast and slow schedules.
+Optimized control is able to mitigate the impact of light rail on average delay,
+while also producing better signal plans (lower maximum and upper quartile delay).
 %
 %The mean is presented as a red square in the box plots.
 %
 %
 (e-h): microsimulation time-distance plots of side street $q_5$ to $q_6$ and
-arterial $q_2$ to $q_{13}$ in Network 1 with the slow light rail schedule.
+arterial $q_2$ to $q_{13}$ of the arterial network with the slow light rail schedule.
+While both controllers can find coordinated policies along the arterial, the optimized
+controller is able to clear out the queues (horizontal flow lines) in the side streets following the transit of
+the light rail. 
+Table (i): improvement in average delay using optimized control compared to fixed control with the introduction
+ of light rail, assuming fixed control was used pre light rail, and evaluated at the demand level corresponding 
+ to point $\clubsuit$ in (a) and (b). Optimized control is
+ able to mitigate the impact to within 10\% of the pre light rail average delay in each case.
 %
 %% TODO(fwt): add a better summary of the overall results, i.e., add a ``mini''
 %% conclusion here
@@ -500,6 +529,10 @@ When the traffic density in the arterial is higher than the side streets then
 the optimized controller will coordinate ``green corridors'' along the
 arterial.
 %
+In \cref{fig:table} we see the improvement in average delay using optimized control compared to fixed control with the introduction
+ of light rail, assuming fixed control was used pre light rail. Optimized control is
+ able to mitigate the impact to within 10\% of the pre light rail average delay in each case, and can even
+ improve upon pre light rail average delays in the case of the fast light rail schedules.
 %\footnote{The supplementary material further elucidates this point.}
 
 

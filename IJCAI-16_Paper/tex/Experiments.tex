@@ -279,7 +279,7 @@ networks.
 (c,d): Box plots representing the observed distribution of delay for 3
 different values of demand for each network, comparing delay distribution
 without the light rail with the impact of the fast and slow schedules.
-Optimized control is able to mitigate the impact of light rail on average delay,
+Optimized adaptive control is able to mitigate the impact of light rail on average delay,
 while also producing better signal plans (lower maximum and upper quartile delay).
 %
 %The mean is presented as a red square in the box plots.
@@ -288,7 +288,7 @@ while also producing better signal plans (lower maximum and upper quartile delay
 (e-h): microsimulation time-distance plots of side street $q_5$ to $q_6$ and
 arterial $q_2$ to $q_{13}$ of the arterial network with the slow light rail
 schedule.  While both controllers can find coordinated policies along the
-arterial, the optimized controller is able to clear out the queues (horizontal
+arterial, the optimized adaptive controller is able to clear out the queues (horizontal
 flow lines) in the side streets following the transit of the light rail.
 %
 %Table (i): improvement in average delay using optimized control compared to
@@ -300,7 +300,7 @@ flow lines) in the side streets following the transit of the light rail.
 %% TODO(fwt): add a better summary of the overall results, i.e., add a ``mini''
 %% conclusion here
 %
-%The fixed-adaptive controller has prioritized the arterial phase duration over
+%The fixed-time controller has prioritized the arterial phase duration over
 %the side street duration and suffers from accumulative queue build up in the
 %side streets following each transit of the light rail.
 %%
@@ -316,7 +316,7 @@ flow lines) in the side streets following the transit of the light rail.
 
 
 \cref{fig:arterial:delayCurve,fig:grid:delayCurve} show, for each network, the
-average delay per vehicle as a function of demand for both optimized fixed-time
+average delay per vehicle as a function of demand for both fixed-time
 and optimized adaptive control approaches in three scenarios: before the light
 rail and after the installation of light rail using the slow and the fast
 schedules.
@@ -518,14 +518,14 @@ $\clubsuit$ in \cref{fig:arterial:delayCurve,fig:grid:delayCurve}.
 The delay obtained by the fixed-time controller \textit{before} the
 introduction of light rail is used as baseline.
 %
-The adaptive controller can successfully mitigate the impact of introducing a
-light rail: the considered networks can be used by 90\% to 105.5\% of the
-original demand without increasing in average delay.}
+The optimized adaptive controller can successfully mitigate the impact of
+introducing a light rail: the considered networks can be used by 90\% to 105.5\%
+of the original demand without increasing in average delay.}
 %
 \label{fig:table}
 \end{table}
 
-To further illustrate the advantages of the optimal adaptive controller, we show
+To further illustrate the advantages of the optimized adaptive controller, we show
 in \cref{fig:microsim1:fixed:side,fig:microsim1:adapt:side,%
 fig:microsim1:fixed:arterial,fig:microsim1:adapt:arterial} the microsimulation
 time-distance plots for several streets in Network 1.
@@ -549,32 +549,34 @@ ahead.
 When vehicle is stationary, its trace becomes horizontal.
 %
 \cref{fig:microsim1:fixed:side,fig:microsim1:fixed:arterial} show that the
-fixed-adaptive controller has prioritized the arterial phase duration over the
+fixed-time controller has prioritized the arterial phase duration over the
 side street duration to achieve coordinated ``green corridors'' sized for the
 average traffic density in the network.
 %
-As byproduct, the side street under the fixed-adaptive controller suffers from
+As byproduct, the side street under the fixed-time controller suffers from
 accumulative queue build up following each transit of the light rail.
 %
 In \cref{fig:microsim1:adapt:side,fig:microsim1:adapt:arterial}, we see that the
-optimized controller is able to clear out the queue build up in the side street
-by increasing the phase time of the side street for a cycle after the transit
-has passed through, and then returns to a schedule that prioritizes the arterial
-depending on the changes in traffic density.
+optimized adaptive controller is able to clear out the queue build up in the
+side street by increasing the phase time of the side street for a cycle after
+the transit has passed through, and then returns to a schedule that prioritizes
+the arterial depending on the changes in traffic density.
 %
 When the traffic density in the arterial is higher than the side streets then
-the optimized controller will coordinate ``green corridors'' along the
+the optimized adaptive controller will coordinate ``green corridors'' along the
 arterial.
 %
 In \cref{fig:table} we see the improvement in average delay using optimized
-control compared to fixed control with the introduction of light rail, assuming
-fixed control was used before the light rail introduction.
+adaptive control compared to fixed-time control with the introduction of light
+rail, assuming the fixed-time control was used before the light rail
+introduction.
 %
-Optimized control is able to mitigate the impact of the light rail introduction
-and allows the networks to be used by almost the same demand level as before
-without increasing the average delay.
+The optimized adaptive control is able to mitigate the impact of the light rail
+introduction and allows the networks to be used by almost the same demand level
+as before without increasing the average delay.
 %
-In particular, for the fast light rail, the adaptive controller allows 5\%
-(arterial) and 0.5\% (grid) increase in demand without additional average delay.
+In particular, for the fast light rail, the optimized adaptive controller allows
+5\% (arterial) and 0.5\% (grid) increase in demand without additional average
+delay.
 
 

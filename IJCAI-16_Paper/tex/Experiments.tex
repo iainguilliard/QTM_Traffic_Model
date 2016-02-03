@@ -503,7 +503,7 @@ Light rail sch.
 \\ \hline
 %
 Fixed        & 65.0\%  &  92.5\%  & 60.0\%  &  82.5\% \\
-Adaptive    & 97.5\%  & 105.0\%  & 90.0\%  & 100.5\% \\ \hline
+\remark{Adaptive}    & 97.5\%  & 105.0\%  & 90.0\%  & 100.5\% \\ \hline
 \textbf{Improvement}   & \textbf{32.5\%}  &  \textbf{12.5}\%  & \textbf{30.0}\%
                        &  \textbf{18.0\%}  \\
 \end{tabular}
@@ -516,7 +516,7 @@ $\clubsuit$ in \cref{fig:arterial:delayCurve} and $\spadesuit$ in \cref{fig:grid
 The delay obtained by the fixed-time controller \textit{before} the
 introduction of light rail is used as baseline.
 %
-The adaptive controller can successfully mitigate the impact of introducing a
+The \remark{optimized} adaptive controller can successfully mitigate the impact of introducing a
 light rail: the considered networks can be used by 90\% to 105.5\% of the
 original demand without increasing in average delay.}
 %
@@ -547,11 +547,11 @@ ahead.
 When vehicle is stationary, its trace becomes horizontal.
 %
 \cref{fig:microsim1:fixed:side,fig:microsim1:fixed:arterial} show that the
-fixed-adaptive controller has prioritized the arterial phase duration over the
+\remark{fixed-adaptive}\toFelipe{Fixed?} controller has prioritized the arterial phase duration over the
 side street duration to achieve coordinated ``green corridors'' sized for the
 average traffic density in the network.
 %
-As byproduct, the side street under the fixed-adaptive controller suffers from
+As byproduct, the side street under the \remark{fixed-adaptive} \toFelipe{Fixed?} controller suffers from
 accumulative queue build up following each transit of the light rail.
 %
 In \cref{fig:microsim1:adapt:side,fig:microsim1:adapt:arterial}, we see that the
@@ -572,7 +572,7 @@ Optimized control is able to mitigate the impact of the light rail introduction
 and allows the networks to be used by almost the same demand level as before
 without increasing the average delay.
 %
-In particular, for the fast light rail, the adaptive controller allows 5\%
+In particular, for the fast light rail, the \remark{optimized} adaptive controller allows 5\%
 (arterial) and 0.5\% (grid) increase in demand without additional average delay.
 
 

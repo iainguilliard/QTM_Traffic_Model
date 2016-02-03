@@ -1,29 +1,3 @@
-\section{Empirical Evaluation}
-  
-In this section we compare the solutions for traffic networks modeled as a QTM
-before and after the introduction of a light rail.
-%
-We consider both fixed-time control, i.e., a non-adaptive control plan, and
-optimized adaptive control obtained by solving the
-MILP~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:pd:holdTransit}).
-%
-The obtained solutions are simulated using a microsimulator and their total
-travel time and observed delay distribution are used as comparison metrics.
-%
-Our hypothesis is that the optimized adaptive approach is able to mitigate the
-impact of introducing light rail w.r.t.\ both metrics.
-%
-%In the remainder of this section, we present the traffic networks considered in
-%the experiments, our methodology, and the results.
-
-
-
-
-
-
-\subsection{Networks}
-
-
 \begin{figure*}
 \centering
 \includegraphics[width=0.9\textwidth]{all_in_one.png}%
@@ -49,6 +23,33 @@ and (d) \textbf{fast} (short and frequent) light rail.
 %
 \vspace{-3mm}
 \end{figure*}
+
+
+\section{Empirical Evaluation}
+  
+In this section we compare the solutions for traffic networks modeled as a QTM
+before and after the introduction of a light rail.
+%
+We consider both fixed-time control, i.e., a non-adaptive control plan, and
+optimized adaptive control obtained by solving the
+MILP~(\ref{eq:objFunc},~\ref{c:turnProb}--\ref{c:pd:holdTransit}).
+%
+The obtained solutions are simulated using a microsimulator and their total
+travel time and observed delay distribution are used as comparison metrics.
+%
+Our hypothesis is that the optimized adaptive approach is able to mitigate the
+impact of introducing light rail w.r.t.\ both metrics.
+%
+%In the remainder of this section, we present the traffic networks considered in
+%the experiments, our methodology, and the results.
+
+
+
+
+
+
+\subsection{Networks}
+
 
 We consider two networks of differing complexity: an arterial crossed by four
 side streets (\cref{fig:net:arterial}) and a 3-by-3 grid (\cref{fig:net:grid}).

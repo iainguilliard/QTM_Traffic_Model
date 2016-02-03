@@ -214,7 +214,7 @@ $\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 \begin{cAlign} 
 %
 \f{i}{j}\!\le\!\FMAX{i}{j}\!\sum^{\phantom{\Qn}}_{\makebox[0pt]{$\scriptstyle
-\p{\ell}{k}\!\in\!\QPset{i}$}}\p{\ell}{k}
+\p{\ell}{k} \in \QPset{i}$}}\p{\ell}{k}
 \tagconstrain{c:maxFlow}
 %
 \end{cAlign}
@@ -675,7 +675,7 @@ cycle, i.e., when its first phase is changed from inactive to active.
 %
  \CTMIN{\ell}(\p[n]{\ell}{1}\! -\! \p[n\!-\!1]{\ell}{1}) \le
 %
-\pd[n\!-\!1]{\ell}{1}\!+\! \textstyle \sum_{k\!=\!2}^{\Pn} \pd{\ell}{k} \le \CTMAX{\ell}
+\pd[n\!-\!1]{\ell}{1}\!+\! \textstyle \sum_{k = 2}^{\Pn} \pd{\ell}{k} \le \CTMAX{\ell}
 \tagconstrain{c:cyclelimits}
 %
 \end{cAlign}

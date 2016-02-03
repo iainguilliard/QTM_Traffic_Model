@@ -28,17 +28,17 @@ literature proposes the use of \emph{optimized} controllers (that
 incorporate elements of both adaptive and actuated control) as
 evidenced in a variety of approaches including mixed integer linear
 programming
-(MILPs)~\trbcitenum{lo1998novel,gartner2002arterial,lin2004enhanced,he2011pamscod,han2012link,guilliard2016trb},
+(MILPs)~\trbcitenum{lo1998novel,gartner1974optimization,gartner2002arterial,lin2004enhanced,he2011pamscod,han2012link,guilliard2016trb},
 heuristic search~\trbcitenum{lo1999dynamic,he2010heuristic}, queuing
 delay optimization~\trbcitenum{varaiya2013max,li2014coupled},
 scheduling-driven
 control~\trbcitenum{xie2012schedule,smith2013surtrac}, and
-reinforcement learning~\trbcitenum{el2013multiagent}.  While all of
+reinforcement learning~\trbcitenum{el2013multiagent}.  While 
 these approaches hold out the promise of more highly optimized
 traffic control methods, to date, \emph{none} have studied the 
 optimal integration of light rail schedule constraints with their
 respective methods nor the impact that such integration would have on
-conventional traffic delay.
+traffic delay.
 
 %Unfortunately, many large cities still use some degree of
 %\emph{fixed-time} control~\trbcitenum{el2013multiagent}, which can
@@ -103,18 +103,35 @@ delay.
 %this setting is to
 %, and Mixed Integer Linear
 %Programming (MILP) can be used to optimize the traffic signals to
-We extend the QTM model to incorporate light rail schedule constraints
-and contribute a novel way to optimize fixed-time traffic signal
-control subject to light rail schedules.  As a second major
-contribution, we also define a novel optimized adaptive signal control
-variant of the QTM that virtually nullifies the impact of the light
-rail presence as we show experimentally in both the QTM optimization
-objective as well as an external microsimulation validation using a
-fine-grained nonlinear model of traffic flow.  Ultimately, these
-results demonstrate a win-win situation where both conventional
-vehicle traffic and light rail commuters benefit through the
-application of MILP-based optimization to jointly manage both light
-rail schedule priority and conventional traffic networks.
+Among alternative MILP-based control methods cited previously, we use
+the QTM since it is highly scalable and focuses on accurate modeling
+of travel delay between intersections critical for prioritizing light
+rail arrivals.  We extend the QTM model to incorporate light rail
+schedule constraints and make three key contributions: (1) we provide
+a novel method that leverages the QTM to optimize conventional
+fixed-time signal control schedules with and without light rail
+schedule constraints, (2) we leverage the QTM for optimal adaptive
+control with light rail constraints, and (3) we use a microsimulator
+to validate the effectiveness of these contributions.  Ultimately, we
+show that optimal adaptive control via the MILP-based QTM can reduce traffic
+delay by up to 78.6\% over optimal fixed-time control when light rail
+is introduced, and in some cases it can even reduce delay over
+fixed-time control \emph{without any light rail}.
+%contribute a novel way to optimize fixed-time controllers w.r.t.\ these
+%constraints --- thus enabling the use of optimized signal schedules
+%in existing fixed-time controllers.  nand adaptive
+%traffic signal controllers subject to light rail schedules.  As a second major
+%contribution, we also define a novel optimized adaptive signal control
+%variant of the QTM that virtually nullifies the impact of the light
+%rail presence --- we demonstrate
+%
+%as we show experimentally in both the QTM optimization
+%objective as well as an external microsimulation validation using a
+%fine-grained nonlinear model of traffic flow.
+Ultimately, these results demonstrate a win-win situation where both
+vehicle traffic and light rail commuters benefit through
+the application of MILP-based optimization to jointly manage both
+light rail schedule priority and traffic networks.
 
 %Hence, such controllers hold the promise of maximizing existing
 %infrastructure capacity by finding optimized traffic signal control

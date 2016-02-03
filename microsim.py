@@ -610,6 +610,22 @@ class microsim:
                 data['Out']['Microsim']['cars'].append({'position': list(car.link_position_log), 'link': list(car.link_log)})
 
 
+def plot_annotations(plt,annotations):
+    if annotations['arrows'] is not None:
+        #print args.annotation_arrow
+        for annotation in annotations['arrows']:
+            kwargs = json.loads(annotation[1])
+            plt.annotate(annotation[0],**kwargs)
+    if annotations['text'] is not None:
+        #print args.annotation_text
+        for annotation in annotations['text']:
+            kwargs = json.loads(annotation[3])
+            x = annotation[0]
+            y = annotation[1]
+            text = annotation[2]
+            plt.text(x,y,text,**kwargs)
+
+
 def plot_fig(plt,figsize):
     if figsize is not None:
         plt.figure(figsize=(figsize[0],figsize[1]))
@@ -656,6 +672,8 @@ if __name__ == '__main__':
     parser.add_argument("--no_lost_time", help="do not add lost time", action='store_true', default = False)
     parser.add_argument("--lost_time", help="Add lost time to phase time", type = float, default = 0)
     parser.add_argument("--amber_time", help="Amber light duration", type = float, default = 2.5)
+    parser.add_argument("--annotation_arrow", help="optional text followed by json dictionary of matplotlib annotation parameters to plot an arrow",nargs=2,action='append')
+    parser.add_argument("--annotation_text", help="x y text followed by json dictionary of matplotlib text parameters",nargs=4,action='append')
 
     args = parser.parse_args()
 
@@ -706,6 +724,7 @@ if __name__ == '__main__':
                             plt.ylim(args.ylim[0],args.ylim[1])
                         if args.xlim is not None:
                             plt.xlim(args.xlim[0],args.xlim[1])
+                        plot_annotations(plt,dict(arrows=args.annotation_arrow,text=args.annotation_text))
                         if args.save_fig is not None:
                             plt.savefig(args.save_fig,bbox_inches='tight',dpi=args.dpi)
                         k += 1
@@ -753,6 +772,7 @@ if __name__ == '__main__':
                     plt.xticks(ticks)
                     plt.xlabel('Number of stops')
                     plt.ylabel('Number of vehicles')
+                    plot_annotations(plt,dict(arrows=args.annotation_arrow,text=args.annotation_text))
                     if args.title is not None:
                         plt.title(args.title[plot_i])
                     if args.ylim is not None:
@@ -768,7 +788,9 @@ if __name__ == '__main__':
                         frame.to_csv(filename + '_%d' % plot_i + '.' + type)
 
 
+
     if args.plot is not None or args.plot_car or args.plot_depart or args.plot_stops is not None:
+
         plt.show();
 
 

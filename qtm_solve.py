@@ -89,9 +89,117 @@ def min3_constr(m,g,a,b,c):
     m.addConstr(phi - c <= U * z2)
     return z1,z2
 
+def read_flows(flow_data):
+    flow = {}
+    out_fmax = {}
+
+    for f_ij in flow_data.keys():
+        i = int(f_ij.split('_')[0])
+        j = int(f_ij.split('_')[1])
+        if i not in flow:
+            flow[i] = {}
+        if j not in flow[i]:
+            flow[i][j] = flow_data[f_ij]
+
+    for i in flow.keys():
+        max_out = 0
+        for j in flow[i].keys():
+            max_out = max(max_out,flow[i][j]['F_MAX'])
+        out_fmax[i] = max_out
+        out_fmax[j] = max_out
+
+    return flow,out_fmax
+
+def convert_model_to_ctm(data,dt):
+    print 'old Nodes',data['Nodes']
+    new_queues = []
+    new_flows = {}
+    new_nodes = data['Nodes']
+    new_q_in = {}
+    new_q_out = {}
+    flows, out_fmax = read_flows(data['Flows'])
+    for i,q in enumerate(data['Queues']):
+        n = int(q['Q_DELAY'] / float(dt))
+        if n < 1: n = 1
+        n0 = q['edge'][0]
+        n1 = q['edge'][1]
+        rx0 = data['Nodes'][n0]['p'][0]
+        ry0 = data['Nodes'][n0]['p'][1]
+        rx1 = data['Nodes'][n1]['p'][0]
+        ry1 = data['Nodes'][n1]['p'][1]
+        rx_f = interp.interp1d([0,1],[rx0,rx1])
+        ry_f = interp.interp1d([0,1],[ry0,ry1])
+        #n_in = len(new_nodes)
+        print 'n',n
+        #print rx_f(0)
+        q_nodes = [n0]
+        if n > 1:
+            for k in range(1, n):
+                t = k / (n)
+                #print t,type(float(rx_f(t)))
+                q_nodes.append(len(new_nodes))
+                new_nodes.append({"p": [float(rx_f(t)), float(ry_f(t))]})
+        q_nodes.append(n1)
+        if n > 1:
+
+            n_out = len(new_nodes) - 1
+            f_max = out_fmax[i]
+            q_in = len(new_queues)
+
+            new_queues.append({ "Q_DELAY": dt, "edge": [n0, q_nodes[1]], "Q_IN": q["Q_IN"],
+                                "Q_OUT": 0,  "Q_P": None, "Q_MAX": q["Q_MAX"] / n,
+                                "q0": q["q0"] / n, "q0_in": q["q0_in"], "q0_out": 0 })
+
+            if "weights" in q:
+                new_queues[-1]["weights"] = q["weights"]
+
+            if n > 2:
+                for k in range(1,n-1):
+
+                    new_queues.append({ "Q_DELAY": dt, "Q_IN": 0, "edge": [q_nodes[k], q_nodes[k + 1]],
+                                    "Q_OUT": 0,  "Q_P": None, "Q_MAX": q["Q_MAX"] / n,
+                                    "q0": q["q0"] / n, "q0_in": 0, "q0_out": 0 })
+
+            q_out = len(new_queues)
+            new_queues.append({ "Q_DELAY": dt, "Q_IN": 0, "edge": [q_nodes[-2], n1],
+                                "Q_OUT": q["Q_OUT"],  "Q_P": q["Q_P"], "Q_MAX": q["Q_MAX"] / n,
+                                "q0": q["q0"] / n, "q0_in": q["q0_in"], "q0_out": q["q0_out"] })
+
+            for k in range(q_in, q_out):
+                new_flows["%d_%d" % (k, k + 1)] = { "F_MAX": float(f_max), "f0": 0 }
+
+            new_q_in[i] = q_in
+            new_q_out[i] = q_out
+            print i,new_q_in[i],new_q_out[i]
+
+        else:
+            new_q_in[i] = len(new_queues)
+            new_q_out[i] = len(new_queues)
+            new_queues.append(q)
+            #q['edge'] = [n_in, n_in + 1]
+
+
+    for f_ij in data['Flows'].keys():
+        i = int(f_ij.split('_')[0])
+        j = int(f_ij.split('_')[1])
+        new_f_i_j = "%d_%d" % (new_q_out[i], new_q_in[j])
+        new_flows[new_f_i_j] = data['Flows'][f_ij]
+        if "F_y" in new_flows[new_f_i_j]:
+            F_ij = new_flows[new_f_i_j]['F_Y'].split('_')
+            new_flows[new_f_i_j]['F_Y'] = ['%d_%d' % (F_ij[0],F_ij[1])]
+
+
+    data['Nodes'] = new_nodes
+    data['Queues'] = new_queues
+    data['Flows'] = new_flows
+    print 'Nodes',data['Nodes']
+    print 'Queues',data['Queues']
+    print 'Flows',data['Flows']
+
 def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=None,minor_frame=0,major_frame=0,blend_frame=None,nthreads=0,fixed_plan=None,
            timelimit=0,accuracy=0,verbose=False,label=None,step=None,run=None,obj='NEW',alpha_obj=1.0,beta_obj=0.001,gamma_obj=0.0001,
-           DT_offset=0,seed=0,tune=False,tune_file='',param=None, in_weight=1.0,mip_start=None,refine=False,no_assertion_fail=False, lost_time=0):
+           DT_offset=0,seed=0,tune=False,tune_file='',param=None, in_weight=1.0,mip_start=None,refine=False,no_assertion_fail=False, lost_time=0,
+                solver_model='QTM'):
     start_time = clock_time.time()
     try:
 
@@ -271,6 +379,9 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             print prev_mp_t
             print time
 
+        if solver_model == 'CTM' and 'Solver_model' not in data:
+            convert_model_to_ctm(data,DT[0])
+            data['Solver_model'] = 'CTM'
 
         #print 'time     =',time
         #print 'time_full=',time_full
@@ -621,7 +732,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         sum_in =  quicksum([quicksum([time[n] * q_in[i][n] if Q_IN[i]>0 else 0 for n in range(n_samples)]) for i in range(Q) ])
         sum_out = quicksum([quicksum([time[n] * q_out[i][n] if Q_OUT[i]>0 else 0 for n in range(n_samples)]) for i in range(Q) ])
         m.addConstr(total_travel_time == sum_out - sum_in)
-        #m.addConstr( sum_out == sum_in)
+        m.addConstr( sum_out == sum_in)
         if obj == 'MAX_OUT':
             out_flow = quicksum([ quicksum([ (T_MAX-time[n]) * out_q[i][n] * DT[n] for n in range(0,N)]) for i in range(Q) ])
             in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n] for i in range(Q) ]) for n in range(0,N)])
@@ -667,6 +778,17 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             maj_flow = quicksum([(T_MAX - time[n]) * f[i][j][n] for i,j,w in gamma_flow_weights for n in range(0,N)])
             m.setObjective(alpha_obj * out_flow + alpha_obj * in_flow + beta_obj * mid_flow + gamma_obj * maj_flow, GRB.MAXIMIZE)
             # m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + 1*((T_MAX-time[n]) * in_q[i][n]) for i in range(Q) for n in range(N)]), GRB.MAXIMIZE)
+        elif obj == 'MIN_LIN_WANG':
+            obj_flows = []
+            for f_ij in data['Flows'].keys():
+                i = int(f_ij.split('_')[0])
+                j = int(f_ij.split('_')[1])
+                obj_flows.append((i,j))
+            print['%d(%d)' % (i,Q_OUT[i]) if Q_OUT[i] > 0 else '%d(_)' % i for i in range(Q) ]
+            print['%d(%d)' % (i,Q_OUT[i]) if Q_OUT[i] == 0 else '%d(_)' % i for i in range(Q) ]
+            out_flow = quicksum([quicksum([(time[n] + 1) * (q_out[i][n] + out_q[i][n]) if Q_OUT[i] > 0 else 0 for n in range(N)]) for i in range(Q) ])
+            flow = quicksum([(time[n] + 1) * (f[i][j][n]) for i,j in obj_flows for n in range(N)])
+            m.setObjective(alpha_obj * out_flow + beta_obj * flow, GRB.MINIMIZE)
         else:
             print 'No objective: %s' % obj
             return None
@@ -747,7 +869,10 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                     #         cars_in_1+=flow_alpha*Q_IN[i]*DT[n-1]
                     #         #print "cars_in_1 =",cars_in_1, ' @',time[n], ' alpha =',flow_alpha ,' limit =',data['In_Flow_limit'],time[n] < data['In_Flow_limit'] and data['In_Flow_limit'] < time[n+1]
                     if time[n] < data['In_Flow_limit']:
-                        m.addConstr(in_q[i][n] <= Q_IN[i])
+                        if obj is not 'MIN_LIN_WANG':
+                            m.addConstr(in_q[i][n] <= Q_IN[i])
+                        else:
+                            m.addConstr(in_q[i][n] == Q_IN[i])
                         cars_in+=Q_IN[i]*DT[n]
                         Q_in[i].append(Q_IN[i])
                         if i==1:
@@ -755,20 +880,30 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                             #print "cars_in_1 =",cars_in_1, ' @',time[n]
                     else:
                         Q_in[i].append(0)
-                        m.addConstr(in_q[i][n] <= 0)
+                        m.addConstr(in_q[i][n] == 0)
 
                 elif flow_weights != None:
-                    m.addConstr(in_q[i][n] <= Q_IN[i]*Q_IN_weight[i][n]) #m.addConstr(in_q[i][n] <= Q_IN[i]*Q_IN_weight[i][n])
+                    if obj is not 'MIN_LIN_WANG':
+                        m.addConstr(in_q[i][n] <= Q_IN[i]*Q_IN_weight[i][n])
+                    else:
+                        m.addConstr(in_q[i][n] == Q_IN[i]*Q_IN_weight[i][n])
                     cars_in+=Q_IN[i]*DT[n]*Q_IN_weight[i][n]
                     Q_in[i].append(Q_IN[i]*Q_IN_weight[i][n])
                 else:
-                    m.addConstr(in_q[i][n] <= Q_IN[i]) #m.addConstr(in_q[i][n] <= Q_IN[i])
+                    if obj is not 'MIN_LIN_WANG':
+                        m.addConstr(in_q[i][n] <= Q_IN[i])
+                    else:
+                        m.addConstr(in_q[i][n] == Q_IN[i])
                     cars_in+=Q_IN[i]*DT[n]
                     Q_in[i].append(Q_IN[i])
 
                 m.addConstr(q_in[i][n] == in_q[i][n] * DT[n] + quicksum([f[j][i][n]*DT[n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
 
+
                 m.addConstr(out_q[i][n] <= Q_OUT[i])
+                if obj == 'MIN_LIN_WANG':
+                    if Q_OUT[i] > 0:
+                        m.addConstr(out_q[i][n] == q[i][n])
 
                 m.addConstr(q_out[i][n] == out_q[i][n] * DT[n] + quicksum([f[i][j][n]*DT[n] if '%d_%d' % (i,j) in data['Flows'] and i != j else 0 for j in range(Q)]))
 
@@ -1287,6 +1422,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             data_out['num_binvars'] = m.NumBinVars
             data_out['num_constrs'] = m.NumConstrs
             data_out['lost_time'] = lost_time
+            data_out['solver_model'] = solver_model
             if timelimit<1e30:
                 data_out['time_limit'] = timelimit
             else:
@@ -1523,7 +1659,7 @@ def plan_solver(data,args):
                 print
                 if milp_solver(data,t0=t0,t1=t1,n_samples=n_samples, DT_vari=DT_vari,minor_frame=minor_frame,major_frame=major_frame,blend_frame=blend_frame,fixed_plan=None,nthreads=args.threads,timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
                        label=label+' step %d' % k,
-                       step=k,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed=args.seed,tune=tune,tune_file=tune_file,param=args.param,lost_time = args.lost_time) is None:
+                       step=k,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed=args.seed,tune=tune,tune_file=tune_file,param=args.param,lost_time = args.lost_time, solver_model=args.solver_model) is None:
                     return None
                 t0+=minor_frame
                 if run_index != None:
@@ -1746,7 +1882,8 @@ def bootstrap_solver(data,args):
                 verbose=args.verbose,step=k,run=run_index,
                 obj=args.obj,alpha_obj=args.alpha,
                 beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed = args.seed,
-                tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=mip_start, lost_time = args.lost_time) is None:
+                tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=mip_start,
+                lost_time = args.lost_time, solver_model = args.solver_model) is None:
                 return None
             #prev_run = copy.deepcopy(data_itr)
             base_N *= 2
@@ -1858,6 +1995,7 @@ if __name__ == '__main__':
     parser.add_argument("--bootstrap", help="iterativly solve for fixed DT using N iteratations of MIP start bootstraping ", type=int)
     parser.add_argument("--no_assertion_fail", help="Do not fail on assertion errors", action="store_true", default=False)
     parser.add_argument("--lost_time", help="lost_time per phase", type=float,default=0.0)
+    parser.add_argument("--solver_model", help="Solver traffic flow model to use (QTM or CTM)", default="QTM")
 
     args = parser.parse_args()
     if args.debug: DEBUG = True
@@ -1898,7 +2036,8 @@ if __name__ == '__main__':
                     timelimit=args.timelimit,accuracy=args.accuracy,
                     verbose=args.verbose,obj=args.obj,alpha_obj=args.alpha,
                     beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed = args.seed,
-                    tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,no_assertion_fail=args.no_assertion_fail, lost_time = args.lost_time)
+                    tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,no_assertion_fail=args.no_assertion_fail, lost_time = args.lost_time,
+                             solver_model = args.solver_model)
         else:
             data = bootstrap_solver(data,args)
 

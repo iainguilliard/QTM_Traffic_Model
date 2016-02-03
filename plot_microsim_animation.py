@@ -352,6 +352,8 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
 
 
     transit_nodes = copy.deepcopy(nodes)
+    # print 'nodes',nodes
+    # print 'transit_nodes',transit_nodes
     # for i,n in enumerate(nodes):
     #     print i,n['queues']
 
@@ -562,6 +564,10 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
         if 'track_spacing' in q:
             qtrack_spacing = q['track_spacing']
         if 'transit' in q:
+            i_n0 = q['edge'][0]
+            i_n1 = q['edge'][1]
+            transit_nodes[i_n0]['p'] = [rx0,ry0]
+            transit_nodes[i_n1]['p'] = [rx1,ry1]
             rx = rx1-rx0
             ry = ry1-ry0
             tx=(rx/lth) * qtrack_width; ty=(ry/lth) * qtrack_width
@@ -775,8 +781,9 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
                         offsets.append(transit_l_data['offset'] * sim_time_factor)
                 sched = transit_l_data
             for n in transit['links']:
-                xoffsets.append(transit_nodes[n]['p'][0])
-                yoffsets.append(transit_nodes[n]['p'][1])
+                # print 'node:',transit_nodes[n]['n']
+                xoffsets.append(transit_nodes[n]['n']['p'][0])
+                yoffsets.append(transit_nodes[n]['n']['p'][1])
             offsets[0] = offsets[1] - (offsets[2] - offsets[1])
             offsets.append(offsets[-1] + (offsets[-1] - offsets[-2]))
             num_transits = int(math.ceil(sim_duration / (sched['period'] * sim_time_factor)))
@@ -807,6 +814,8 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
             #     yoffsets_stops.append(yoffsets[k + 1])
             # transit['x_f'] = interp.interp1d(zero_offsets_stops,xoffsets_stops)
             # transit['y_f'] = interp.interp1d(zero_offsets_stops,yoffsets_stops)
+            # print 'transit:',transit['id'],transit['links'],'=',zero_offsets,xoffsets,yoffsets
+            # print [ (t_node,transit_nodes[t_node]['p']) for t_node in transit['links']]
             transit['x_f'] = interp.interp1d(zero_offsets,xoffsets)
             transit['y_f'] = interp.interp1d(zero_offsets,yoffsets)
             transit['transit_safe_time'] = transit_safe_time
@@ -817,7 +826,7 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
             transit['period'] = sched['period'] * sim_time_factor
             transit['offset'] = offsets[0]
             transit['duration'] = sched['duration'] * sim_time_factor
-            transit['width'] = track_width
+            transit['width'] = track_width * 2
             transit['x_length'] = transit['x_f'](transit['duration']) - transit['x_f'](0) * 0.7
             transit['y_length'] = transit['y_f'](transit['duration']) - transit['y_f'](0) * 0.7
             t_0 = offsets[0]
@@ -825,7 +834,7 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
             while t_0 < sim_duration:
                 p = ax.add_patch( plt.Polygon([[0,0],[0,0],[0,0],[0,0]],
                                      closed=True,fill='y',color='None',ec='None',lw=1))
-                transits.append({'t_0':t_0, 't_1': t_1, 'transit': transit, 'width': track_width,
+                transits.append({'t_0':t_0, 't_1': t_1, 'transit': transit, 'width': track_width * 2,
                                  'duration': transit['duration'], 'poly': p, 'active': False, 'offset': transit['offset']})
                 t_0 += transit['period']
                 t_1 += transit['period']

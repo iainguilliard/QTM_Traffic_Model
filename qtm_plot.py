@@ -1146,6 +1146,19 @@ def plot_annotations(ax,args):
             ax.text(args.annotate_x[i],args.annotate_y[i],args.annotate_labels[i],size=size)
             if args.annotate_vline is not None and args.annotate_vline[i]:
                 ax.axvline(args.annotate_x[i],color='k',linestyle = args.annotate_vline_style[i])
+    if args.annotation_arrow is not None:
+        #print args.annotation_arrow
+        for annotation in args.annotation_arrow:
+            kwargs = json.loads(annotation[1])
+            ax.annotate(annotation[0],**kwargs)
+    if args.annotation_text is not None:
+        #print args.annotation_text
+        for annotation in args.annotation_text:
+            kwargs = json.loads(annotation[3])
+            x = annotation[0]
+            y = annotation[1]
+            text = annotation[2]
+            ax.text(x,y,text,**kwargs)
 
 def plot_box_plot(args):
 
@@ -1264,6 +1277,7 @@ def plot_box_plot(args):
 
         X = sorted(plot_data)
         Y = plot_data
+        boxprops = dict(fillcolor=args.color[c_i])
         props = dict(linestyle=args.linestyle[l_i],color=args.color[c_i],markeredgecolor=args.color[c_i],
                       markerfacecolor=args.color[c_i])
         props2 = dict(color=args.color[c_i],markeredgecolor=args.color[c_i],
@@ -1272,8 +1286,14 @@ def plot_box_plot(args):
                       markerfacecolor=args.color[c_i])
         #print boxprops,c_i,len(args.color)
 
-        ax[plot_i].boxplot(Y, vert=True, showmeans=True, widths=0.5, whis=1e99) #, boxprops=props, whiskerprops=props3, capprops=props,
+        bp = ax[plot_i].boxplot(Y, vert=True, showmeans=True, widths=0.5, whis=1e99, meanprops=dict(markersize=3),patch_artist=True) #, boxprops=props, whiskerprops=props3, capprops=props,
                       #medianprops=props, meanprops=props3)#,flierprops=props3,positions=X)
+        for box in bp['boxes']:
+            #box.set(facecolor = args.color[c_i] , alpha = 0.2 )
+            box.set(facecolor = mp.colors.ColorConverter().to_rgba(args.color[c_i] , alpha=0.2))
+            #box.set()
+            box.set(edgecolor = (0, 0, 1, 1.0) )
+            if c_i+1 < len(args.color): c_i += 1
         #Y = [plot_data[x][1] for x in X]
         #ax.plot(X,Y,c=args.color[c_i], label=plot_label,marker='x')
         if args.draw_vlines is not None:
@@ -1293,8 +1313,11 @@ def plot_box_plot(args):
         if args.title:
             ax[plot_i].set_title(args.title[plot_i % len(args.title)])
         if i+1 < len(args.linestyle): i += 1
-        if c_i+1 < len(args.color): c_i += 1
+        #if c_i+1 < len(args.color): c_i += 1
         if l_i+1 < len(args.linestyle): l_i += 1
+        if plot_i >= 1:
+            args.annotation_text = None
+            args.annotation_arrow = None
         plot_annotations(ax[plot_i],args)
 
     if args.plot_cpu_time:
@@ -3078,6 +3101,8 @@ if __name__ == '__main__':
     parser.add_argument("--annotate_size", help="List of label font sizes for each label in annotate_label", nargs='*', type=int)
     parser.add_argument("--annotate_vline", help="List of y|n to draw vline at annotate_x", nargs='*')
     parser.add_argument("--annotate_vline_style", help="List of line syles sizes for annotate_vline", nargs='*',default=['_','_','_','_'])
+    parser.add_argument("--annotation_arrow", help="optional text followed by json dictionary of matplotlib annotation parameters to plot an arrow",nargs=2,action='append')
+    parser.add_argument("--annotation_text", help="x y text followed by json dictionary of matplotlib text parameters",nargs=4,action='append')
     parser.add_argument("--by_car", help="Box plot of delay from travel time per car rather than per time step", action="store_true", default=False)
     parser.add_argument("--dt", help="sampling step per car for box plots",type=float,default=1)
     parser.add_argument("--time_factor", help="time factor to apply to all plots",type=float,default=1)

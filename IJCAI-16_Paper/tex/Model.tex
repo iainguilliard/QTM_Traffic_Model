@@ -214,7 +214,7 @@ $\p{\ell}{k} = 0$ for all $k \in \QPset{i}$).
 \begin{cAlign} 
 %
 \f{i}{j}\!\le\!\FMAX{i}{j}\!\sum^{\phantom{\Qn}}_{\makebox[0pt]{$\scriptstyle
-\p{\ell}{k}\!\in\!\QPset{i}$}}\p{\ell}{k}
+\p{\ell}{k}\!\in\QPset{i}$}}\p{\ell}{k}
 \tagconstrain{c:maxFlow}
 %
 \end{cAlign}
@@ -293,7 +293,7 @@ elapsed since the beginning of the problem until the end of interval \DT[n].
 The volume of traffic that entered queue~$i$ between two time points
 $x$ and $y$ is denoted as $\Vol_i(x,y)$, and is obtained by summing
 the piecewise linear segments of \qin{i} over $[x,y]$ (see \cite{guilliard2016trb}).
-
+%
 %%
 %\begin{equation} \label{eq:vol}
 %%
@@ -307,7 +307,7 @@ principle for queue $i$ where $\Vol_i(\tn[n-1]-\QDELAY{i},\tn[n]-\QDELAY{i})$ is
 the volume of cars that reached the stop line during \DT[n].
 %
 Notice that \eqref{c:qUpdate} represents a non-first order Markovian update
-because the update considers the 
+because the update considers
 %previous $n - T^{-1}(t_{n}-\QDELAY{i})$ time
 %steps, i.e., 
 the number of %$\DT[n]$ 
@@ -315,7 +315,7 @@ time steps spanned by \QDELAY{i}.
 %
 To ensure that the total volume of traffic traversing $i$ (i.e.,
 $\Vol_i(\tn[n] - \QDELAY{i}, \tn[n])$) and waiting at the stop line does not
-exceed the capacity of the queue, we apply~\eqref{c:10}.
+exceed the capacity of the queue,~\eqref{c:10} is enforced.
 %
 \begin{cAlign}
 %
@@ -350,12 +350,12 @@ This might be used by the optimizer to reserve space for traffic from an
 alternate queue to further minimize delay in the long-term, even though it leads
 to unintuitive traffic flow behavior.
 %
-We address this well-known issue through our objective
-function~\eqref{eq:objFunc} by maximizing the external outflow~\outq{i}
+QTM addresses this well-known issue by maximizing the external outflow~\outq{i}
 %
 %(i.e., both internal and external outflow)
 %
-and external inflow~\inq{i} of all queues~$i$.
+and external inflow~\inq{i} of all queues~$i$ in its objective
+function~\eqref{eq:objFunc}.
 %
 This quantity is weighted by the remaining time until the end of the problem
 horizon \TMAX to force the optimizer to allow as much traffic volume as possible
@@ -469,15 +469,16 @@ Formally, for all~$\tl \in \Lset$, $k \in \Pset_\tl$, and interval $n \in
 \{1,\dots,N\}$, the phase activation parameter~$\p{\tl}{k} \in \{0,1\}$ becomes
 a free variable to be optimized.
 %
-In order to obtain a valid control plan, we enforce that one phase of traffic
-light \tl is always active at any interval~$n$~\eqref{c:onlyOnePhaseOn} and
-cyclic phase policies where phase changes follow a fixed ordered sequence,
-indexed by $k$~\eqref{c:seqPhases}
+In order to obtain a valid control plan, only one phase of traffic
+light \tl is allowed to be active at any interval~$n$~\eqref{c:onlyOnePhaseOn}.
+%
+Moreover, phase changes follow a (cyclic) fixed ordered sequence
+indexed by $k$~\eqref{c:seqPhases},
 %
 %, i.e., if phase~$k$ was active during interval~$n-1$ and has become inactive
 %in interval~$n$, then phase~$k+1$ must be active in interval~$n$.
 %
-(where \eqref{c:seqPhases} assumes that $k+1$ equals 1 if $k = \Pn{}$).
+where \eqref{c:seqPhases} assumes that $k+1$ equals 1 if~$k = \Pn{}$.
 %
 %% TODO: We need to understand this issue better:
 % \toIain{I removed the constraint $\p{\ell}{k} + \p{\ell}{k+1} \le 1$ because
@@ -499,7 +500,7 @@ indexed by $k$~\eqref{c:seqPhases}
 \noindent\begin{minipage}{0.4\linewidth}
 \begin{cAlign} 
 %
-\textstyle \sum_{k\!=\!1}^{\Pn} \p{\ell}{k} &\!=\! 1\tagconstrain{c:onlyOnePhaseOn}
+\textstyle \sum_{k = 1}^{\Pn} \p{\ell}{k} &\!=\! 1\tagconstrain{c:onlyOnePhaseOn}
 %
 \end{cAlign}
 \end{minipage}%
@@ -547,9 +548,9 @@ indexed by $k$~\eqref{c:seqPhases}
 
 
 
-Next, we enforce the minimum and maximum phase durations (i.e.,
+Next, the minimum and maximum phase durations (i.e.,
 $\PTMIN{\ell}{k}$ and $\PTMAX{\ell}{k}$) for each phase $k \in \Pset_\tl$ of
-traffic light \tl.
+traffic light \tl is enforced.
 %
 To encode these constraints, we use the helper variable $\pd{\ell}{k} \in
 [0,\PTMAX{\ell}{k}]$, defined by constraint (\ref{c:pd}), that:
@@ -564,12 +565,16 @@ inactive; and %~(\ref{c:pd:inactiveUB},\ref{c:pd:inactiveLB}); and
 (iii) is restarted when phase~$k$ changes from inactive to
 active. %~\eqref{c:pd:reset}.
 %
-Notice that (\ref{c:pd}) can be encoded by employing the \textit{big-M}
-method to turn the cases that should not be active into subsumed constraints
-based on the value of $\p[n]{\tl}{k}$.
+%Notice that (\ref{c:pd}) can be encoded by employing the \textit{big-M}
+%method to turn the cases that should not be active into subsumed constraints
+%based on the value of $\p[n]{\tl}{k}$.
 %
-We use~\PTMAX{\ell}{k} as our large constant since $\pd[n]{\ell}{k} \le
-\PTMAX{\ell}{k}$ and $\DT[n] \le \PTMAX{\ell}{k}$.
+%We use~\PTMAX{\ell}{k} as our large constant since $\pd[n]{\ell}{k} \le
+%\PTMAX{\ell}{k}$ and $\DT[n] \le \PTMAX{\ell}{k}$.
+%
+(\ref{c:pd})~is encoded using the \textit{big-M} method and \PTMAX{\ell}{k} as
+the large constant since $\pd[n]{\ell}{k} \le \PTMAX{\ell}{k}$ and $\DT[n] \le
+\PTMAX{\ell}{k}$.
 %
 Similarly, \cref{c:minPhase} ensures the minimum phase time of $k$ and is
 not enforced while $k$ is still active.
@@ -642,7 +647,7 @@ not enforced while $k$ is still active.
 %
 
 
-Lastly, we constrain the sum of all the phase durations for light \tl to be
+Lastly, QTM constrains the sum of all the phase durations for light \tl to be
 within the cycle time limits \CTMIN{\tl}and
 \CTMAX{\tl}~\eqref{c:cyclelimits}.
 %
@@ -675,7 +680,7 @@ cycle, i.e., when its first phase is changed from inactive to active.
 %
  \CTMIN{\ell}(\p[n]{\ell}{1}\! -\! \p[n\!-\!1]{\ell}{1}) \le
 %
-\pd[n\!-\!1]{\ell}{1}\!+\! \textstyle \sum_{k\!=\!2}^{\Pn} \pd{\ell}{k} \le \CTMAX{\ell}
+\pd[n\!-\!1]{\ell}{1}\!+\! \textstyle \sum_{k = 2}^{\Pn} \pd{\ell}{k} \le \CTMAX{\ell}
 \tagconstrain{c:cyclelimits}
 %
 \end{cAlign}
@@ -689,15 +694,15 @@ plan in a QTM network without light rail.
 \paragraph{Light Rail Constraints}
 %
 \parskip=0pt
-To incorporate a fixed-schedule light rail in our model, we post-process our
+To incorporate a fixed-schedule light rail in QTM, we post-process the
 MILP model by fixing the free variable $\p[n]{\tl}{k}$ for all $n$ s.t.\ the
 light rail uses phase $k$ of \tl at time $n$.
 %
-Formally, given a schedule $S_{\tl}(k,n) \in \{0,1\}$ where~$1$ represents that
-the light rail uses phase $k$ of \tl at time $n$, we replace
+Formally, given a schedule $S_{\tl}(k,n) \in \{0,1\}$ where $1$ represents that
+the light rail uses phase $k$ of \tl at~time $n$, we replace
 (\ref{c:pd}) and (\ref{c:minPhase}) by \eqref{c:forceTransit} and
-\eqref{c:pd:holdTransit} when $\sum_{k \in \Pset_\tl} S_{\tl}(k,n) > 0$.
-%
+\eqref{c:pd:holdTransit} when~$\sum_{k \in \Pset_\tl} S_{\tl}(k,n) > 0$.
+
 %\begin{cAlign}
 %%
 %\p[n]{\ell}{k} &= S_{\ell}(k,n)\tagconstrain{c:forceTransit}\\
@@ -705,6 +710,7 @@ the light rail uses phase $k$ of \tl at time $n$, we replace
 %\pd{\ell}{k} &= \pd[n-1]{\ell}{k}\tagconstrain{c:pd:holdTransit}
 %%
 %\end{cAlign}
+\vspace{-2mm}
 \noindent\begin{minipage}{0.5\linewidth}
 \begin{cAlign} 
 %

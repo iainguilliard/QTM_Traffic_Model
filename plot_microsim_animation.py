@@ -784,6 +784,8 @@ def plot_network(data,ax,cars,road_color='0.8',transit_safe_time = 5, q_delay = 
                 # print 'node:',transit_nodes[n]['n']
                 xoffsets.append(transit_nodes[n]['n']['p'][0])
                 yoffsets.append(transit_nodes[n]['n']['p'][1])
+            if transit['id'] == 'North-South':
+                xoffsets = [5.0, 5.0, 5.0, 5.0, 5.0]
             offsets[0] = offsets[1] - (offsets[2] - offsets[1])
             offsets.append(offsets[-1] + (offsets[-1] - offsets[-2]))
             num_transits = int(math.ceil(sim_duration / (sched['period'] * sim_time_factor)))
@@ -958,25 +960,27 @@ def draw_frame(frame, time_lu, car_color, scalar_cmap, cars, car_polys, xy_data,
         q_f = qtm_data['q_f']
         Q_DELAY = qtm_data['Q_DELAY']
         bins = qtm_data['bins']
-        for i,q_in_f_i in enumerate(q_in_f):
-            for k in range(bins[i]):
-                t_q_in = t - Q_DELAY[i] * (k / bins[i])
+        model = qtm_data['model']
+        if model != 'CTM':
+            for i,q_in_f_i in enumerate(q_in_f):
+                for k in range(bins[i]):
+                    t_q_in = t - Q_DELAY[i] * (k / bins[i])
 
-                if t_q_in >= 0:
-                    #print t_q_in,q_in_f_i(t_q_in)
-                    if q_in_f_i(t_q_in) > 0:
-                        col = scalar_cmap.to_rgba(0)
-                    else:
-                        col = 'none' #scalar_cmap.to_rgba(0)
-                    qtm_q_in_polys[i][k].set_facecolor(col)
-                    qtm_q_in_polys[i][k].set_edgecolor('none')
-                    q_in = q_in_f_i(t_q_in)
-                    if q_in > 1.0:
-                        q_in = 1.0
-                    if q_in < 0.0:
-                        q_in = 0.0
-                    qtm_q_in_polys[i][k].set_alpha(q_in)
-                    updated_polys.append(qtm_q_in_polys[i][k])
+                    if t_q_in >= 0:
+                        #print t_q_in,q_in_f_i(t_q_in)
+                        if q_in_f_i(t_q_in) > 0:
+                            col = scalar_cmap.to_rgba(0)
+                        else:
+                            col = 'none' #scalar_cmap.to_rgba(0)
+                        qtm_q_in_polys[i][k].set_facecolor(col)
+                        qtm_q_in_polys[i][k].set_edgecolor('none')
+                        q_in = q_in_f_i(t_q_in)
+                        if q_in > 1.0:
+                            q_in = 1.0
+                        if q_in < 0.0:
+                            q_in = 0.0
+                        qtm_q_in_polys[i][k].set_alpha(q_in)
+                        updated_polys.append(qtm_q_in_polys[i][k])
         for i,q_f_i in enumerate(q_f):
             ((rx0,ry0),(rx1,ry1),(rx,ry),(tx,ty)) = xy_data[i]
             q = q_f_i(t)
@@ -986,12 +990,17 @@ def draw_frame(frame, time_lu, car_color, scalar_cmap, cars, car_polys, xy_data,
                 col = scalar_cmap.to_rgba(0.25)
             else:
                 col = 'none'
-            rx0 = rx1 - (rx1 - rx0) * q
-            ry0 = ry1 - (ry1 - ry0) * q
+                q = 0
+            if  model != 'CTM':
+                rx0 = rx1 - (rx1 - rx0) * q
+                ry0 = ry1 - (ry1 - ry0) * q
             qtm_q_polys[i].set_xy([[rx0 - ty, ry0 + tx], [rx1 - ty, ry1 + tx], [rx1 + ty, ry1 - tx], [rx0 + ty, ry0 - tx]])
             qtm_q_polys[i].set_facecolor(col)
             qtm_q_polys[i].set_edgecolor('none')
-            qtm_q_polys[i].set_alpha(1.0)
+            if  model == 'CTM':
+                qtm_q_polys[i].set_alpha(q)
+            else:
+                qtm_q_polys[i].set_alpha(1.0)
             updated_polys.append(qtm_q_polys[i])
 
     if len(q_sig_polys) > 0:
@@ -1028,6 +1037,7 @@ if __name__ == '__main__':
     parser.add_argument("--fps", type=int, help="frames per second", default=15)
     parser.add_argument("--car_color", help="color to render cars", default='k')
     parser.add_argument("--road_color", help="color to render road", default='0.8')
+    parser.add_argument("--t0", type=float, help="end of simulation time to animate up to",default=0)
     parser.add_argument("--t1", type=float, help="end of simulation time to animate up to")
     parser.add_argument("--format", help="Video format to use. Options: vga, ,svga, xga, 720p, 1080p")
     parser.add_argument("--titles", help="titles to display under plots", nargs='*')
@@ -1110,12 +1120,20 @@ if __name__ == '__main__':
     print 'frame_DT:',frame_DT
     if args.t1 is not None and args.t1 <= sim_time[-1]:
         t1_index = int(sim_time_f(args.t1))
-        print 'Trimmed animation to %s sec of simulation' % sim_time[t1_index]
+
     else:
         t1_index = len(sim_time) - 1
+    if args.t0 <= sim_time[-1] and args.t0 < t1_index:
+        t0_index = int(sim_time_f(args.t0))
+    else:
+        t0_index = 0
 
-    frame_f = interp.interp1d(np.linspace(0,total_frames,len(sim_time[:t1_index])),sim_time[:t1_index])
-    print frame_f(total_frames)
+    if t1_index < len(sim_time) - 1 or t0_index > 0:
+        print 'Trimmed animation to %s sec of simulation' % (sim_time[t1_index] - sim_time[t0_index])
+    if t0_index > 0:
+        print 'Animation start offset to %s sec of simulation' % sim_time[t0_index]
+    frame_f = interp.interp1d(np.linspace(0,total_frames,len(sim_time[t0_index:t1_index+1])),sim_time[t0_index:t1_index+1])
+    print "Total number of frames in animation:", frame_f(total_frames)
     time_lu = frame_f(range(total_frames))
 
     fig, ax = plt.subplots(nrows=1, ncols=len(args.file), sharex=False, sharey=False)
@@ -1223,9 +1241,11 @@ if __name__ == '__main__':
             q_f = [interp.interp1d(data_time,q[i]) for i in range(len(data['Queues']))]
             bins = [int(Q_DELAY[i] / (frame_DT * 5)) for i in range(len(data['Queues']))]
             print 'bins:',bins
-            qtm_data = {'q_in_f': q_in_f, 'q_f': q_f, 'Q_DELAY': Q_DELAY, 'bins': bins}
+            qtm_data = {'q_in_f': q_in_f, 'q_f': q_f, 'Q_DELAY': Q_DELAY, 'bins': bins, 'model' : data['Out'].get('solver_model')}
         else:
             qtm_data = None
+        print 'model:',qtm_data['model']
+
         q_sig_f = [interp.interp1d(data_time,q_sig[i],kind='zero') if len(q_sig[i]) > 0 else None for i in range(len(data['Queues']))]
         #print 'q_delay',q_delay[0]
         # print cars[0]['delay_f'](sim_time)[0:20]

@@ -1764,7 +1764,7 @@ def plot_av_travel_time_N(args):
     titles=[]
     i=0
     c_i=0
-
+    av_i = 0
     l_i=0
     labels=[]
     if args.labels: labels=args.labels
@@ -1774,7 +1774,7 @@ def plot_av_travel_time_N(args):
     plot_scatter_Y = []
     plot_data_mf = []
     plot_data_results = []
-
+    time_limit_Y = []
     # for file in args.files:
     #     files = []
     #
@@ -1807,6 +1807,7 @@ def plot_av_travel_time_N(args):
         plot_data.append( dict())
         plot_scatter_Y.append([])
         plot_scatter_X.append([])
+        time_limit_Y.append([])
         plot_data_mf.append( dict())
         plot_label=''
         if len(labels)>0: plot_label = labels[l_i]
@@ -1839,6 +1840,8 @@ def plot_av_travel_time_N(args):
                     N = d_out['Step'][0]['N']
                 else:
                     N = len(d_out['Step'][0]['t'])-1
+                if args.plot_travel_time_maj:
+                    N = d_out['Step'][0]['t'][-1]
                 #print 'N=',N
             else:
                 if 'N' in d_out:
@@ -1852,7 +1855,8 @@ def plot_av_travel_time_N(args):
 
 
             solve_time=0
-            total_travel_time=0
+            total_travel_time=None
+            time_limit = 0
             for run in range(runs):
                 if 'Run' in d['Out']:
                     #print 'run=',run
@@ -1860,7 +1864,26 @@ def plot_av_travel_time_N(args):
                 #print results.keys()
 
                 #total_travel_time += calc_total_travel_time(d,results)
-                total_travel_time += results['total_travel_time']
+                if total_travel_time is not None:
+                    if args.minimum[av_i] == 'y':
+                        total_travel_time = min(total_travel_time,results['total_travel_time'])
+                    else:
+                        total_travel_time += results['total_travel_time'] / runs
+                else:
+                    if args.minimum[av_i] == 'y':
+                        total_travel_time = results['total_travel_time']
+                    else:
+                        total_travel_time = results['total_travel_time'] / runs
+
+                if args.count_time_limit:
+                    if 'Step' in results:
+                        for step in results['Step']:
+                            if step['status'] == 'TIME_LIMIT':
+                                time_limit += 1.0 / runs
+                    else:
+                        if results['status'] == 'TIME_LIMIT':
+                            time_limit += 1.0 / runs
+
                 solve_time=0
                 if args.plot_cpu_time:
                     if 'Step' in results:
@@ -1869,6 +1892,7 @@ def plot_av_travel_time_N(args):
                                 solve_time+=step['solve_time']
                             else:
                                 solve_time+=step['solver_runtime']
+
                             #print step['solver_runtime']
                             if args.plot_cpu_time:
                                 if 'solver_runtime' not in step:
@@ -1887,6 +1911,7 @@ def plot_av_travel_time_N(args):
                 if not args.plot_cpu_time:
                     plot_scatter_Y[-1].append(results['total_travel_time'])
                     plot_scatter_X[-1].append(N)
+
                 #print results['total_travel_time']
                 if len(plot_label)==0:
                     plot_label = '$'+label.split('$')[1]+'$'
@@ -1894,12 +1919,14 @@ def plot_av_travel_time_N(args):
                 #time = results['t']
                 #total_time = time[-1] - time[0]
                 min_TT = min(results['total_travel_time'],min_TT)
-            av_delay,total_traffic_in = get_av_delay(d,args)
+            #av_delay,total_traffic_in = get_av_delay(d,args)
+
+            time_limit_Y[-1].append(time_limit)
 
             if args.plot_cpu_time:
                 plot_data[-1][solve_time]=total_travel_time/runs
             else:
-                plot_data[-1][N]=total_travel_time/runs
+                plot_data[-1][N]=total_travel_time # total_travel_time/runs
             #print total_travel_time/runs
             #print min_TT
             if annotate and 'plan' in d['Out']:
@@ -1915,11 +1942,13 @@ def plot_av_travel_time_N(args):
                     plot_data_mf[-1][N]=0
         i+=1
         c_i+=1
+        if av_i + 1 < len(args.minimum):
+            av_i += 1
 
     if ref_file != None:
         min_TT = ref_file['Out']['total_travel_time']
         #min_TT = calc_total_travel_time(ref_file,ref_file['Out']) #get_av_delay(ref_file,args)
-
+    print 'time_limit_Y:',time_limit_Y
     i=0
     c_i=0
     m_i=0
@@ -1933,7 +1962,9 @@ def plot_av_travel_time_N(args):
             plot_label = '$'+label.split('$')[1]+'$'
         X = sorted(plot)
         Y = [((plot[x]-min_TT)/min_TT)*100 for x in X]
-        ax.plot(X,Y,c=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,marker=args.marker[m_i],markerfacecolor='None')
+        ax.plot(X,Y,color=args.color[c_i], linestyle=args.linestyle[l_i], label=plot_label,marker=args.marker[m_i],markerfacecolor='None')
+        if args.count_time_limit:
+            ax.plot(X,time_limit_Y[plot_i],color=args.color[c_i],marker=args.marker[m_i],markerfacecolor='None')
         if args.plot_scatter:
             ax.plot(plot_scatter_X[plot_i],((np.array(plot_scatter_Y[plot_i])-min_TT)/min_TT)*100 ,'.',c=args.color[c_i])
         for j,x in enumerate(sorted(plot_data_mf[i])):
@@ -1959,6 +1990,8 @@ def plot_av_travel_time_N(args):
     ax.grid()
     if args.plot_cpu_time:
         ax.set_xlabel('CPU Solve Time')
+    elif args.plot_travel_time_maj:
+        ax.set_xlabel('Major frame time (s)')
     else:
         ax.set_xlabel('N (number of time samples)')
     ax.set_ylabel('% increase in total travel time') #ax.set_ylabel('Total Travel Time')
@@ -2412,33 +2445,64 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                             ax[i].plot(t,[j*P_MAX*2+P_MAX for x in p[1]],  marker=marker, linestyle = ls, color=col)
 
 
-                elif var[0:2]=='p_' and 1==2:
+                elif var[0:2]=='p_' :
 
                     l = int(((var[3:-1].split('_'))[0]).split(',')[0])
                     k = int(((var[3:-1].split('_'))[0]).split(',')[1])
                     if l < len(data['Lights']):
                         num_p = len(data['Lights'][l]['P_MAX'])
                         N=len(t)
-                        p = [ results['d_{%d,%d}' % (l,k)][0] ]*N
+                        p = results['p_{%d,%d}' % (l,k)]
+                        p_f = interp.interp1d(t,p,kind='zero')
 
-                        P_MIN=data['Lights'][l]['P_MIN'][k]
-                        for n,pk in enumerate(results['p_{%d,%d}' % (l,k)]):
-                            if n==0 and p[n]==0: p[n]=P_MIN
-                            if pk<1e-6:
-                                p[n]=results['d_{%d,%d}' % (l,k)][n]
+                        # P_MIN=data['Lights'][l]['P_MIN'][k]
+                        # for n,pk in enumerate(results['p_{%d,%d}' % (l,k)]):
+                        #     if n==0 and p[n]==0: p[n]=P_MIN
+                        #     if pk<1e-6:
+                        #         p[n]=results['d_{%d,%d}' % (l,k)][n]
+                        #
+                        #     else:
+                        #         if n>0: p[n]=p[n-1]
+                    t_samp = np.linspace(0,t[-1],N*100)
+                    ax[i].plot(t_samp,p_f(t_samp), label=results['label'], marker=None, linestyle = ls, color=col)
+                    ax[i].plot(t,p, marker=marker, linestyle = ' ', color=col)
+                    ax[i].set_ylim(-0.1,1.1)
+                elif var[0:2]=='d_' :
 
-                            else:
-                                if n>0: p[n]=p[n-1]
+                    l = int(((var[3:-1].split('_'))[0]).split(',')[0])
+                    k = int(((var[3:-1].split('_'))[0]).split(',')[1])
+                    if l < len(data['Lights']):
+                        num_p = len(data['Lights'][l]['P_MAX'])
+                        N=len(t)
+                        d = results['d_{%d,%d}' % (l,k)]
+                        d_f1 = interp.interp1d(t,d,kind='zero')
+                        d_f2 = interp.interp1d(t,d)
 
-                    ax[i].plot(t,p, label=results['label'], marker=marker, linestyle = ls, color=col)
-                    ax[i].set_ylim(-1,data['Lights'][l]['P_MAX'][k]+1 )
+                        P_MAX=data['Lights'][l]['P_MAX'][k]
+                        # for n,pk in enumerate(results['p_{%d,%d}' % (l,k)]):
+                        #     if n==0 and p[n]==0: p[n]=P_MIN
+                        #     if pk<1e-6:
+                        #         p[n]=results['d_{%d,%d}' % (l,k)][n]
+                        #
+                        #     else:
+                        #         if n>0: p[n]=p[n-1]
+                    os_factor = 100
+                    t_samp = np.linspace(0,t[-1],N*os_factor)
+                    d_switch = interp.interp1d(t,[0 if -1e-6 < d[nx + 1] < 1e-6 or d[nx] == d[nx +1] else 1 for nx in range(len(t)-1)] + [0],kind='zero')
+                    d_f = [d_f1(tx) if d_switch(tx)==0 else d_f2(tx) for tx in t_samp]
+                    ax[i].plot(t_samp,d_f, label=results['label'], marker=None, linestyle = ls, color=col)
+                    ax[i].plot(t,d, marker=marker, linestyle = ' ', color=col)
+                    ax[i].set_ylim(-0.1,P_MAX+0.1)
                 elif var in results.keys():
                     #if var[0] == 'l':
                     if var[0:3]=='q_{':
                         DT = results['DT']
                         #ax[i].plot(t,[results[var][0]]+[results[var][x]/DT[x-1] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col) #/DT[x_i]
                         if args.io_vars_as_rate == True:
-                            ax[i].plot(t,[results[var][x]/DT[x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
+                            plot_f = interp.interp1d(t,[results[var][x]/DT[x] for x in range(0,len(t))],kind='zero')
+                            t_x = np.linspace(t[0],t[-1],len(t) * 100)
+                            ax[i].plot(t_x,plot_f(t_x),marker=marker, label=label, linestyle = ls, color=col)
+                            #ax[i].plot(t,[results[var][x]/DT[x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
                         else:
                             ax[i].plot(t,[results[var][x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
                     else:
@@ -2476,8 +2540,9 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                             ax[i].set_ylim(-1,data['Queues'][int(var[3:])]['Q_MAX']+2)
 
                     elif var[0] == 'd' and var[1] != 'q':
-                        lp = var[3:-1].split(',')
-                        ax[i].set_ylim(-1,data['Lights'][int(lp[0])]['P_MAX'][int(lp[1])]+2)
+                        # lp = var[3:-1].split(',')
+                        # ax[i].set_ylim(-1,data['Lights'][int(lp[0])]['P_MAX'][int(lp[1])]+2)
+                        None
                     elif var[0] == 'l':
                         l = int(var[2:])
                         ax[i].set_ylim(-1,len(data['Lights'][l]['P_MAX']) )
@@ -3060,6 +3125,9 @@ if __name__ == '__main__':
     parser.add_argument("--plot_travel_time", help="Plots travel time vs N or cpu time for each file",action="store_true", default=False)
     parser.add_argument("--plot_travel_time_ref", help="file for travel time plot reference ")
     parser.add_argument("--plot_av_travel_time_N", help="Plots average travel time vs N for each file",action="store_true", default=False)
+    parser.add_argument("--plot_travel_time_maj", help="Sets plot_av_travel_time_N to Plot average travel time vs major frame time for each file",action="store_true", default=False)
+    parser.add_argument("--count_time_limit", help="plot average TIME_LIMIT status codes in each run",action="store_true", default=False)
+    parser.add_argument("--minimum", help="List of y|n whether to plot minimum or average the points of plot_av_travel_time_N", default='n')
     parser.add_argument("--plot_av_delay", help="Plots average delay vs total traffic for each file",action="store_true", default=False)
     parser.add_argument("--plot_delay_diff", help="Plots average delay vs total traffic for each file",nargs=3, type=float)
     parser.add_argument("--plot_av_travel_time", help="Plots total travel time vs total traffic for each file",action="store_true", default=False)
@@ -3119,7 +3187,7 @@ if __name__ == '__main__':
     parser.add_argument("--no_legend", help="do not display a plot legend", action="store_true",default=False)
     args = parser.parse_args()
 
-    linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.'}
+    linestyle_map = { '_': '-', '_ _': '--', '_.' : '-.' , '..' : ':' }
 
     if args.debug:
         DEBUG = True

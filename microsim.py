@@ -8,11 +8,13 @@ import qtm_plot as qtm
 import argparse
 import json as json
 import pandas as  pd
+from scipy.stats import gaussian_kde
+from scipy.optimize import leastsq
 
 DEBUG_PLOT = False
 
 def random():
-    return 0 #np.random.uniform()
+    return np.random.normal()
 
 class signal():
 
@@ -35,6 +37,7 @@ class signal():
         self.scedule = interp.interp1d(scedule_time,range(len(scedule_state)))
         self.scedule_time = scedule_time
         self.scedule_state = scedule_state
+        self.scedule_state_f = interp.interp1d(scedule_time,scedule_state,kind='zero')
         self.position = position
         self.amber_time = amber_time
         sced = interp.interp1d(scedule_time,self.scedule_state,kind='zero')
@@ -61,6 +64,12 @@ class signal():
             return self.scedule_state[int(self.scedule(t))]
         else:
             return 0
+
+    def plot(self,plt):
+        # print self.scedule_time
+        # print self.scedule(self.scedule_time)
+        sced_t = np.linspace(self.scedule_time[0],self.scedule_time[-1],10000)
+        plt.plot(sced_t,self.scedule_state_f(sced_t),c='b')
 
 class link():
     def __init__(self, index, signal = None):
@@ -117,6 +126,8 @@ class path():
         self.links = links
         self.link_offsets = link_offsets
         self.link_f = self.link_f = interp.interp1d(link_offsets,range(len(links) + 1),kind='zero')
+        self.car_xf = None
+        self.car_tf = None
 
     def add(self,car):
         self.cars.append(car)
@@ -197,25 +208,189 @@ class path():
             total_stops.append(car.get_stops(threshhold))
         return total_stops
 
+    def get_flow_density(self,t,dt,x,dx,plt=None,theta=0,kwargs={}):
+        sum_q = 0
+        sum_k = 0
+        j=0
+        for car in self.cars:
+            #print car.time_log
+            #print car.position_log
+            t0,t1,x0,x1 = None,None,None,None
+            i0,i1 = None,None
+            if car.time_log[0] < t + dt and car.time_log[-1] > t:
+                for i,car_t in enumerate(car.time_log):
+                    if t <= car_t <= t + dt:
+                        car_x =  car.position_log[i]
+                        if x <= car_x <= x + dx:
+                            if x0 is None:
+                                if i > 0:
+                                    alpha_x = (t - car.time_log[i - 1]) / (car_t - car.time_log[i - 1])
+                                    alpha_t = (x - car.position_log[i - 1]) / (car_x - car.position_log[i - 1])
+                                    if car.time_log[i - 1] < t and car.position_log[i - 1] >= x:
+                                        t0 = t
 
+                                        x0 = car.position_log[i - 1] + alpha_x * (car_x - car.position_log[i - 1])
+                                    elif car.time_log[i - 1] >= t and car.position_log[i - 1] < x:
+                                        x0 = x
 
+                                        t0 = car.time_log[i - 1] + alpha_t * (car_t - car.time_log[i - 1])
+                                    else:
+                                        x0 = x # car.position_log[i - 1] + alpha_x * (car_x - car.position_log[i - 1])
+                                        alpha_t = (x0 - car.position_log[i - 1]) / (car_x - car.position_log[i - 1])
+                                        t0 = car.time_log[i - 1] + alpha_t * (car_t - car.time_log[i - 1])
+                                        if t0 < t:
+                                            t0 = t
+                                            alpha_x = (t0 - car.time_log[i - 1]) / (car_t - car.time_log[i - 1])
+                                            x0 = car.position_log[i - 1] + alpha_x * (car_x - car.position_log[i - 1])
 
+                                else:
+                                    x0 = car_x
+                                    t0 = car_t
+                                i0 = i
+                            else:
+                                x1 = car_x
+                                t1 = car_t
+                                i1 = i
+                        elif car_x > x + dx:
+                            break
+                    elif car_t > t + dt:
+                        break
+            if None not in (t0,t1,x0,x1): #if t0 is not None and x0 is not None and t1 is not None and x1 is not None:
+                if i1 < len(car.time_log) - 1:
+                    if car.time_log[i1 + 1] > t + dt and car.position_log[i1 + 1] <= x + dx:
+                        t1 = t + dt
+                        alpha_x = (t + dt - car.time_log[i1]) / (car.time_log[i1 + 1] - car.time_log[i1])
+                        x1 = car.position_log[i1] + alpha_x * (car.position_log[i1 + 1] - car.position_log[i1])
+
+                    elif car.time_log[i1 + 1] <= t + dt and car.position_log[i1 + 1] > x + dx:
+                        x1 = x + dx
+                        alpha_t = (x + dx - car.position_log[i1]) / (car.position_log[i1 + 1] - car.position_log[i1])
+                        t1 = car.time_log[i1] + alpha_t * (car.time_log[i1 + 1]- car.time_log[i1])
+                    elif car.time_log[i1 + 1] <= t + dt and car.position_log[i1 + 1] <= x + dx:
+                        t1 = car.time_log[i1+1]
+                        x1 = car.position_log[i1+1]
+                    else:
+                        x1 = x + dx
+                        alpha_t = (x1 - car.position_log[i1]) / (car.position_log[i1 + 1] - car.position_log[i1])
+                        t1 = car.time_log[i1] + alpha_t * (car.time_log[i1 + 1]- car.time_log[i1])
+                        if t1 > t + dt:
+                            t1 = t+ dt
+                            alpha_x = (t1 - car.time_log[i1]) / (car.time_log[i1 + 1] - car.time_log[i1])
+                            x1 = car.position_log[i1] + alpha_x * (car.position_log[i1 + 1] - car.position_log[i1])
+
+                else:
+
+                    x1 = car.position_log[i1] # x + dx
+                    t1 = car.time_log[i1] # t + dt
+                l_i = x1 - x0
+                t_i = t1 - t0
+                sum_q += l_i
+                sum_k += t_i
+            #print j,t0,t1,x0,x1
+                if plt is not None:
+                    #plt.plot(car.time_log[i0-1:i1+2], car.position_log[i0-1:i1+2],'k-',marker='.',hold=True)
+                    #plt.plot([t0],[x0],'rx',hold=True)
+                    #plt.plot([t1],[x1],'rx')
+                    plt.plot([t0] + car.time_log[i0:i1+1] + [t1],[x0] + car.position_log[i0:i1+1] + [x1],**kwargs)
+                j += 1
+        if j < theta:
+            return 0,0
+        else:
+            sum_q /= (dt * dx)
+            sum_k /= (dt * dx)
+            return sum_q, sum_k
+
+    def get_flow_density2(self,t,dt,x,dx):
+        sum_q = 0
+        sum_k = 0
+        j=0
+        for car in self.cars:
+            #print car.time_log
+            #print car.position_log
+            t0 = None
+            t1 = None
+            x0 = None
+            x1 = None
+            for i,car_t in enumerate(car.time_log):
+                if t <= car_t <= t + dt:
+                    if t0 is None:
+                        t0 = t0
+                        t1 = t0
+                    else:
+                        t1 = car_t
+                    car_x =  car.position_log[i]
+                    if x <= car_x <= x + dx:
+                        if x0 is None:
+                            x0 = x
+                            x1 = x
+                        else:
+                            x1 = car_x
+            if None not in [t0,t1,x0,x1]:
+                l_i = x1 - x0
+                t_i = t1 - t0
+                sum_q += l_i
+                sum_k += t_i
+            #print j,t0,t1,x0,x1
+            j += 1
+        sum_q /= (dt * dx)
+        sum_k /= (dt * dx)
+        return sum_q, sum_k
+
+    def get_qk(self,t,dt,x,dx,plt,xr,tr):
+
+        if self.car_xf is None or self.car_tf is None:
+            self.car_xf = []
+            self.car_tf = []
+            for car in self.cars:
+                self.car_xf.append(interp.interp1d([-1e9,0] + car.time_log, [0,0] + car.position_log, bounds_error=False, fill_value=car.position_log[-1]))
+                self.car_tf.append(interp.interp1d([-1e9,0] + car.position_log,[0,0] + car.time_log, bounds_error=False, fill_value=car.time_log[-1]))
+
+        sum_q = 0
+        sum_k = 0
+        print 'square=',t,dt,x,dx
+        for i,car in enumerate(self.cars):
+            #print self.car_xf[i](t + dt),self.car_xf[i](t)
+            l_i = self.car_xf[i](t + dt) - self.car_xf[i](t)
+            t_i = self.car_tf[i](x + dx) - self.car_tf[i](x)
+            sum_q += l_i
+            sum_k += t_i
+            if l_i > 0  and t_i > 0:
+                plt.plot(self.car_tf[i](xr),self.car_xf[i](tr))
+            #print i,l_i,t_i
+        q = sum_q / (dt * dx)
+        k = sum_k / (dt * dx)
+        return q, k
 
 
 
 class car():
 
-    def __init__(self,path,t,init_speed,maxspeed):
+    def __init__(self, path, t, init_speed,maxspeed, params=None):
+
+
         self.position = 0
         self.speed = init_speed
         self.width = 1.7
-        self.length = 3 #4.667  # 3 + 2 * random()
+        self.length = 3             #4.667  # 3 + 2 * random()
         self.maxSpeed = maxspeed    # IDM param: v0, desired speed when driving on a free road (m/s)
         self.s0 = 2                 # IDM param: s0, minimum bumper-to-bumper distance to the front vehicle (m)
         self.timeHeadway = 1.5      #1.5# IDM param: T, desired safety time headway when following other vehicles (s)
-        self.distanceToStopLine = 1e6
         self.maxAcceleration = 2    #1 # IDM param: a, acceleration in everyday traffic (m/s^2)
         self.maxDeceleration = 3    # IDM param: b, "comfortable" braking deceleration in everyday traffic (m/s^2)
+        if params is not None:
+            if 'random' in params and params['random'] is not None:
+                randomf = random()
+            else:
+                randomf = 0
+            self.width = params['width']
+            self.length = params['length'] + randomf
+            if 'maxSpeed' in params:
+                self.maxSpeed = params['maxspeed']
+            self.timeHeadway = params['timeHeadway']
+            self.s0 = params['s0']
+            self.maxAcceleration = params['maxAcceleration']
+            self.maxDeceleration = params['maxDeceleration']
+        self.distanceToStopLine = 1e6
         self.path = path
         self.path.add(self)
         self.link = None
@@ -387,18 +562,23 @@ def find_paths(data):
 
 class microsim:
 
-    def __init__(self,data,free_flow_speed,time_factor=1,amber_time=5,road_width=0, lost_time = 0,
-                 no_lost_time = False):
+    def __init__(self, data, free_flow_speed, time_factor=1, amber_time=5, road_width=0, lost_time = 0,
+                 no_lost_time = False, params=None, slt_weight=0):
         self.cars = []
         self.time = []
+        self.signals = []
+        self.data_signals = []
+        self.data_time = []
         self.amber_time = amber_time
         self.free_flow_speed = free_flow_speed
         self.time_factor = time_factor
-        self.load_file(data,free_flow_speed,time_factor=time_factor,road_width=road_width, lost_time=lost_time,
-                       no_lost_time=no_lost_time)
+        self.load_file(data, free_flow_speed, time_factor=time_factor, road_width=road_width, lost_time=lost_time,
+                       no_lost_time=no_lost_time, slt_weight=slt_weight)
+        self.params = idm_params
+        self.slt_weight = slt_weight
 
 
-    def load_file(self,data,free_flow_speed,time_factor = 1,road_width=0,lost_time = 0, no_lost_time = False):
+    def load_file(self, data, free_flow_speed, time_factor = 1, road_width=0, lost_time = 0, no_lost_time = False, slt_weight = 0.5):
         data_DT = [x * time_factor for x in data['Out']['DT']]
         self.data_time = [x * time_factor for x in data['Out']['t']]
         q_paths = find_paths(data)
@@ -407,6 +587,7 @@ class microsim:
         if 'lost_time' in data['Out'] and no_lost_time == False:
             lost_time = data['Out']['lost_time']  * time_factor
         print 'lost_time :', lost_time
+        self.lost_time = lost_time
         print 'amber_time:', self.amber_time
         for q_path in q_paths:
 
@@ -424,7 +605,7 @@ class microsim:
                 if queue['Q_P'] is not None:
                     l = queue['Q_P'][0]
                     ph = queue['Q_P'][1]
-                    print (l,ph)
+                    #print (l,ph),data['Lights'][l]['P_MIN'][ph],data['Lights'][l]['P_MAX'][ph]
                     p_state = [1 if x < 0.5 else 0 for x in data['Out']['p_{%d,%d}' % (l,ph)]]
 
                     if p_state[0] == 0:
@@ -432,43 +613,34 @@ class microsim:
                     else:
                         state = 1
                     schedule = []
-                    schedule_t = []
-                    a_t = []
-                    active = False
                     t = 0
                     if state == 1:
                         schedule.append(0)
-                        #schedule.append( -lost_time * 0.5)
-                        schedule_t.append(0)
-                        active = True
-                        t = 0 #- lost_time * 0.5
+                    active = False
+                    # startup_lost_time_weight = 0.5
                     for j,x in enumerate(p_state[1:]):
                         t += data_DT[j]
                         if x != state:
-                            a_t.append(active)
-                            schedule_t.append(t)
-                            # if state == 1:
-                            schedule.append(t - lost_time * 0.5)
-                            t = lost_time * 0.5
-                            # else:
-                            #     schedule.append(t)
-                            #     t=0
-                            #     active = True
-                            # elif state == 1 and active == True:
-                            #     schedule.append(t)
-                            #     active = True
-                            # elif state == 0 and active == True:
-                            #     schedule.append(t + lost_time)
-                            #     active == False
-                            # else:
-                            #     schedule.append(t)
-                            #     active = False
-                            #     print state,active
-                            # #t =  lost_time * 0.5
+
+                            if active == False:
+                                if x == 0: # Green
+                                    t -= lost_time * slt_weight
+                                active = True
+                            elif x == 0: # Green
+                                t -= lost_time * slt_weight
+                            else:
+                                t += lost_time * slt_weight
+                            schedule.append(t)
+                            t=0
+
                         state = x
-                    #print 's__t:',schedule_t
-                    #print 's_lt:',schedule
-                    #print 'a__t:',a_t
+                    if np.sum(schedule) < self.data_time[-1]:
+                        schedule.append(t)
+                    if np.sum(schedule) < self.data_time[-1]:
+                        schedule.append(self.data_time[-1] - np.sum(schedule))
+                    #print self.data_time[-1]
+                    #if schedule[-1] < self.data_time[-1]:
+                    #    schedule.append(self.data_time[-1])
                     sig = signal(schedule,distance - road_width,self.amber_time)
                     sced_p = interp.interp1d(self.data_time,p_state,kind='zero')
                     sced_t = np.linspace(self.data_time[0],self.data_time[-1],10000)
@@ -479,6 +651,8 @@ class microsim:
                         plt.xlim(0,100)
                         plt.show()
                     signals.append(sig)
+                    self.data_signals.append(p_state)
+                    self.signals.append(sig)
                 l = link(i,signal)
                 links.append(l)
                 self.links[i] = l
@@ -536,7 +710,7 @@ class microsim:
         cars_in = 0
         t = 0
         while t < time[-1] and road.inflow(t + 1.0/road.inflow(t)) > EPSILON:
-            cars.append(car(road,t,road.free_flow_speed,road.free_flow_speed))
+            cars.append(car(road,t,road.free_flow_speed,road.free_flow_speed,params=self.params))
             #print 'adding car at t=%f' % t,'(%f)' % t
             t += 1.0/road.inflow(t)
             #if t % (1.0/road.inflow(t)) < EPSILON:
@@ -581,17 +755,88 @@ class microsim:
         return total_cars
 
 
-    def plot(self,plt,index):
+    def plot(self,plt,index,traces=1.0,green_bands=None,title=' '):
+
         road = self.paths[index]
-        for i,c in enumerate(self.cars[index]):
-            plt.plot(c.time_log,c.position_log,label='position %d' % i)
-            for l in road.signals:
+
+        if traces is not None and traces != 'off':
+            trace_alpha = float(traces)
+            for i,c in enumerate(self.cars[index]):
+                plt.plot(c.time_log,c.position_log,label='position %d' % i,alpha = trace_alpha)
+
+        for l in road.signals:
+            for i,x in enumerate(l.scedule_state):
+                if x > 0:
+                    if i < len(l.scedule_state) - 1:
+                        plt.plot([l.scedule_time[i],l.scedule_time[i+1]],[l.position,l.position],'k',lw=2,solid_capstyle='round')
+                    else:
+                        plt.plot([l.scedule_time[i],l.scedule_time[-1]],[l.position,l.position],'k',lw=2,solid_capstyle='round')
+
+        if green_bands is not None:
+            if len(green_bands) > 0:
+                alpha = green_bands[0]
+            else:
+                alpha  = 0.5
+            slt_time = self.slt_weight * self.lost_time
+            for j,l in enumerate(road.signals):
+                if j < len(road.signals) - 1:
+                    link_length = road.signals[j+1].position - l.position
+                else:
+                    link_length = road.length - l.position
                 for i,x in enumerate(l.scedule_state[:-1]):
-                    if x > 0:
-                        plt.plot([l.scedule_time[i],l.scedule_time[i+1]],[l.position,l.position],'k',lw=2)
-            if args.title ==' ': plt.title(road.indexes)
-            plt.xlabel('time (s)')
-            plt.ylabel('distance (m)')
+                    if x > 0 and i+2 < len(l.scedule_state):
+                            t0 = l.scedule_time[i+1] + slt_time
+                            t1 = l.scedule_time[i+1] + link_length / self.free_flow_speed + slt_time
+                            t2 = l.scedule_time[i+2] + link_length / self.free_flow_speed
+                            t3 = l.scedule_time[i+2]
+                            plt.fill_betweenx([l.position,l.position + link_length],[t0,t1],[t3,t2],edgecolor='none',facecolor='g',alpha=alpha,lw=0)
+                            #plt.plot([t0,t1,t2],[l.position,l.position + link_length,l.position + link_length],'y',alpha = 0.5)
+                            #plt.plot([t0,t3,t2],[l.position,l.position,l.position + link_length],'c',alpha = 0.5)
+
+        if title ==' ': plt.title(road.indexes)
+        plt.ylim(0,road.length)
+        plt.xlabel('time (s)')
+        plt.ylabel('distance (m)')
+
+    def plot_signal(self,plt,index,xlim=None):
+        plt.figure(figsize=(12,2))
+        sced_t = np.linspace(self.data_time[0],self.data_time[-1],10000)
+        sced_f = interp.interp1d(self.data_time,self.data_signals[index],kind='zero')
+        plt.plot(sced_t,sced_f(sced_t),c='r',alpha=0.1)
+        plt.ylim(-0.1,1.1)
+        if xlim is not None:
+            plt.xlim(xlim[0],xlim[1])
+        self.signals[index].plot(plt)
+
+    def plot_nfd(self,plt,dt=20,dx=20):
+        nfd_data = [(0,0)]
+        nfd_data_tx = [(None,0,0)]
+        for path in sim.paths:
+            for t in np.arange(self.data_time[0],self.data_time[-1] + dt,dt):
+            #for t in np.arange(100,350,dt):
+                # for x in np.arange(350,400,dx):
+                for x in np.arange(0,path.length + dx,dx):
+                    #q0,k0 = path_0.get_flow_density2(t,10,x,dx)
+                    q1,k1 = path.get_flow_density(t,dt,x,dx)
+                    if not (q1 == 0.0 and k1 == 0.0):
+                        nfd_data.append((q1,k1))
+                        nfd_data_tx.append((path,t,x))
+            #print fd_data
+            nfd_x = np.array([x[1] for x in nfd_data])
+            nfd_y = np.array([x[0] for x in nfd_data])
+
+        xy = np.vstack([nfd_x,nfd_y])
+        z = gaussian_kde(xy)(xy)
+
+        idx = z.argsort()
+        nfd_x, nfd_y, z = nfd_x[idx], nfd_y[idx], z[idx]
+        plt.xlim(0,np.max(nfd_x)*1.1)
+        plt.ylim(0,np.max(nfd_y)*1.1)
+        plt.scatter(nfd_x,nfd_y,c=z,edgecolors='',s=50) # edgecolors='g',facecolors='none'
+        plt.xlabel('Density (Vehicles/m)')
+        plt.ylabel('Flow (Vehicles/s)')
+        plt.title('Fundamential Diagram')
+        return {'k':nfd_x,'q':nfd_y}
 
     def write(self,data):
         data['Out']['average_delay'] = self.average_delay()
@@ -646,6 +891,123 @@ def plot_fig(plt,figsize):
 #     cars = microsim_road(road,time,DT)
 #     return cars,road
 
+def nfd_model(nfd_data, model, plt=None):
+
+    nfd_x = nfd_data['k']
+    nfd_y = nfd_data['q']
+
+    print
+    print 'Model: ',model
+    print
+
+    if model == 'cubic' or model == 'quadratic':
+        # nbins = 50
+        # bins = np.linspace(0,0.2,nbins)
+        # binplace = np.digitize(nfd_x, bins)
+        # nfd_median=[]
+        # nfd_median_x=[]
+        # for i in range(1,nbins):
+        #     if len(np.where(binplace == i)) > 0:
+        #         nfd_median.append(np.median(nfd_y[np.where(binplace == i)]))
+        #         nfd_median_x.append(bins[i - 1])
+        # plt.scatter(nfd_median_x, nfd_median, edgecolors='r', facecolors='none') # edgecolors='g'
+        if model == 'cubic':
+            n = 3
+        else:
+            n = 2
+
+        nfd_z = np.polyfit(nfd_x, nfd_y, n)
+        p = np.poly1d(nfd_z)
+        print 'p = ',p
+        roots = np.sort(np.roots(p))
+        print 'roots = ',roots
+        p_derivative = np.polyder(p)
+        k_jam = roots[1].real
+        k_0 = roots[0].real
+        vf = p_derivative(k_0)
+        vb = -p_derivative(k_jam)
+        W = vb/vf
+        xp = np.linspace(k_0, k_jam, 100)
+        yp = p(xp)
+        max_flow = np.max(yp)
+        if plt is not None:
+            plt.plot(xp, yp,c='k',label=model,ls=':')
+
+    elif model == 'leastsq_1':
+
+        def residuals(p, y, x, w):
+            a,b,b2,c = p
+            x0 = np.where(x < b/2)
+            x1 = np.where(x > b/2)
+            if b2 > b/2:
+                x2 = np.where(x > b2)
+            else:
+                x2 = np.where(x > b/2)
+            #w = y / np.max(y)
+            err = w * (y - (a * x**2 - a * b * x))
+            err[x1] = w[x1] * (y[x1] + a * b**2 / 4)
+            err[x2] =  np.abs( ( ((a * b**2) / (4 * c - 4 * b2)) * x[x2] - ((a * b**2 * c) / (4 * c - 4 * b2)) ) - y[x2]) / np.sqrt(((a * b**2) / (4 * c - 4 * b2))**2 + 1)
+            return err
+
+        def peval(x, p):
+            a,b,b2,c = p
+            x0 = np.where(x < b/2)
+            x1 = np.where(x > b/2)
+            x2 = np.where(x > b2)
+            y = a * x**2 - a * b * x
+            y[x1] = - a * b**2 / 4
+            y[x2] = ((a * b**2) / (4 * c - 4 * b2)) * x[x2] - ((a * b**2 * c) / (4 * c - 4 * b2))
+            return y
+
+        b0 = 2 * nfd_x[np.argmax(nfd_y)]
+        a0 = (-4 * np.max(nfd_y)) / b0**2
+        c0 = np.max(nfd_x)
+        v0 = -a0 * b0
+        b20 = b0 / 2 # -max(nfd_y) / (v0/2) + c0 #b0/2 + (c0 - b0/2) / 2
+        plt.scatter([b0/2,c0,b20],[-a0*b0**2/4,0,-a0*b0**2/4],c='y')
+        p0 = [a0,b0,b20,c0]
+        x_lsq = np.linspace(0, c0, 100)
+
+        w = nfd_y * 1.0 / np.max(nfd_y)
+        plsq = leastsq(residuals, p0, args=(nfd_y, nfd_x, w))
+
+        a,b,b2,c = plsq[0]
+
+        print ' a =',a
+        print ' b =',b
+        print 'b/2=',b/2
+        print 'b2 =',b2
+        print ' c =',c
+        k_jam = c
+        max_flow = -(a*b**2)/4
+        vf = -a*b
+        vb = -((a*b**2)/4) / (c - b2)
+        W = vb / vf
+        if plt is not None:
+            plt.plot(x_lsq, peval(x_lsq,p0),c='c',label='leastsq_1: p0')
+            x_lsq = np.linspace(0, c, 100)
+            # y_lsq = a * np.square(x_lsq) - a * b * x_lsq
+            plt.plot(x_lsq, peval(x_lsq,plsq[0]),c='k',label='leastsq_1')
+
+    elif model == 'CTM':
+
+        k_m = 0.03728227153
+        max_flow = q_m = 0.5
+        vf = q_m / k_m
+        k_jam = 0.15
+        W= 0.5
+        vb = vf * W
+        k_m2 = k_jam - (k_m / W)
+        plt.plot([0,k_m,k_m2,k_jam],[0,q_m,q_m,0],c='r',label='CTM model')
+
+    print 'Max flow   :',max_flow
+    print 'Jam density:',k_jam
+    print 'Free flow speed     :', vf
+    print 'Backwards wave speed:', vb
+    print 'W ratio             :',W
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("files", help="the model file to simulate", nargs='+')
@@ -663,7 +1025,11 @@ if __name__ == '__main__':
     parser.add_argument("--plot_depart", help="plot cumulative departure curve of queue n ", nargs='*', type=int)
     parser.add_argument("--plot_arrival", help="plot cumulative arrival curve of queue n ", nargs='*', type=int)
     parser.add_argument("--plot_stops", help="count the number of stops in path ", action='append', nargs='+', type=int)
+    parser.add_argument("--plot_nfd", help="Plot the network fundimental diagram with optional parameters ", action='append', nargs='*', type=int)
+    parser.add_argument("--plot_green_bands",help="plot green bands with alpha", nargs='*', type=float)
+    parser.add_argument("--plot_traces",help="plot car traces with alpha or turn off with 'off'",default=1.0)
     parser.add_argument("--stop_threshold", help="velocity threshold below which a car is considered stopped ", type=float, default  = 1.0)
+    parser.add_argument("--plot_signal", help="plot signal n ", nargs='*', type=int)
     parser.add_argument("--max_stops", help="number of stops to count for histogram ", type=int)
     parser.add_argument("--ylim", help="range of y axis", nargs = 2, type=float)
     parser.add_argument("--xlim", help="range of x axis", nargs = 2, type=float)
@@ -671,9 +1037,12 @@ if __name__ == '__main__':
     parser.add_argument("--road_width", help="set road_width", type=float, default = 0) # default = 10
     parser.add_argument("--no_lost_time", help="do not add lost time", action='store_true', default = False)
     parser.add_argument("--lost_time", help="Add lost time to phase time", type = float, default = 0)
+    parser.add_argument("--slt_weight", help="fraction of lost to time to use as start up lost time", type = float, default = 0.5)
     parser.add_argument("--amber_time", help="Amber light duration", type = float, default = 2.5)
     parser.add_argument("--annotation_arrow", help="optional text followed by json dictionary of matplotlib annotation parameters to plot an arrow",nargs=2,action='append')
     parser.add_argument("--annotation_text", help="x y text followed by json dictionary of matplotlib text parameters",nargs=4,action='append')
+    parser.add_argument("--idm_params", help="Override defaults with JSON formated dictionary of IDM car parameters: {'width','length','maxspeed','s0','timeHeadway', 'maxAcceleration','maxDeceleration'}")
+    parser.add_argument("--random", help="randomize the microsim",action='store_true',default = None)
 
     args = parser.parse_args()
 
@@ -682,14 +1051,23 @@ if __name__ == '__main__':
     time_factor = args.time_factor
     DT = args.DT
 
+    if args.idm_params is not None:
+        idm_params = json.loads(args.idm_params)
+        idm_params['random'] = args.random
+    else:
+        idm_params = None
+    print 'idm_params:',idm_params
+
     file_sets,loaded_file_sets = qtm.read_files(args.files,return_file_sets=True)
+    plot_flag = False
     for k,files in enumerate(file_sets):
         for l,data in enumerate(files):
             #data = file[0][0]
 
-            sim = microsim(data,free_flow_speed,time_factor=time_factor,
+            sim = microsim(data, free_flow_speed, time_factor=time_factor,
                            road_width=args.road_width, lost_time = args.lost_time,
-                           no_lost_time=args.no_lost_time, amber_time=args.amber_time)
+                           no_lost_time=args.no_lost_time, amber_time=args.amber_time, params=idm_params,
+                           slt_weight=args.slt_weight)
             sim.simulate(DT,indexes = args.index)
             average_delay = sim.average_delay()
             delay = sim.delay()
@@ -708,7 +1086,7 @@ if __name__ == '__main__':
                 f.close()
 
             if args.plot is not None:
-
+                plot_flag = True
                 if len(args.plot) == 0:
                     plot_paths = [i for i,p in enumerate(sim.paths)]
                 else:
@@ -717,7 +1095,9 @@ if __name__ == '__main__':
                 for i in plot_paths:
                     if i is not None:
                         plot_fig(plt,args.figsize)
-                        sim.plot(plt,i)
+                        sim.plot(plt,i,traces = args.plot_traces,
+                                 green_bands = args.plot_green_bands,
+                                 title = args.title)
                         if args.title is not None:
                             plt.title(args.title[k])
                         if args.ylim is not None:
@@ -730,6 +1110,7 @@ if __name__ == '__main__':
                         k += 1
 
             if args.plot_car is not None:
+                plot_flag = True
                 plot_fig(plt,args.figsize)
                 for car_plot in args.plot_car:
                     paths = sim.indexes_to_paths([car_plot[0]])
@@ -739,6 +1120,7 @@ if __name__ == '__main__':
                             car.plot(plt)
 
             if args.plot_depart is not None or args.plot_arrival is not None:
+                plot_flag = True
                 plot_fig(plt,args.figsize)
                 t_range = np.arange(sim.data_time[0],sim.data_time[-1],DT)
                 if args.plot_arrival is not None:
@@ -749,7 +1131,7 @@ if __name__ == '__main__':
                         plt.plot(t_range,sim.links[queue].departures(t_range))
 
             if args.plot_stops is not None:
-
+                plot_flag = True
                 for plot_i,plot in enumerate(args.plot_stops):
                     plot_fig(plt,args.figsize)
                     paths = sim.indexes_to_paths(plot)
@@ -787,14 +1169,249 @@ if __name__ == '__main__':
                         frame = pd.DataFrame(plot_data)
                         frame.to_csv(filename + '_%d' % plot_i + '.' + type)
 
+            if args.plot_signal is not None:
+                plot_flag = True
+                for sig in args.plot_signal:
+                    sim.plot_signal(plt,sig,xlim=args.xlim)
 
+            if args.plot_nfd is not None:
+                plot_flag = True
+                plot_fig(plt,args.figsize)
+                nfd_data = sim.plot_nfd(plt)
+                nfd_model(nfd_data,'CTM',plt=plt)
+                nfd_model(nfd_data,'quadratic',plt=plt)
+                nfd_model(nfd_data,'cubic',plt=plt)
+                nfd_model(nfd_data,'leastsq_1',plt=plt)
+                if args.save_csv is not None:
+                    #filename = args.save_csv.split('.')[0]
+                    #type = args.save_csv.split('.')[1]
+                    frame = pd.DataFrame(nfd_data)
+                    frame.to_csv(args.save_csv)
 
-    if args.plot is not None or args.plot_car or args.plot_depart or args.plot_stops is not None:
-
+    if plot_flag:
         plt.show();
 
+    path_0 = sim.paths[2]
+
+    plt.figure(1,figsize = (14,5))
+    plt.subplot(121)
+
+    # x=359 # 353.2
+    # dx=50
+    # t=38.4
+    # dt=10.6
+
+    # x=357 # 353.2
+    # dx=50
+    # t=59.7
+    # dt=10.6
+
+    # x=396
+    # dx=.25
+    # t=79.7
+    # dt=1.6
+
+    x=340
+    dx=70
+    t=30
+    dt=70
+
+    path_0.get_flow_density(t,dt,x,dx,plt,kwargs=dict(c='k',ls=':',lw=0.5))
+    # plt.axhline(x,ls=':')
+    # plt.axhline(x+dx,ls=':')
+    # plt.axvline(t,ls=':')
+    # plt.axvline(t+dt,ls=':')
+
+    #plt.show();
+
+    # x=350 # 353.2
+    # dx=10
+    # t=40
+    # dt=10
+
+    x=350
+    dx=50
+    t=40
+    dt=50
+
+    path_0.get_flow_density(t,dt,x,dx,plt,kwargs=dict(c='k',ls='-',lw=2.0))
+    plt.axhline(x,ls='-',color='r')
+    plt.axhline(x+dx,ls='-',color='r')
+    plt.axvline(t,ls='-',color='r')
+    plt.axvline(t+dt,ls='-',color='r')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Distance (m)')
+    plt.title('Space-Time Window')
+    #plt.show();
+
+    # nfd_data = []
+    # dt = 20
+    # dx = 20
+    # for t in np.arange(sim.data_time[0],sim.data_time[-1],dt):
+    # #for t in np.arange(100,350,dt):
+    #     # for x in np.arange(350,400,dx):
+    #     for x in np.arange(0,900,dx):
+    #         #q0,k0 = path_0.get_flow_density2(t,10,x,dx)
+    #         q1,k1 = path_0.get_flow_density(t,dt,x,dx)
+    #         nfd_data.append((q1,k1))
+    # #print fd_data
+    # plt.scatter([x[1] for x in nfd_data],[x[0] for x in nfd_data],edgecolors='b',facecolors='none')
+
+    plt.subplot(122)
+
+    # nfd_data = [(0,0)]
+    # nfd_data_tx = [(None,0,0)]
+    # dt = 20
+    # dx = 20
+    # for path in sim.paths:
+    #     for t in np.arange(sim.data_time[0],sim.data_time[-1],dt):
+    #     #for t in np.arange(100,350,dt):
+    #         # for x in np.arange(350,400,dx):
+    #         for x in np.arange(0,1000,dx):
+    #             #q0,k0 = path_0.get_flow_density2(t,10,x,dx)
+    #             q1,k1 = path.get_flow_density(t,dt,x,dx)
+    #             if not (q1 == 0.0 and k1 == 0.0):
+    #                 nfd_data.append((q1,k1))
+    #                 nfd_data_tx.append((path,t,x))
+    #     #print fd_data
+    #     nfd_x = np.array([x[1] for x in nfd_data])
+    #     nfd_y = np.array([x[0] for x in nfd_data])
+    #
+    # xy = np.vstack([nfd_x,nfd_y])
+    # z = gaussian_kde(xy)(xy)
+    #
+    # idx = z.argsort()
+    # nfd_x, nfd_y, z = nfd_x[idx], nfd_y[idx], z[idx]
+    #
+    nfd_x = nfd_data['k']
+    nfd_y = nfd_data['q']
+    plt.scatter(nfd_x,nfd_y,edgecolors='g',facecolors='none',s=50) #
+    # nfd_data = sim.plot_nfd(plt,20,20)
+
+    for n_test in range(len(nfd_data)):
+        if nfd_x[n_test] > 0.18:
+            n = n_test
+            break
+    else:
+        n = int(np.random.uniform(0,len(nfd_data) - 1))
+    #for i,qk in enumerate(nfd_data):
+    #   plt.text(qk[1],qk[0],'%d' % i)
+    plt.text(nfd_data['k'][n],nfd_data['q'][n],'%d' % n)
+    nbins = 50
+    bins = np.linspace(0,0.2,nbins)
+    binplace = np.digitize(nfd_x, bins)
+    # nfd_median=[]
+    # nfd_median_x=[]
+    # for i in range(1,nbins):
+    #     if len(np.where(binplace == i)) > 0:
+    #         nfd_median.append(np.median(nfd_y[np.where(binplace == i)]))
+    #         nfd_median_x.append(bins[i - 1])
+    # plt.scatter(nfd_median_x, nfd_median, edgecolors='r', facecolors='none') # edgecolors='g'
+
+    nfd_z = np.polyfit(nfd_x, nfd_y, 3)
+    nfd_p = np.poly1d(nfd_z)
+    xp = np.linspace(0, 0.2, 100)
+    plt.plot(xp, nfd_p(xp),c='k',label='Parabola fit',ls=':')
+
+    def residuals(p, y, x, w):
+        a,b,b2,c = p
+        x0 = np.where(x < b/2)
+        x1 = np.where(x > b/2)
+        if b2 > b/2:
+            x2 = np.where(x > b2)
+        else:
+            x2 = np.where(x > b/2)
+        #w = y / np.max(y)
+        err = w * (y - (a * x**2 - a * b * x))
+        err[x1] = w[x1] * (y[x1] + a * b**2 / 4)
+        err[x2] =  np.abs( ( ((a * b**2) / (4 * c - 4 * b2)) * x[x2] - ((a * b**2 * c) / (4 * c - 4 * b2)) ) - y[x2]) / np.sqrt(((a * b**2) / (4 * c - 4 * b2))**2 + 1)
+        return err
+
+    def peval(x, p):
+        a,b,b2,c = p
+        x0 = np.where(x < b/2)
+        x1 = np.where(x > b/2)
+        x2 = np.where(x > b2)
+        y = a * x**2 - a * b * x
+        y[x1] = - a * b**2 / 4
+        y[x2] = ((a * b**2) / (4 * c - 4 * b2)) * x[x2] - ((a * b**2 * c) / (4 * c - 4 * b2))
+        return y
+
+    b0 = 2 * nfd_x[np.argmax(nfd_y)]
+    a0 = (-4 * np.max(nfd_y)) / b0**2
+    c0 = np.max(nfd_x)
+    v0 = -a0 * b0
+    b20 = b0 / 2 # -max(nfd_y) / (v0/2) + c0 #b0/2 + (c0 - b0/2) / 2
+    plt.scatter([b0/2,c0,b20],[-a0*b0**2/4,0,-a0*b0**2/4],c='y')
+    p0 = [a0,b0,b20,c0]
+    x_lsq = np.linspace(0, c0, 100)
+    plt.plot(x_lsq, peval(x_lsq,p0),c='c',label='lsq fit: p0')
+    w = nfd_y * 1.0 / np.max(nfd_y)
+    plsq = leastsq(residuals, p0, args=(nfd_y, nfd_x, w))
+
+    a,b,b2,c = plsq[0]
+
+    print 'Least squares fit:'
+    print ' a =',a
+    print ' b =',b
+    print 'b/2=',b/2
+    print 'b2 =',b2
+    print ' c =',c
+    k_jam = c
+    max_flow = -(a*b**2)/4
+    vf = -a*b
+    vb = -((a*b**2)/4) / (c - b2)
+    W = vb / vf
+    print 'Max flow   :',max_flow
+    print 'Jam density:',k_jam
+    print 'Free flow speed     :', vf
+    print 'Backwards wave speed:', vb
+    print 'W ratio             :',W
+    x_lsq = np.linspace(0, c, 100)
+    # y_lsq = a * np.square(x_lsq) - a * b * x_lsq
+    plt.plot(x_lsq, peval(x_lsq,plsq[0]),c='k',label='lsq fit')
+
+    plt.xlabel('Density (Vehicles/m)')
+    plt.ylabel('Flow (Vehicles/s)')
+    plt.title('Fundamential Diagram')
+    plt.xlim(0,0.25)
+    plt.ylim(0,0.7)
+    k_m = 0.03728227153
+    q_m = 0.5
+    k_j = 0.15
+    W= 0.5
+    k_m2 = k_j - (k_m / W)
+    plt.plot([0,k_m,k_m2,k_j],[0,q_m,q_m,0],c='r',label='CTM model')
+    plt.legend(loc='best')
+    plt.show();
 
 
+
+    # plt.figure(2,figsize = (14,5))
+    # plt.subplot(1,2,1)
+
+    # print nfd_data_tx[n]
+    # t=nfd_data_tx[n][1]
+    # x=nfd_data_tx[n][2]
+    # path=nfd_data_tx[n][0]
+    # path.get_flow_density(t,dt,x,dx,plt,kwargs=dict(c='k',ls='-',lw=2.0))
+    # plt.title('Fundamential Diagram @ %d path=%s' % (n,path.indexes))
+    # plt.xlabel('Time (s)')
+    # plt.ylabel('Distance (m)')
+    # plt.show();
+    #plt.plot(sim.data_time,path_0.car_xf[0](sim.data_time))
+    #plt.plot(sim.data_time,path_0.car_xf[10](sim.data_time))
+
+    # print 'x@t=0',path_0.car_xf[0](0)
+    # print 't@x=0',path_0.car_tf[0](0)
+    # print 'path_0.cars[0].time_log     ',path_0.cars[0].time_log
+    # print 'path_0.cars[0].poitition_log',path_0.cars[0].position_log
+    # print 'path_0.cars[10].time_log     ',path_0.cars[10].time_log
+    # print 'path_0.cars[10].poitition_log',path_0.cars[10].position_log
+    # road = np.arange(0,1000,10)
+    # plt.plot(road,path_0.car_tf[0](road))
+    # plt.plot(road,path_0.car_tf[10](road))
+    # plt.show();
     # d = np.array([2,3,2,0,0,2,3,3,0,0,0,0])
     # print d
     # pos = d < 1

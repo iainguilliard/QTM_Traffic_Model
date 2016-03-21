@@ -14,6 +14,7 @@ import zlib
 import numpy
 import scipy.interpolate as interp
 import math
+import numpy as np
 #import plot_model as pl
 #import matplotlib.pyplot as plt
 
@@ -188,18 +189,22 @@ def convert_model_to_ctm(data,dt):
             F_ij = new_flows[new_f_i_j]['F_Y'].split('_')
             new_flows[new_f_i_j]['F_Y'] = ['%d_%d' % (F_ij[0],F_ij[1])]
 
-
+    if 'Base_Network' not in data:
+        data['Base_Network'] = {}
+        data['Base_Network']['Nodes'] = data['Nodes']
+        data['Base_Network']['Queues'] = data['Queues']
+        data['Base_Network']['Flows'] = data['Flows']
     data['Nodes'] = new_nodes
     data['Queues'] = new_queues
     data['Flows'] = new_flows
-    print 'Nodes',data['Nodes']
-    print 'Queues',data['Queues']
-    print 'Flows',data['Flows']
+    #print 'Nodes',data['Nodes']
+    #print 'Queues',data['Queues']
+    #print 'Flows',data['Flows']
 
 def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=None,minor_frame=0,major_frame=0,blend_frame=None,nthreads=0,fixed_plan=None,
            timelimit=0,accuracy=0,verbose=False,label=None,step=None,run=None,obj='NEW',alpha_obj=1.0,beta_obj=0.001,gamma_obj=0.0001,
            DT_offset=0,seed=0,tune=False,tune_file='',param=None, in_weight=1.0,mip_start=None,refine=False,no_assertion_fail=False, lost_time=0,
-                solver_model='QTM'):
+                solver_model='QTM',no_warning=False,buffer_input=False):
     start_time = clock_time.time()
     try:
 
@@ -379,7 +384,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             print prev_mp_t
             print time
 
-        if solver_model == 'CTM' and 'Solver_model' not in data:
+        if solver_model == 'CTM' and ('Solver_model' not in data or mip_start is not None):
             convert_model_to_ctm(data,DT[0])
             data['Solver_model'] = 'CTM'
 
@@ -392,15 +397,15 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
                     if n==0:
                         flow_weights[f]['wt']=[0]*N
-                    if t > flow_weights[f]['start'] and t <= flow_weights[f]['end']:
+                    if t >= flow_weights[f]['start'] and t < flow_weights[f]['end']:
                         flow_weights[f]['wt'][n]=flow_weights[f]['weight']
                     else:
                         flow_weights[f]['wt'][n]=0
                     if n>1:
-                        if t > flow_weights[f]['start'] and time[n-1] < flow_weights[f]['start']:
+                        if t >= flow_weights[f]['start'] and time[n-1] < flow_weights[f]['start']:
                             flow_alpha = (flow_weights[f]['start'] - time[n-1]) / (t - time[n-1])
                             flow_weights[f]['wt'][n] *= flow_alpha
-                        if t > flow_weights[f]['end'] and time[n-1] < flow_weights[f]['end']:
+                        if t >= flow_weights[f]['end'] and time[n-1] < flow_weights[f]['end']:
                             flow_alpha = (flow_weights[f]['end'] - time[n-1]) / (t - time[n-1])
                             flow_weights[f]['wt'][n-1] *= flow_alpha
 
@@ -409,7 +414,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             flow_weights=None
 
         # Define Constants
-        T_MAX = time[N-1]+1
+        T_MAX = time[N-1] # T_MAX = time[N-1]+1
 
         if lost_time > 0:
             for i,light in enumerate(data['Lights']):
@@ -422,9 +427,9 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 c_max_extra = 0
 
                 for j,p in enumerate(light['P_MAX']):
-                    P_MIN.append(light['P_MIN'][j]) # - lost_time
+                    P_MIN.append(light['P_MIN'][j]) #  - lost_time)
                     P_MIN.append(lost_time)
-                    P_MAX.append(light['P_MAX'][j]) # - lost_time
+                    P_MAX.append(light['P_MAX'][j]) #  - lost_time)
                     P_MAX.append(lost_time)
                     p0.append(light['p0'][j])
                     p0.append(0)
@@ -448,15 +453,17 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 print light
             for i,q in enumerate(data['Queues']):
                 if q['Q_P'] is not None:
+                    print i,'from:',q['Q_P'],'to:',
                     for j in range(1,len(q['Q_P'])):
                         q['Q_P'][j] = q['Q_P'][j] * 2
+                    print q['Q_P']
         epsilon = 0.1
 
         Q = len(data['Queues'])
         L = len(data['Lights'])
 
         Q_IN  = [ q['Q_IN']   for q in data['Queues'] ]
-        Q_in  = [ [0]   for q in data['Queues'] ]
+        Q_in  = [ []   for q in data['Queues'] ]
         Q_OUT = [ q['Q_OUT']  for q in data['Queues'] ]
         if flow_weights != None:
             Q_IN_weight = [ [0]*N for q in data['Queues'] ]
@@ -471,7 +478,10 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                     Q_IN_weight[i]=[1]*N
 
         Q_p   = [ q['Q_P']    for q in data['Queues'] ]
-        Q_MAX = [ q['Q_MAX']  for q in data['Queues'] ]
+        if buffer_input:
+            Q_MAX = [ 1e9 if Q_IN[i] > 0 else q['Q_MAX'] for i,q in enumerate(data['Queues']) ]
+        else:
+            Q_MAX = [ q['Q_MAX']  for q in data['Queues'] ]
         Q_DELAY = [ q['Q_DELAY']  for q in data['Queues'] ]
 
         P_MAX = [ [ p for p in light['P_MAX']] for light in data['Lights'] ]
@@ -548,24 +558,25 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                     break
             m1=m0+1
             if m1>= len(out['t']): m1=m0
-            dt_ratio = DT[0] / out['DT'][m0]
+            dt_ratio = DT[0] / out['DT'][m0-1]
+            print 'DT[0]',DT[0],'out["DT"][m0]',out['DT'][m0]
             td = t0-out['t'][m0]
             alpha = 1-(td / out['DT'][m0]) #(out['t'][m1] - out['t'][m0]))
-            print 'alpha',alpha,'m0',m0,'m1',m1
-            print 'q_{5,in} =',out['q_{5,in}']
-            print 'sum(q_{5,in}) =',sum(out['q_{5,in}'])
-            print 'q_{5,stop} =',out['q_{5,stop}']
-            print 'Q_MAX[5] =',Q_MAX[5]
+            print 'alpha',alpha,'m0',m0,'m1',m1,'dt_ratio',dt_ratio
+            #print 'q_{5,in} =',out['q_{5,in}']
+            #print 'sum(q_{5,in}) =',sum(out['q_{5,in}'])
+            #print 'q_{5,stop} =',out['q_{5,stop}']
+            #print 'Q_MAX[5] =',Q_MAX[5]
             q0 = [ alpha * out['q_%d' % i][m0] + (1-alpha) * out['q_%d' % i][m1]     for i,q in enumerate(data['Queues']) ]
             q0_stop =  [ alpha * out['q_{%d,stop}' % i][m0] + (1-alpha) * out['q_{%d,stop}' % i][m1]     for i,q in enumerate(data['Queues']) ]
             q0_in =  [ (alpha * out['q_{%d,in}' % i][m0] + (1-alpha) * out['q_{%d,in}' % i][m1]) * dt_ratio  for i,q in enumerate(data['Queues']) ]
-            q_in_prev = [ out['q_{%d,in}' % i] for i,q in enumerate(data['Queues']) ]
+            q_in_prev = [ out['q_{%d,in}' % i] for i,q in enumerate(data['Queues']) ]; # print 'q_in_prev',q_in_prev
             q_stop_prev = [ out['q_{%d,stop}' % i] for i,q in enumerate(data['Queues']) ]
             t_prev = out['t']
             DT_prev = out['DT']
             q0_out = [ (alpha * out['q_{%d,out}' % i][m0] + (1-alpha) * out['q_{%d,out}' % i][m1]) * dt_ratio for i,q in enumerate(data['Queues']) ]
             p0 = [ [ out['p_{%d,%d}' %(i,j)][m0] for j,p in enumerate(light['p0'])] for i,light in enumerate(data['Lights']) ]
-            d0 = [ [ (alpha * out['d_{%d,%d}' %(i,j)][m0] + (1-alpha) * out['d_{%d,%d}' %(i,j)][m1]) for j,d in enumerate(light['p0'])] for i,light in enumerate(data['Lights']) ]
+            d0 = [ [ out['d_{%d,%d}' %(i,j)][m0] for j,d in enumerate(light['p0'])] for i,light in enumerate(data['Lights']) ]
 
             #q0 =    [ out['q_%d' % i][m0] for i,q in enumerate(data['Queues']) ] #[ alpha * out['q_%d' % i][m0] + (1-alpha) * out['q_%d' % i][m1]     for i,q in enumerate(data['Queues']) ]
             #q0_stop = [ out['q_{%d,stop}' % i][m0] for i,q in enumerate(data['Queues']) ] #[ alpha * out['q_{%d,stop}' % i][m0] + (1-alpha) * out['q_{%d,stop}' % i][m1]     for i,q in enumerate(data['Queues']) ]
@@ -601,21 +612,22 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
         # Create variables
         p = [[[m.addVar(vtype=GRB.BINARY, name="p%d_%d_%d" % (i,j,n))  for n in range(N)] for j in range(len(l[i]))] for i in range(L)]
-        d = [[[m.addVar(name="d%d_%d_%d" % (i,j,n))  for n in range(N)] for j in range(len(l[i]))] for i in range(L)]
-        q = [[m.addVar(lb=0, name="q%d_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        q_in = [[m.addVar(lb=0, name="q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        q_stop = [[m.addVar(lb=0, name="q%d_stop_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        qm_in = [[m.addVar(lb=-1, name="qm%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        qw_in = [[m.addVar(lb=-1, name="qw%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        q_out = [[m.addVar(lb=0, name="q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        d_q_out = [[m.addVar(lb=0, name="d_q%d_out_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        d_q_in = [[m.addVar(lb=0, name="d_q%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        fij = [[m.addVar(lb=0, name="fij_%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        fxy = [[m.addVar(lb=0, name="fxy_%d_in_%d" % (i,n)) for n in range(N)] for i in range(Q)]
+        d = [[[m.addVar(name="d%d_%d @ %d" % (i,j,n))  for n in range(N)] for j in range(len(l[i]))] for i in range(L)]
+        q = [[m.addVar(lb=0, name="q%d @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
+        q_in = [[m.addVar(lb=0, name="q%d_in @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
+        q_stop = [[m.addVar(lb=0, name="q%d_stop @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
+        qm_in = [[m.addVar(lb=-1, name="qm%d_in @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
+        qw_in = [[m.addVar(lb=-1, name="qw%d_in @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
+        q_out = [[m.addVar(lb=0, name="q%d_out @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
+        d_1 = [[m.addVar(lb=0, name="d_(1)_%d @ %d" % (i, n)) for n in range(N)] for i in range(Q)]
+        d_2 = [[m.addVar(lb=0, name="d_(2)_%d @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
+        fij = [[m.addVar(lb=0, name="fij_%d_in @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
+        fxy = [[m.addVar(lb=0, name="fxy_%d_in @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
 
-        in_q = [[m.addVar(lb=0, name="in_q%d_%d" % (i,n)) for n in range(N)] for i in range(Q)]
-        out_q = [[m.addVar(lb=0, ub=Q_OUT[i], name="out_q%d_%d" % (i,n)) for n in range(N)] for i in range(Q)]
+        in_q = [[m.addVar(lb=0, name="in_q%d @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
+        out_q = [[m.addVar(lb=0, ub=Q_OUT[i], name="out_q%d @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
 
+        total_stops = m.addVar(lb=0, name = "stops")
 
         f = [[[None for n in range(N)] for j in range(Q)] for i in range(Q)]
         f_set = [[] for n in range(N)]
@@ -653,13 +665,13 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                     x = int(f_xy.split('_')[0])
                     y = int(f_xy.split('_')[1])
                     dominant_flows.add((x,y))
-        print 'Dominant Flows: %s' % dominant_flows
+        # print 'Dominant Flows: %s' % dominant_flows
 
-        total_travel_time = m.addVar(lb=0, name="total_travel_time")
+        total_travel_time = m.addVar(lb=-GRB.INFINITY, name="total_travel_time")
         c_fixed = [m.addVar( name="c_fixed_%d" % i) for i in range(L)]
         dp_fixed = [[m.addVar( name="d_fixed_%d_%d" % (i,j)) for j in range(len(l[i]))] for i in range(L)]
-        c_on = [[m.addVar(lb=-100000, name="fixed_cycle_time_on_%d_%d" % (i,n)) for n in range(N)] for i in range(L)]
-        tct = [[m.addVar(lb=-100000, name="fixed_cycle_time_on_%d_%d" % (i,n)) for n in range(N)] for i in range(L)]
+        c_on = [[m.addVar(lb=-GRB.INFINITY, name="fixed_cycle_time_on_%d_%d" % (i,n)) for n in range(N)] for i in range(L)]
+        tct = [[m.addVar(lb=-GRB.INFINITY, name="fixed_cycle_time_on_%d_%d" % (i,n)) for n in range(N)] for i in range(L)]
 
         # Integrate new variables
         m.update()
@@ -689,75 +701,113 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                     for n in range(N):
                         p[i][j][n].start = int(new_p[n] + 0.25)
 
-        if fixed_plan != None:
+        if fixed_plan is not None:
             p_fixed_plan = [[[ 0 for n in range(N) ] for j in range(len(l[i]))] for i in range(L)]
-            d_fixed_plan = [[[ d0[i][j] if n==0 else 0 for n in range(N) ] for j in range(len(l[i]))] for i in range(L)]
-            t_fixed_plan =fixed_plan['t']
+            d_fixed_plan = [[[ fixed_plan['d_{%d,%d}' % (i,j)][0] if n==0 else 0 for n in range(N) ] for j in range(len(l[i]))] for i in range(L)]
+            t_fixed_plan = numpy.linspace(fixed_plan['t'][0],fixed_plan['t'][-1],len(fixed_plan['t']))
             #print 'len(p_fixed) =',len(p_fixed[0][0])
             #print 'len(fixed_plan[p_{0,0}]) =',len(fixed_plan['p_{%d,%d}' % (0,0)])
+            #print 't_fixed_plan:',t_fixed_plan[0],t_fixed_plan[-1],t_fixed_plan
+            #print 'time:',time[0],time[n_samples],time
             for i in range(L):
                 for j in range(len(l[i])):
-                    k=0
-                    for n in range(n_samples):
-                        #if i==0 and j==0 and k+1<len(t_fixed):
-                        #    print time[n], '>=', t_fixed[k+1],time[n] >= t_fixed[k+1],
-                        if k+1<len(t_fixed_plan) and time[n] >= t_fixed_plan[k+1]-1e-6:
-                            k+=1
-                        p_fixed_plan[i][j][n]=fixed_plan['p_{%d,%d}' % (i,j)][k]
-                        #if i==0 and j==0:
-                        #    print 't_fixed[k]=%f'%t_fixed[k],'time[n]=%f'%time[n],'n=',n,'k=',k,'p_{%d,%d}=' % (i,j),p_fixed[i][j][n],
-                        #if n<n_samples and k+1 < len(t_fixed) and time[n]>t_fixed[k+1]:
+                    time_x = numpy.linspace(time[0],time[n_samples],n_samples)
+                    p_fixed_f = interp.interp1d(t_fixed_plan,fixed_plan['p_{%d,%d}' % (i,j)],kind='zero')
+                    p_fixed_plan[i][j][0:n_samples] = p_fixed_f(time[0:n_samples])
 
-                        if n>0:
-                            if p_fixed_plan[i][j][n] == 1 and p_fixed_plan[i][j][n-1] == 0:
-                                d_fixed_plan[i][j][n]=0
-                            elif p_fixed_plan[i][j][n] == 0 and p_fixed_plan[i][j][n-1] == 0:
-                                d_fixed_plan[i][j][n]=d_fixed_plan[i][j][n-1]
-                            else:
-                                d_fixed_plan[i][j][n]=d_fixed_plan[i][j][n-1] + DT[n-1]*p_fixed_plan[i][j][n-1]
-                        #if i==0 and j==0:
-                        #    print 'd=',d_fixed[i][j][n]
+                    for n in range(1,len(p_fixed_plan[i][j])):
+                        if p_fixed_plan[i][j][n] == 1 and p_fixed_plan[i][j][n-1] == 0:
+                            d_fixed_plan[i][j][n]=0
+                        elif p_fixed_plan[i][j][n] == 0 and p_fixed_plan[i][j][n-1] == 0:
+                            d_fixed_plan[i][j][n]=d_fixed_plan[i][j][n-1]
+                        else:
+                            d_fixed_plan[i][j][n]=d_fixed_plan[i][j][n-1] + DT[n-1]*p_fixed_plan[i][j][n-1]
+
+
+            # for i in range(L):
+            #     for j in range(len(l[i])):
+            #         k=0
+            #         for n in range(n_samples):
+            #             #if i==0 and j==0 and k+1<len(t_fixed):
+            #             #    print time[n], '>=', t_fixed[k+1],time[n] >= t_fixed[k+1],
+            #             if k+1<len(t_fixed_plan) and time[n] >= t_fixed_plan[k+1]-1e-6:
+            #                 k+=1
+            #             p_fixed_plan[i][j][n]=fixed_plan['p_{%d,%d}' % (i,j)][k]
+            #             #if i==0 and j==0:
+            #             #    print 't_fixed[k]=%f'%t_fixed[k],'time[n]=%f'%time[n],'n=',n,'k=',k,'p_{%d,%d}=' % (i,j),p_fixed[i][j][n],
+            #             #if n<n_samples and k+1 < len(t_fixed) and time[n]>t_fixed[k+1]:
+            #
+            #             if n>0:
+            #                 if p_fixed_plan[i][j][n] == 1 and p_fixed_plan[i][j][n-1] == 0:
+            #                     d_fixed_plan[i][j][n]=0
+            #                 elif p_fixed_plan[i][j][n] == 0 and p_fixed_plan[i][j][n-1] == 0:
+            #                     d_fixed_plan[i][j][n]=d_fixed_plan[i][j][n-1]
+            #                 else:
+            #                     d_fixed_plan[i][j][n]=d_fixed_plan[i][j][n-1] + DT[n-1]*p_fixed_plan[i][j][n-1]
+            #             #if i==0 and j==0:
+            #             #    print 'd=',d_fixed[i][j][n]
 
         #if mip_start is not None:
         #    if
         #    for i in range(L):
         #        for j in range(len(l[i])):
+
+        print 'Objective: %s alpha=%s beta=%s gamma=%s' % (obj,alpha_obj,beta_obj,gamma_obj)
         delay = quicksum([quicksum([time[n] * q_out[i][n] if Q_OUT[i]>0 else 0 for n in range(N)]) for i in range(Q) ])
         vehicle_holding = quicksum([quicksum([time[n] * q_out[i][n] if Q_OUT[i]==0 else 0 for n in range(N)]) for i in range(Q) ])
-        in_flow = quicksum([quicksum([(T_MAX-time[n]) * in_q[i][n] if Q_IN[i]>0 else 0 for n in range(N)]) for i in range(Q) ])
-        out_flow = quicksum([quicksum([(T_MAX-time[n]) * out_q[i][n] if Q_OUT[i]>0 else 0 for n in range(N)]) for i in range(Q) ])
+        in_flow = quicksum([quicksum([(T_MAX-time[n] + 1) * in_q[i][n] if Q_IN[i]>0 else 0 for n in range(N)]) for i in range(Q) ])
+        out_flow = quicksum([quicksum([(T_MAX-time[n] + 1) * out_q[i][n] if Q_OUT[i]>0 else 0 for n in range(N)]) for i in range(Q) ])
         #m.setObjective(delay - beta*in_flow - beta*out_flow, GRB.MINIMIZE)
         #m.setObjective(delay + beta* vehicle_holding, GRB.MINIMIZE)
 
-        sum_in =  quicksum([quicksum([time[n] * q_in[i][n] if Q_IN[i]>0 else 0 for n in range(n_samples)]) for i in range(Q) ])
-        sum_out = quicksum([quicksum([time[n] * q_out[i][n] if Q_OUT[i]>0 else 0 for n in range(n_samples)]) for i in range(Q) ])
+        sum_in =  quicksum([quicksum([time[n] * q_in[i][n] if Q_IN[i]>0 else 0 for n in range(N-1)]) for i in range(Q) ])
+        sum_out = quicksum([quicksum([time[n] * q_out[i][n] if Q_OUT[i]>0 else 0 for n in range(N-1)]) for i in range(Q) ])
         m.addConstr(total_travel_time == sum_out - sum_in)
-        m.addConstr( sum_out == sum_in)
+        m.addConstr(total_stops == 0.5 * quicksum([quicksum([d_2[i][n] + d_1[i][n] for i in range(Q)]) for n in range(0, N)]))
+        #m.addConstr( sum_out == sum_in)
         if obj == 'MAX_OUT':
-            out_flow = quicksum([ quicksum([ (T_MAX-time[n]) * out_q[i][n] * DT[n] for n in range(0,N)]) for i in range(Q) ])
-            in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n] for i in range(Q) ]) for n in range(0,N)])
-            #flow = quicksum( [ quicksum([ (T_MAX-time[n]) * f[j][i][n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]) for n in range(0,N)])
+            out_flow = quicksum([ quicksum([ (T_MAX-time[n] + 1) * out_q[i][n] * DT[n] for n in range(0,N)]) for i in range(Q) ])
+            in_flow = quicksum( [ quicksum([ (T_MAX-time[n] + 1) * in_q[i][n] * DT[n] for i in range(Q) ]) for n in range(0,N)])
+            #flow = quicksum( [ quicksum([ (T_MAX-time[n] + 1) * f[j][i][n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]) for n in range(0,N)])
             m.setObjective(alpha_obj * out_flow  + beta_obj * in_flow, GRB.MAXIMIZE)
         elif obj == 'MIN_TT':
-            out_flow = quicksum([ quicksum([ (T_MAX-time[n]) * out_q[i][n] * DT[n] for n in range(0,N)]) for i in range(Q) ])
-            in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n] for i in range(Q) ]) for n in range(0,N)])
-            #flow = quicksum( [ quicksum([ (T_MAX-time[n]) * f[j][i][n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]) for n in range(0,N)])
+            out_flow = quicksum([ quicksum([ (T_MAX-time[n] + 1) * out_q[i][n] * DT[n] for n in range(0,N)]) for i in range(Q) ])
+            in_flow = quicksum( [ quicksum([ (T_MAX-time[n] + 1) * in_q[i][n] * DT[n] for i in range(Q) ]) for n in range(0,N)])
+            #flow = quicksum( [ quicksum([ (T_MAX-time[n] + 1) * f[j][i][n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]) for n in range(0,N)])
             m.setObjective(alpha_obj * out_flow  + beta_obj * in_flow, GRB.MAXIMIZE)
         elif obj == 'MAX_OUT2':
-            out_flow = quicksum([ quicksum([ (T_MAX-time[n]) * out_q[i][n] * DT[n] for n in range(0,N)]) for i in range(Q) ])
-            flow = quicksum([ quicksum([ (T_MAX-time[n]) * q_out[i][n] for n in range(N)]) if Q_OUT[i]==0 else 0 for i in range(Q) ])
-            in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n] for i in range(Q) ]) for n in range(0,N)])
+            flow_set = []
+            for i in range(Q):
+                if Q_OUT[i] == 0: flow_set.append(i)
+            print 'Internal queue out flows:',flow_set
+            out_flow = quicksum([ quicksum([ (T_MAX - time[n] + 1) * q_out[i][n] for n in range(N)]) if Q_OUT[i]  > 0 else 0 for i in range(Q) ])
+            flow     = quicksum([ quicksum([ (T_MAX - time[n] + 1) * q_out[i][n] for n in range(N)]) if Q_OUT[i] == 0 else 0 for i in range(Q) ])
+            in_flow  = quicksum([ quicksum([ (T_MAX - time[n] + 1) * in_q[i][n]  for n in range(N)])                         for i in range(Q) ])
 
-            m.setObjective(alpha_obj * (out_flow  + in_flow) + beta_obj * flow, GRB.MAXIMIZE)
+            m.setObjective(alpha_obj * (out_flow  + in_flow) - (1.0 - alpha_obj) * total_stops + beta_obj * flow, GRB.MAXIMIZE)
+        elif obj == 'MAX_OUT3':
+            flows = []
+            flow_pairs = []
+            for f_ij in data['Flows'].keys():
+                i = int(f_ij.split('_')[0])
+                j = int(f_ij.split('_')[1])
+                flows.append(f[i][j])
+                flow_pairs.append((i,j))
+            out_flow = quicksum([ quicksum([ (T_MAX - time[n] + 1) * out_q[i][n] for n in range(N)])  for i in range(Q) ])
+            in_flow  = quicksum([ quicksum([ (T_MAX - time[n] + 1) * in_q[i][n]  for n in range(N)])  for i in range(Q) ])
+            flow     = quicksum([ quicksum([ (T_MAX - time[n] + 1) * f_ij[n] for f_ij in flows ]) for n in range(N) ])
+            #print 'out_flows:',[ i if Q_OUT[i]  > 0 else 0 for i in range(Q) ]
+            #print 'in_flows:',[ i for i in range(Q) ]
+            print 'flows:',flow_pairs
+            m.setObjective(alpha_obj * (out_flow  + in_flow) - (1.0 - alpha_obj) * total_stops + beta_obj * flow, GRB.MAXIMIZE)
         elif obj == 'MAX_QOUT':
-            flow = quicksum([ quicksum([ (T_MAX-time[n]) * q_out[i][n] for n in range(N)]) if Q_OUT[i]>0 else 0 for i in range(Q) ])
-            in_flow = quicksum( [ quicksum([ (T_MAX-time[n]) * in_q[i][n] * DT[n-1] for i in range(Q) ]) for n in range(0,N)])
-            stops = 0.5 * quicksum( [ quicksum([ d_q_in[i][n] + d_q_out[i][n] for i in range(Q) ]) for n in range(0,N)])
-            m.setObjective(alpha_obj * flow  -  (1-alpha_obj)*stops + beta_obj*in_flow, GRB.MAXIMIZE)
+            flow = quicksum([ quicksum([ (T_MAX-time[n] + 1) * q_out[i][n] for n in range(N)]) if Q_OUT[i]>0 else 0 for i in range(Q) ])
+            in_flow = quicksum( [ quicksum([ (T_MAX-time[n] + 1) * in_q[i][n] * DT[n-1] for i in range(Q) ]) for n in range(0,N)])
+            m.setObjective(alpha_obj * flow  -  (1-alpha_obj)*total_stops + beta_obj*in_flow, GRB.MAXIMIZE)
             #m.setObjective(flow + beta*in_flow, GRB.MAXIMIZE)
         elif obj == 'MAX_ALL_QOUT':
-            m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + beta_obj * ((T_MAX-time[n]) * in_q[i][n])  for i in range(Q) for n in range(0,N)]), GRB.MAXIMIZE)
-            # m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + 1*((T_MAX-time[n]) * in_q[i][n]) for i in range(Q) for n in range(N)]), GRB.MAXIMIZE)
+            m.setObjective(quicksum([(T_MAX-time[n] + 1) * q_out[i][n] + beta_obj * ((T_MAX-time[n] + 1) * in_q[i][n])  for i in range(Q) for n in range(0,N)]), GRB.MAXIMIZE)
+            # m.setObjective(quicksum([(T_MAX-time[n] + 1) * q_out[i][n] + 1*((T_MAX-time[n] + 1) * in_q[i][n]) for i in range(Q) for n in range(N)]), GRB.MAXIMIZE)
         elif obj == 'MAX_ALL_FLOWS':
             obj_flow_weights = []
             gamma_flow_weights = []
@@ -772,59 +822,66 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 obj_flow_weights.append((i,j,beta_obj))
             print 'Objective function flow weights: %s' % obj_flow_weights
             print 'Gamma flow weights: %s' % gamma_flow_weights
-            in_flow = quicksum([quicksum([(T_MAX - time[n]) * in_q[i][n] if Q_IN[i] > 0 else 0 for n in range(N)]) for i in range(Q) ])
-            out_flow = quicksum([quicksum([(T_MAX - time[n]) * out_q[i][n] if Q_OUT[i] > 0 else 0 for n in range(N)]) for i in range(Q) ])
-            mid_flow = quicksum([(T_MAX - time[n]) * f[i][j][n] for i,j,w in obj_flow_weights for n in range(0,N)])
-            maj_flow = quicksum([(T_MAX - time[n]) * f[i][j][n] for i,j,w in gamma_flow_weights for n in range(0,N)])
+            in_flow = quicksum([quicksum([(T_MAX - time[n] + 1) * in_q[i][n] if Q_IN[i] > 0 else 0 for n in range(N)]) for i in range(Q) ])
+            out_flow = quicksum([quicksum([(T_MAX - time[n] + 1) * out_q[i][n] if Q_OUT[i] > 0 else 0 for n in range(N)]) for i in range(Q) ])
+            mid_flow = quicksum([(T_MAX - time[n] + 1) * f[i][j][n] for i,j,w in obj_flow_weights for n in range(0,N)])
+            maj_flow = quicksum([(T_MAX - time[n] + 1) * f[i][j][n] for i,j,w in gamma_flow_weights for n in range(0,N)])
             m.setObjective(alpha_obj * out_flow + alpha_obj * in_flow + beta_obj * mid_flow + gamma_obj * maj_flow, GRB.MAXIMIZE)
-            # m.setObjective(quicksum([(T_MAX-time[n]) * q_out[i][n] + 1*((T_MAX-time[n]) * in_q[i][n]) for i in range(Q) for n in range(N)]), GRB.MAXIMIZE)
+            # m.setObjective(quicksum([(T_MAX-time[n] + 1) * q_out[i][n] + 1*((T_MAX-time[n] + 1) * in_q[i][n]) for i in range(Q) for n in range(N)]), GRB.MAXIMIZE)
         elif obj == 'MIN_LIN_WANG':
             obj_flows = []
             for f_ij in data['Flows'].keys():
                 i = int(f_ij.split('_')[0])
                 j = int(f_ij.split('_')[1])
                 obj_flows.append((i,j))
-            print['%d(%d)' % (i,Q_OUT[i]) if Q_OUT[i] > 0 else '%d(_)' % i for i in range(Q) ]
-            print['%d(%d)' % (i,Q_OUT[i]) if Q_OUT[i] == 0 else '%d(_)' % i for i in range(Q) ]
-            out_flow = quicksum([quicksum([(time[n] + 1) * (q_out[i][n] + out_q[i][n]) if Q_OUT[i] > 0 else 0 for n in range(N)]) for i in range(Q) ])
-            flow = quicksum([(time[n] + 1) * (f[i][j][n]) for i,j in obj_flows for n in range(N)])
+            #print['%d(%d)' % (i,Q_OUT[i]) if Q_OUT[i] > 0 else '%d(_)' % i for i in range(Q) ]
+            #print['%d(%d)' % (i,Q_OUT[i]) if Q_OUT[i] == 0 else '%d(_)' % i for i in range(Q) ]
+            out_flow = quicksum([quicksum([(time[n]) * (q_out[i][n]) if Q_OUT[i] > 0 else 0 for n in range(N)]) for i in range(Q) ])
+            flow = quicksum([quicksum([(time[n]) * (q_out[i][n]) if Q_OUT[i] == 0 else 0 for n in range(N)]) for i in range(Q) ])
             m.setObjective(alpha_obj * out_flow + beta_obj * flow, GRB.MINIMIZE)
         else:
             print 'No objective: %s' % obj
             return None
-        print 'Objective: %s alpha=%s beta=%s gamma=%s' % (obj,alpha_obj,beta_obj,gamma_obj)
+
         # initial conditions at n = 0
-        for i in range(L):
-            for j in range(len(l[i])):
-                m.addConstr(p[i][j][0] == p0[i][j])
-                if args.fixed_phase:
-                    #print
-                    m.addConstr(d[i][j][0] <= dp_fixed[i][j] + P_MAX[i][j] * (p0[i][j]))
-                    m.addConstr(d[i][j][0] >= dp_fixed[i][j] - P_MAX[i][j] * (p0[i][j]))
-                    m.addConstr(dp_fixed[i][j] <= P_MAX[i][j])
-                    m.addConstr(dp_fixed[i][j] >= P_MIN[i][j])
-                else:
-                    m.addConstr(d[i][j][0] == d0[i][j])
-                m.addConstr(c_on[i][0] == 0)
-                m.addConstr(tct[i][0] == 0)
+        # for i in range(L):
+        #     for j in range(len(l[i])):
+        #         m.addConstr(p[i][j][0] == p0[i][j])
+        #         if args.fixed_phase:
+        #             #print
+        #             m.addConstr(d[i][j][0] <= dp_fixed[i][j] + P_MAX[i][j] * (p0[i][j]))
+        #             m.addConstr(d[i][j][0] >= dp_fixed[i][j] - P_MAX[i][j] * (p0[i][j]))
+        #             m.addConstr(dp_fixed[i][j] <= P_MAX[i][j])
+        #             m.addConstr(dp_fixed[i][j] >= P_MIN[i][j])
+        #         else:
+        #             m.addConstr(d[i][j][0] == d0[i][j])
+        #         m.addConstr(c_on[i][0] == 0)
+        #         m.addConstr(tct[i][0] == 0)
 
         for i in range(Q):
             m.addConstr(q[i][0] == q0[i])
-            if flow_weights != None:
-                m.addConstr(in_q[i][0] <= Q_IN[i]*Q_IN_weight[i][0])
-                #Q_in[i].append(Q_IN[i]*Q_IN_weight[i][0])
-            else:
-                m.addConstr(in_q[i][0] == Q_IN[i])
-                #Q_in[i].append(Q_IN[i])
-            m.addConstr(q_in[i][0] == q0_in[i]) #in_q[i][0] * DT[0] + quicksum([f[j][i][0]*DT[0] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
-            m.addConstr(q_stop[i][0] == q0_stop[i])
-            m.addConstr(qm_in[i][0] == -1)
-            m.addConstr(qw_in[i][0] == -1)
-            m.addConstr(q_out[i][0] == q0_out[i])
-            for j in range(Q):
-                f_ij = '%d_%d' % (i,j)
-                if f_ij in data['Flows'] and i != j:
-                    m.addConstr(f[i][j][0] == f0[i][j])
+            # if flow_weights != None:
+            #     if solver_model == 'QTM':
+            #         m.addConstr(in_q[i][0] == Q_IN[i]*Q_IN_weight[i][0])
+            #     else:
+            #         m.addConstr(in_q[i][0] == Q_IN[i]*Q_IN_weight[i][0] * DT[0])
+            #     #Q_in[i].append(Q_IN[i]*Q_IN_weight[i][0])
+            # else:
+            #     if solver_model == 'QTM':
+            #         m.addConstr(in_q[i][0] == Q_IN[i])
+            #     else:
+            #         m.addConstr(in_q[i][0] == Q_IN[i] * DT[0])
+            #     #Q_in[i].append(Q_IN[i])
+            # #print 'q0_in[%d]=' % i,q0_in[i]
+            # m.addConstr(q_in[i][0] == in_q[i][0] * DT[0]) # q0_in[i]) #in_q[i][0] * DT[0] + quicksum([f[j][i][0]*DT[0] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
+            # m.addConstr(q_stop[i][0] == q0_stop[i])
+            # m.addConstr(qm_in[i][0] == -1)
+            # m.addConstr(qw_in[i][0] == -1)
+            # m.addConstr(q_out[i][0] == q0_out[i])
+            # for j in range(Q):
+            #     f_ij = '%d_%d' % (i,j)
+            #     if f_ij in data['Flows'] and i != j:
+            #         m.addConstr(f[i][j][0] == f0[i][j])
 
         # for f_ij in data['Flows'].keys():
         #         i = int(f_ij.split('_')[0])
@@ -849,7 +906,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         #print 'n\ttime\tt_m\tt_w\tm0\tw0\tDTm\tDTw\tDTw1'
         queue_print = -1
 
-        for n in range(1,N):
+        for n in range(0,N):
             debug('==============================')
             debug('n=%d' % n)
             debug('==============================')
@@ -869,206 +926,278 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                     #         cars_in_1+=flow_alpha*Q_IN[i]*DT[n-1]
                     #         #print "cars_in_1 =",cars_in_1, ' @',time[n], ' alpha =',flow_alpha ,' limit =',data['In_Flow_limit'],time[n] < data['In_Flow_limit'] and data['In_Flow_limit'] < time[n+1]
                     if time[n] < data['In_Flow_limit']:
-                        if obj is not 'MIN_LIN_WANG':
+                        if solver_model == 'QTM':
                             m.addConstr(in_q[i][n] <= Q_IN[i])
+                            Q_in[i].append(Q_IN[i])
+                            cars_in += Q_IN[i]
                         else:
-                            m.addConstr(in_q[i][n] == Q_IN[i])
-                        cars_in+=Q_IN[i]*DT[n]
-                        Q_in[i].append(Q_IN[i])
+                            #print (n,i, Q_IN[i])
+                            m.addConstr(in_q[i][n] == Q_IN[i] * DT[n])
+                            Q_in[i].append(Q_IN[i] * DT[n])
+                            cars_in += Q_IN[i]*DT[n]
+
                         if i==1:
                             cars_in_1+=Q_IN[i]*DT[n]
                             #print "cars_in_1 =",cars_in_1, ' @',time[n]
                     else:
+                        #print (n,i, 0)
                         Q_in[i].append(0)
                         m.addConstr(in_q[i][n] == 0)
 
                 elif flow_weights != None:
-                    if obj is not 'MIN_LIN_WANG':
-                        m.addConstr(in_q[i][n] <= Q_IN[i]*Q_IN_weight[i][n])
+                    if solver_model == 'QTM':
+                        m.addConstr(in_q[i][n] == Q_IN[i] * Q_IN_weight[i][n])
+                        Q_in[i].append(Q_IN[i ] *Q_IN_weight[i][n])
+                        cars_in += Q_IN[i] * Q_IN_weight[i][n]
                     else:
-                        m.addConstr(in_q[i][n] == Q_IN[i]*Q_IN_weight[i][n])
-                    cars_in+=Q_IN[i]*DT[n]*Q_IN_weight[i][n]
-                    Q_in[i].append(Q_IN[i]*Q_IN_weight[i][n])
+                        m.addConstr(in_q[i][n] == Q_IN[i]*Q_IN_weight[i][n] * DT[n])
+                        Q_in[i].append(Q_IN[i] * Q_IN_weight[i][n] * DT[n])
+                        cars_in += Q_IN[i] * Q_IN_weight[i][n] * DT[n]
+
                 else:
-                    if obj is not 'MIN_LIN_WANG':
-                        m.addConstr(in_q[i][n] <= Q_IN[i])
-                    else:
+                    if solver_model == 'QTM':
                         m.addConstr(in_q[i][n] == Q_IN[i])
-                    cars_in+=Q_IN[i]*DT[n]
-                    Q_in[i].append(Q_IN[i])
+                        cars_in += Q_IN[i]
+                        Q_in[i].append(Q_IN[i])
 
-                m.addConstr(q_in[i][n] == in_q[i][n] * DT[n] + quicksum([f[j][i][n]*DT[n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
-
-
-                m.addConstr(out_q[i][n] <= Q_OUT[i])
-                if obj == 'MIN_LIN_WANG':
-                    if Q_OUT[i] > 0:
-                        m.addConstr(out_q[i][n] == q[i][n])
-
-                m.addConstr(q_out[i][n] == out_q[i][n] * DT[n] + quicksum([f[i][j][n]*DT[n] if '%d_%d' % (i,j) in data['Flows'] and i != j else 0 for j in range(Q)]))
-
-                if n == N - 1:
-                    m.addConstr( q_out[i][n] <= q[i][n] + q_stop[i][n])
-
-                m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1]  + q_stop[i][n-1] ) #q_in[i][m0-1] * (DT[n-1]/DT[m0-1])  )
-
-
-
-                t_m = time[n]-Q_DELAY[i]
-                t_w = time[n]-Q_DELAY[i] + DT[n]
-                #m0 = t_inv[i][n]
-                #w0 = t_inv[i][n+1]
-
-                debug(( 't0=',t0))
-                debug(( 't1=',t1))
-                debug(( 'N=',N))
-                debug(( 'Q_DELAY[i]=',Q_DELAY[i]))
-                debug(( 't[n]=',time[n]))
-                debug(( 't_m=',t_m))
-                debug(( 't_w=',t_w))
-                if i==queue_print:
-                    debug(( n,'\t',time[n],'\t',t_m,'\t',t_w,))
-                if t_m >= time_full[0]:
-                    m1 = 1
-                    t_m1 = time_full[1]
-                    debug(( 'if 1 m1:'))
-                    while t_m1 <= t_m: ###and m1 < N - 1:
-                        m1 += 1
-                        debug(( m1,))
-                        t_m1 = time_full[m1]
-                    debug(( 'end if 1 m1'))
-                    m0 = m1 - 1
-                    w1 = m1 + 1
-                    DTm = ((time_full[m1] - t_m) / DT[m0])
-                    if w1 < N:
-                        t_w1 = time_full[w1]
-                        debug(( 'if 1 w1:'))
-                        while t_w1 <= t_w: ###and w1 < N - 1:
-                            w1 += 1
-                            debug(( w1))
-                            t_w1 = time_full[w1]
-                        debug(( 'end if 1 w1'))
                     else:
-                        w1 = m1
-                    w0 = w1 - 1
-                    DTw = ((t_w - time_full[w0]) / DT[w0])
-                    DTw1 = ((time_full[w1] - t_w) / DT[w0])
+                        m.addConstr(in_q[i][n] == Q_IN[i] * DT[n])
+                        cars_in += Q_IN[i] * DT[n]
+                        Q_in[i].append(Q_IN[i] * DT[n])
 
-                    #alpha = (t_m-time[m0])/(time[m1]-time[m0])
-                    #if i==1: print '@',time[n],'alpha=',alpha,'t_m=',t_m,'t_n0=',time[m0],'t_m1=',time[m1],'1/DT_n0-1=',(1.0/DT[m0-1]),'t_m-Q_DELAY-t_n0=',(time[n] - Q_DELAY[i] - time[m0])
-                    #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in[i][m0] + alpha * q_in[i][m1])
 
-                    m.addConstr(q[i][n] + q_in[i][m0] * DTm + quicksum([q_in[i][k] for k in range(m1,n)]) <= Q_MAX[i],
-                                name='q_%d_%d_capacity(%s,%s){%d,%d}' % (i,n,t_m-t0,t_w-t0,m1,n))
+                if solver_model == 'CTM':
+                    W = 0.5
 
-                    m.addConstr(q_stop[i][n] == q_in[i][m0] * DTm + quicksum([q_in[i][k] for k in range(m1,w0)]) + q_in[i][w0] * DTw )
+                    #m.addConstr(in_q[i][n] == Q_IN[i])
+                    m.addConstr(q[i][n] <= Q_MAX[i])
 
-                    m.addConstr(qm_in[i][n] == m0)
+                    next_cell = None
+                    prev_cell = None
+                    F_MAX_ij = 0
+                    for j in range(Q):
+                        f_ij = '%d_%d' % (i,j)
+                        if f_ij in data['Flows'] and i != j:
+                            m.addConstr(q_out[i][n] <= W * (Q_MAX[j] - q[j][n-1]) )
+                            next_cell = j
+                            F_MAX_ij = data['Flows'][f_ij]['F_MAX']
+                        f_ji = '%d_%d' % (j,i)
+                        if f_ji in data['Flows'] and i != j:
+                            prev_cell = j
 
-                    if i == queue_print:
-                        debug(( '\t',m0,'\t',w0,))
-                        debug(( '\t',DTm,'\t',DTw,'\t',DTw1,' t_m >= 0 and t_w >= 0',))
+                    if next_cell is None: # destination cell
+                        m.addConstr(q_out[i][n] == q[i][n])
+                        m.addConstr(out_q[i][n] == q_out[i][n])
+                        if n > 0:
+                            m.addConstr(q[i][n] == q[i][n-1] + q_out[prev_cell][n-1] - q_out[i][n-1])
+                        m.addConstr(q_in[i][n] == q_out[prev_cell][n])
+                    elif prev_cell is None: # origin cell
+                        #print (n,i)
+                        if n > 0:
+                            m.addConstr(q[i][n] == q[i][n-1] + in_q[i][n-1] - q_out[i][n-1])
+                        m.addConstr(q_in[i][n] == in_q[i][n])
+                        m.addConstr(q_out[i][n] <= q[i][n])
 
-                elif t_w >= time_full[0] and t_m < time_full[0]:
-                    m1 = 1
-                    t_m1 = t_prev[1]
-                    debug(( 'if 2 m1:'))
-                    while t_m1 <= t_m: ### and m1 < len(t_prev) - 1:
-                        m1 += 1
-                        debug(( m1,))
-                        t_m1 = t_prev[m1]
-                    debug(( 'end if 2 m1'))
-                    m0 = m1 - 1
-                    m_end = m1
-                    t_m_end = t_prev[m_end]
-                    debug(( 'if 2 m_end:'))
-                    while m_end < len(t_prev) - 1 and t_m_end < time_full[0]:
-                        m_end += 1
-                        debug(( m_end,))
+                    else: # ordinary cell
+                        if Q_p[i] is None: # ordinary cell
+                            m.addConstr(q_out[i][n] <= F_MAX_ij * DT[n])
+                        else: # intersection cell
+                            if fixed_plan == None:
+                                m.addConstr(q_out[i][n] <= F_MAX_ij * DT[n] * quicksum([ p[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]) )
+                            else:
+                                sum_fixed = sum([ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ])
+                                if sum_fixed < 0: print 'WARNING: sum(p_fixed_plan[q_%d,l_%d] @ n = %d) = %f' % (i,Q_p[i][0],n,sum_fixed)
+                                state = [ p_fixed_plan[Q_p[i][0]][q_p][n] > 0 for q_p in Q_p[i][1:] ]
+                                if True in state:
+                                    m.addConstr(q_out[i][n] <= F_MAX_ij * DT[n])
+                                else:
+                                    m.addConstr(q_out[i][n] == 0)
+                        m.addConstr(q_out[i][n] <= q[i][n])
+                        if n > 0:
+                            m.addConstr(q[i][n] == q[i][n-1] + q_out[prev_cell][n-1] - q_out[i][n-1])
+                        m.addConstr(q_in[i][n] == q_out[prev_cell][n])
+
+                    m.addConstr(q_out[i][n] - q_in[i][n-1] == d_1[i][n] - d_2[i][n])
+
+
+
+                else: # QTM
+
+                    m.addConstr(q_in[i][n] == in_q[i][n] * DT[n] + quicksum([f[j][i][n]*DT[n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
+
+                    if obj == 'MIN_LIN_WANG':
+                        if Q_OUT[i] > 0:
+                            m.addConstr(out_q[i][n] == q[i][n])
+                    else:
+                        m.addConstr(out_q[i][n] <= Q_OUT[i])
+
+                    m.addConstr(q_out[i][n] == out_q[i][n] * DT[n] + quicksum([f[i][j][n]*DT[n] if '%d_%d' % (i,j) in data['Flows'] and i != j else 0 for j in range(Q)]))
+
+
+                    if n == N - 1:
+                        m.addConstr( q_out[i][n] <= q[i][n] + q_stop[i][n])
+                    if n > 0:
+                        m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1]  + q_stop[i][n-1] ) #q_in[i][m0-1] * (DT[n-1]/DT[m0-1])  )
+
+
+
+                    t_m = time[n]-Q_DELAY[i]
+                    t_w = time[n]-Q_DELAY[i] + DT[n]
+                    #m0 = t_inv[i][n]
+                    #w0 = t_inv[i][n+1]
+
+                    debug(( 't0=',t0))
+                    debug(( 't1=',t1))
+                    debug(( 'N=',N))
+                    debug(( 'Q_DELAY[i]=',Q_DELAY[i]))
+                    debug(( 't[n]=',time[n]))
+                    debug(( 't_m=',t_m))
+                    debug(( 't_w=',t_w))
+                    if i==queue_print:
+                        debug(( n,'\t',time[n],'\t',t_m,'\t',t_w,))
+                    if t_m >= time_full[0]:
+                        m1 = 1
+                        t_m1 = time_full[1]
+                        debug(( 'if 1 m1:'))
+                        while t_m1 <= t_m: ###and m1 < N - 1:
+                            m1 += 1
+                            debug(( m1,))
+                            t_m1 = time_full[m1]
+                        debug(( 'end if 1 m1'))
+                        m0 = m1 - 1
+                        w1 = m1 + 1
+                        DTm = ((time_full[m1] - t_m) / DT[m0])
+                        if w1 < N:
+                            t_w1 = time_full[w1]
+                            debug(( 'if 1 w1:'))
+                            while t_w1 <= t_w: ###and w1 < N - 1:
+                                w1 += 1
+                                debug(( w1))
+                                t_w1 = time_full[w1]
+                            debug(( 'end if 1 w1'))
+                        else:
+                            w1 = m1
+                        w0 = w1 - 1
+                        DTw = ((t_w - time_full[w0]) / DT[w0])
+                        DTw1 = ((time_full[w1] - t_w) / DT[w0])
+
+                        #alpha = (t_m-time[m0])/(time[m1]-time[m0])
+                        #if i==1: print '@',time[n],'alpha=',alpha,'t_m=',t_m,'t_n0=',time[m0],'t_m1=',time[m1],'1/DT_n0-1=',(1.0/DT[m0-1]),'t_m-Q_DELAY-t_n0=',(time[n] - Q_DELAY[i] - time[m0])
+                        #m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1] + (1 - alpha) * q_in[i][m0] + alpha * q_in[i][m1])
+
+                        m.addConstr(q[i][n] + q_in[i][m0] * DTm + quicksum([q_in[i][k] for k in range(m1,n)]) <= Q_MAX[i],
+                                    name='q_%d_%d_capacity(%s,%s){%d,%d}' % (i,n,t_m-t0,t_w-t0,m1,n))
+
+                        m.addConstr(q_stop[i][n] == q_in[i][m0] * DTm + quicksum([q_in[i][k] for k in range(m1,w0)]) + q_in[i][w0] * DTw )
+
+                        m.addConstr(qm_in[i][n] == m0)
+
+                        if i == queue_print:
+                            debug(( '\t',m0,'\t',w0,))
+                            debug(( '\t',DTm,'\t',DTw,'\t',DTw1,' t_m >= 0 and t_w >= 0',))
+
+                    elif t_w >= time_full[0] and t_m < time_full[0]:
+                        m1 = 1
+                        t_m1 = t_prev[1]
+                        debug(( 'if 2 m1:'))
+                        while t_m1 <= t_m: ### and m1 < len(t_prev) - 1:
+                            m1 += 1
+                            debug(( m1,))
+                            t_m1 = t_prev[m1]
+                        debug(( 'end if 2 m1'))
+                        m0 = m1 - 1
+                        m_end = m1
                         t_m_end = t_prev[m_end]
-                    debug(( 'end if 2 m_end'))
-                    DTm = ((t_prev[m1] - t_m) / DT_prev[m0])
-                    w1 = 1
-                    t_w1 = time_full[w1]
-                    debug(( 'if 2 w1:'))
-                    while t_w1 <= t_w and w1 < N - 1:
-                        w1 += 1
-                        debug(( w1,))
+                        debug(( 'if 2 m_end:'))
+                        while m_end < len(t_prev) - 1 and t_m_end < time_full[0]:
+                            m_end += 1
+                            debug(( m_end,))
+                            t_m_end = t_prev[m_end]
+                        debug(( 'end if 2 m_end'))
+                        DTm = ((t_prev[m1] - t_m) / DT_prev[m0])
+                        w1 = 1
                         t_w1 = time_full[w1]
-                    debug(( 'end if 2 w1'))
-                    w0 = w1 - 1
-                    DTw = ((t_w - time_full[w0]) / DT[w0])
-                    DTw1 = ((time_full[w1] - t_w) / DT[w0])
-                    #print '\t',m1,'\t',m_end,'\t',range(m1,m_end)
+                        debug(( 'if 2 w1:'))
+                        while t_w1 <= t_w and w1 < N - 1:
+                            w1 += 1
+                            debug(( w1,))
+                            t_w1 = time_full[w1]
+                        debug(( 'end if 2 w1'))
+                        w0 = w1 - 1
+                        DTw = ((t_w - time_full[w0]) / DT[w0])
+                        DTw1 = ((time_full[w1] - t_w) / DT[w0])
+                        #print '\t',m1,'\t',m_end,'\t',range(m1,m_end)
 
-                    m.addConstr(q[i][n] + q_in_prev[i][m0] * DTm
-                                + quicksum([q_in_prev[i][k] for k in range(m1,m_end)])
-                                + quicksum([q_in[i][k] for k in range(n)]) <= Q_MAX[i],
-                                name='q_%d_%d_capacity(%s,%s){%d,%d=%s}' % (i,n,t_m-t0,t_w-t0,
-                                        m1,m_end,sum([q_in_prev[i][k] for k in range(m1,m_end)])))
+                        m.addConstr(q[i][n] + q_in_prev[i][m0] * DTm
+                                    + quicksum([q_in_prev[i][k] for k in range(m1,m_end)])
+                                    + quicksum([q_in[i][k] for k in range(n)]) <= Q_MAX[i],
+                                    name='q_%d_%d_capacity(%s,%s){%d,%d=%s}' % (i,n,t_m-t0,t_w-t0,
+                                            m1,m_end,sum([q_in_prev[i][k] for k in range(m1,m_end)])))
 
-                    m.addConstr(q_stop[i][n] == q_in_prev[i][m0] * DTm + q_in[i][w0] * DTw
-                                + quicksum([q_in_prev[i][k] for k in range(m1,m_end)])
-                                + quicksum([q_in[i][k] for k in range(w0)])  )
+                        m.addConstr(q_stop[i][n] == q_in_prev[i][m0] * DTm + q_in[i][w0] * DTw
+                                    + quicksum([q_in_prev[i][k] for k in range(m1,m_end)])
+                                    + quicksum([q_in[i][k] for k in range(w0)])  )
 
-                    m.addConstr(qm_in[i][n] == m0)
+                        m.addConstr(qm_in[i][n] == m0)
 
-                    if i==queue_print:
-                        debug(( '\t',m0,'\t',w0,))
-                        debug(( '\t',DTm,'\t',DTw,'\t',DTw1,' t_m < 0 and t_w >= 0',))
+                        if i==queue_print:
+                            debug(( '\t',m0,'\t',w0,))
+                            debug(( '\t',DTm,'\t',DTw,'\t',DTw1,' t_m < 0 and t_w >= 0',))
 
-                else:
-                    m1 = 1
-                    t_m1 = t_prev[1]
-                    debug(( 'if 3 m1:'))
-                    while t_m1 <= t_m: ### and m1 < len(t_prev) - 1:
-                        m1 += 1
-                        debug(( m1,))
-                        t_m1 = t_prev[m1]
-                    debug(( 'end if 3 m1'))
-                    m0 = m1 - 1
-                    m_end = m1
-                    t_m_end = t_prev[m_end]
-                    debug(( 'if 3 m_end:'))
-                    while m_end < len(t_prev) - 1 and t_m_end < time_full[0]:
-                        m_end += 1
-                        debug(( m_end,))
+                    else:
+                        m1 = 1
+                        t_m1 = t_prev[1]
+                        debug(( 'if 3 m1:'))
+                        while t_m1 <= t_m: ### and m1 < len(t_prev) - 1:
+                            m1 += 1
+                            debug(( m1,))
+                            t_m1 = t_prev[m1]
+                        debug(( 'end if 3 m1'))
+                        m0 = m1 - 1
+                        m_end = m1
                         t_m_end = t_prev[m_end]
-                    debug(( 'end if 3 m_end'))
-                    DTm = ((t_prev[m1] - t_m) / DT_prev[m0])
-                    w1 = 1
-                    t_w1 = t_prev[w1]
-                    debug(( 'if 3 w1:'))
-                    while t_w1 <= t_w: ### and w1 < len(t_prev) - 1:
-                        w1 += 1
-                        debug(( w1,))
+                        debug(( 'if 3 m_end:'))
+                        while m_end < len(t_prev) - 1 and t_m_end < time_full[0]:
+                            m_end += 1
+                            debug(( m_end,))
+                            t_m_end = t_prev[m_end]
+                        debug(( 'end if 3 m_end'))
+                        DTm = ((t_prev[m1] - t_m) / DT_prev[m0])
+                        w1 = 1
                         t_w1 = t_prev[w1]
-                    debug(( 'end if 3 w1'))
-                    w0 = w1 - 1
-                    DTw = ((t_w - t_prev[w0]) / DT_prev[w0])
-                    DTw1 = ((t_prev[w1] - t_w) / DT_prev[w0])
+                        debug(( 'if 3 w1:'))
+                        while t_w1 <= t_w: ### and w1 < len(t_prev) - 1:
+                            w1 += 1
+                            debug(( w1,))
+                            t_w1 = t_prev[w1]
+                        debug(( 'end if 3 w1'))
+                        w0 = w1 - 1
+                        DTw = ((t_w - t_prev[w0]) / DT_prev[w0])
+                        DTw1 = ((t_prev[w1] - t_w) / DT_prev[w0])
 
-                    m.addConstr(q[i][n] + q_in_prev[i][m0] * DTm
-                                + quicksum([q_in_prev[i][k] for k in range(m1,m_end)])
-                                + quicksum([q_in[i][k] for k in range(n)]) <= Q_MAX[i],
-                                name='q_%d_%d_capacity(%s,%s){%d,%d=%s}' % (i,n,t_m-t0,t_w-t0,
-                                        m1,m_end,sum([q_in_prev[i][k] for k in range(m1,m_end)])))
+                        m.addConstr(q[i][n] + q_in_prev[i][m0] * DTm
+                                    + quicksum([q_in_prev[i][k] for k in range(m1,m_end)])
+                                    + quicksum([q_in[i][k] for k in range(n)]) <= Q_MAX[i],
+                                    name='q_%d_%d_capacity(%s,%s){%d,%d=%s}' % (i,n,t_m-t0,t_w-t0,
+                                            m1,m_end,sum([q_in_prev[i][k] for k in range(m1,m_end)])))
 
-                    m.addConstr(q_stop[i][n] == q_in_prev[i][m0] * DTm
-                                + quicksum([q_in_prev[i][k] for k in range(m1,w0)])
-                                + q_in_prev[i][w0] * DTw )
+                        m.addConstr(q_stop[i][n] == q_in_prev[i][m0] * DTm
+                                    + quicksum([q_in_prev[i][k] for k in range(m1,w0)])
+                                    + q_in_prev[i][w0] * DTw )
 
-                    m.addConstr(qm_in[i][n] == m0)
+                        m.addConstr(qm_in[i][n] == m0)
+
+                        if i==queue_print:
+                            debug(( '\t',m0,'\t',w0,))
+                            debug(( '\t',DTm,'\t',DTw,'\t',DTw1,' t_m < 0 and t_w < 0',))
+
+                    if n > 0:
+                        m.addConstr(q[i][n] - q[i][n-1] == d_1[i][n] - d_2[i][n])
+
 
                     if i==queue_print:
-                        debug(( '\t',m0,'\t',w0,))
-                        debug(( '\t',DTm,'\t',DTw,'\t',DTw1,' t_m < 0 and t_w < 0',))
+                        debug(())
 
-
-                m.addConstr( q[i][n] - q[i][n-1] == d_q_out[i][n] - d_q_in[i][n]  )
-
-                if i==queue_print:
-                    debug(())
                 if fixed_plan == None:
                     for j in range(Q):
                         f_ij = '%d_%d' % (i,j)
@@ -1126,38 +1255,92 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                         #m.addConstr( fxy[i][n] == quicksum([ (T_MAX - time[nn] + 1) * (1.0 / F_xy) * f[x][y][nn] for nn in range(n)])) #(T_MAX - time[n]) * (1.0 / F_xy) * f[x][y][n] )
                                         #m.addConstr( (T_MAX - time[n]) * (1.0 / F_xy) * f[x][y][n] <= (T_MAX - time[n]) * (1.0 / F_ij) * f[i][j][n] )
 
-                else:
+                else: # Fixed Plan
                     for j in range(Q):
                         f_ij = '%d_%d' % (i,j)
                         if f_ij in data['Flows'] and i != j:
-                            if Q_p[i] != None:
-                                sum_fixed = sum([ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ])
-                                if sum_fixed < 0: print 'WARNING: sum(p_fixed_plan[q_%d,l_%d] @ n = %d) = %f' % (i,Q_p[i][0],n,sum_fixed)
-                                state = [ p_fixed_plan[Q_p[i][0]][q_p][n] > 0 for q_p in Q_p[i][1:] ]
-                                if True in state:
-                                    m.addConstr( f[i][j][n] <= data['Flows'][f_ij]['F_MAX']  )
-                                else:
-                                    m.addConstr( f[i][j][n] == 0 )
-                                #m.addConstr( f[i][j][n] <= data['Flows'][f_ij]['F_MAX'] * sum([ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]) )
-
+                            F_ij = data['Flows'][f_ij]['F_MAX']
                             if 'Pr' in data['Flows'][f_ij]:
                                 Pr_ij = data['Flows'][f_ij]['Pr']
+                            else:
+                                Pr_ij = 1.0
+                            if (i,j) not in dominant_flows and "F_Y" not in data['Flows'][f_ij] and False:
+                                if Q_p[i] != None:
+                                    m.addConstr( f[i][j][n] <= F_ij * quicksum([ p[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]) )
                                 m.addConstr( f[i][j][n] <= Pr_ij * ( quicksum([f[i][k][n] if '%d_%d' % (i,k) in data['Flows'] and i != k else 0 for k in range(Q)]) ) )
 
-                            if "F_Y" in data['Flows'][f_ij]:
+                            else:
+                                if Q_p[i] != None:
+                                    sum_fixed = sum([ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ])
+                                    if sum_fixed < 0: print 'WARNING: sum(p_fixed_plan[q_%d,l_%d] @ n = %d) = %f' % (i,Q_p[i][0],n,sum_fixed)
+                                    state = [ p_fixed_plan[Q_p[i][0]][q_p][n] > 0 for q_p in Q_p[i][1:] ]
+                                    if True in state:
+                                        F_max = F_ij # * quicksum([ p[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ])
+                                    else:
+                                        F_max = 0
+                                else:
+                                    if "F_Y" in data['Flows'][f_ij]:
+                                        for x_y in data['Flows'][f_ij]["F_Y"]:
+                                            x = int(x_y.split('_')[0])
+                                            y = int(x_y.split('_')[1])
+                                            f_xy = '%d_%d' % (x,y)
+                                            if f_xy in data['Flows']:
+                                                F_xy = data['Flows'][f_xy]['F_MAX']
+                                            #m.addConstr( f[i][j][n] <= F_ij / F_xy  * (F_xy - f[x][y][n]) , name = 'f_%d_%d_yeild_to_f_%d_%d' % (i,j,x,y))
 
-                                for x_y in data['Flows'][f_ij]:
-                                    x = x_y.splt('_')[0]
-                                    y = x_y.splt('_')[1]
-                                    f_xy = '%d_%d' % (x,y)
-                                    if f_xy in data['Flows']:
+                                            F_max = F_ij / F_xy  * (F_xy - f[x][y][n])
+                                    else:
+                                        F_max = F_ij
+                                        #print 'Adding min3 for %s yielding to %s ' % (f_ij,f_xy)
+                                min3_constr(m, f[i][j][n], F_max, # Pr_ij * F_max
+                                    Pr_ij * (1.0/DT[n]) * (Q_MAX[j] - q[j][n]),
+                                    Pr_ij * (1.0/DT[n]) * (q_stop[i][n] + q[i][n]))
 
-                                        F_ij = data['Flows'][f_ij]['F_MAX']
-                                        F_xy = data['Flows'][f_xy]['F_MAX']
-                                        m.addConstr( f[i][j][n] <= Fij / F_xy  * (F_xy - f[x][y][n]) , name = 'f_%d_%d_yeild_to_f_%d_%d' % (i,j,x,y))
-                                        min_constr(m, f[x][y][n], F_xy, (1.0/DT[n]) * Q_MAX[y] - q[y][n], (1.0/DT[n]) * q[x][n-1])
-                                        #m.addConstr( fij[i][n] == quicksum([ (T_MAX - time[nn] + 1) * (1.0 / F_ij) * f[i][j][nn] for nn in range(n)])) #(T_MAX - time[n]) * (1.0 / F_ij) * f[i][j][n] )
-                                        #m.addConstr( fxy[i][n] == quicksum([ (T_MAX - time[nn] + 1) * (1.0 / F_xy) * f[x][y][nn] for nn in range(n)])) #(T_MAX - time[n]) * (1.0 / F_xy) * f[x][y][n] )
+
+                    # for j in range(Q):
+                    #     f_ij = '%d_%d' % (i,j)
+                    #     if f_ij in data['Flows'] and i != j:
+                    #         F_ij = data['Flows'][f_ij]['F_MAX']
+                    #         if Q_p[i] != None:
+                    #             sum_fixed = sum([ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ])
+                    #             if sum_fixed < 0: print 'WARNING: sum(p_fixed_plan[q_%d,l_%d] @ n = %d) = %f' % (i,Q_p[i][0],n,sum_fixed)
+                    #             state = [ p_fixed_plan[Q_p[i][0]][q_p][n] > 0 for q_p in Q_p[i][1:] ]
+                    #             if True in state:
+                    #                 F_max = F_ij
+                    #                 if 'Pr' in data['Flows'][f_ij]:
+                    #                     Pr_ij = data['Flows'][f_ij]['Pr']
+                    #                 else:
+                    #                     Pr_ij = 1.0
+                    #                 min3_constr(m, f[i][j][n], F_max, # Pr_ij * F_max
+                    #                         Pr_ij * (1.0/DT[n]) * (Q_MAX[j] - q[j][n]),
+                    #                         Pr_ij * (1.0/DT[n]) * (q_stop[i][n] + q[i][n]))
+                    #                 # m.addConstr( f[i][j][n] <= data['Flows'][f_ij]['F_MAX']  )
+                    #             else:
+                    #                 F_max = 0
+                    #                 m.addConstr( f[i][j][n] == 0 )
+                    #         else:
+                    #             min3_constr(m, f[i][j][n], F_ij, # Pr_ij * F_max
+                    #                          (1.0/DT[n]) * (Q_MAX[j] - q[j][n]),
+                    #                          (1.0/DT[n]) * (q_stop[i][n] + q[i][n]))
+                    #             #m.addConstr( f[i][j][n] <= data['Flows'][f_ij]['F_MAX'] * sum([ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]) )
+                    #
+                    #
+                    #             # m.addConstr( f[i][j][n] <= Pr_ij * ( quicksum([f[i][k][n] if '%d_%d' % (i,k) in data['Flows'] and i != k else 0 for k in range(Q)]) ) )
+                    #
+                    #         if "F_Y" in data['Flows'][f_ij]:
+                    #
+                    #             for x_y in data['Flows'][f_ij]:
+                    #                 x = x_y.splt('_')[0]
+                    #                 y = x_y.splt('_')[1]
+                    #                 f_xy = '%d_%d' % (x,y)
+                    #                 if f_xy in data['Flows']:
+                    #
+                    #                     F_ij = data['Flows'][f_ij]['F_MAX']
+                    #                     F_xy = data['Flows'][f_xy]['F_MAX']
+                    #                     m.addConstr( f[i][j][n] <= Fij / F_xy  * (F_xy - f[x][y][n]) , name = 'f_%d_%d_yeild_to_f_%d_%d' % (i,j,x,y))
+                    #                     min_constr(m, f[x][y][n], F_xy, (1.0/DT[n]) * Q_MAX[y] - q[y][n], (1.0/DT[n]) * q[x][n-1])
+                    #                     #m.addConstr( fij[i][n] == quicksum([ (T_MAX - time[nn] + 1) * (1.0 / F_ij) * f[i][j][nn] for nn in range(n)])) #(T_MAX - time[n]) * (1.0 / F_ij) * f[i][j][n] )
+                    #                     #m.addConstr( fxy[i][n] == quicksum([ (T_MAX - time[nn] + 1) * (1.0 / F_xy) * f[x][y][nn] for nn in range(n)])) #(T_MAX - time[n]) * (1.0 / F_xy) * f[x][y][n] )
 
             if fixed_plan == None:
                 for i in range(L):
@@ -1176,7 +1359,8 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                 m.addConstr(p[i][j][n] == 1)
                             else:
                                 m.addConstr(p[i][j][n] == 0)
-                            m.addConstr(d[i][j][n] == d[i][j][n-1])
+                            if n > 0:
+                                m.addConstr(d[i][j][n] == d[i][j][n-1])
 
                         else:
 
@@ -1195,28 +1379,33 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
                                 relax_vars.append(d[i][j][n])
                                 rhspen.append(2)
+                            if n > 0:
+                                relax_constr.append(m.addConstr(d[i][j][n] <= P_MAX[i][j] * (1 - p[i][j][n] + p[i][j][n-1]), name='d_reset_%d_%d_%d' % (i,j,n)))
+                                rhspen.append(2)
+                                ubpen.append(1)
+                                lbpen.append(1)
 
-                            relax_constr.append(m.addConstr(d[i][j][n] <= P_MAX[i][j] * (1 - p[i][j][n] + p[i][j][n-1]), name='d_reset_%d_%d_%d' % (i,j,n)))
-                            rhspen.append(2)
-                            ubpen.append(1)
-                            lbpen.append(1)
+                                m.addConstr(p[i][j][n-1] <= p[i][j][n] + p[i][(j+1) % np][n])
+                                #m.addConstr(p[i][j][n] + p[i][(j+1) % np][n] <= 1)
+                                m.addConstr(d[i][j][n] >= d[i][j][n-1] + p[i][j][n-1] * DT[n-1] - 10*P_MAX[i][j] * (1 - p[i][j][n-1]), name='d_inc_ub_%d_%d_%d' % (i,j,n) )
+                                m.addConstr(d[i][j][n] <= d[i][j][n-1] + p[i][j][n-1] * DT[n-1] + 10*P_MAX[i][j] * (1 - p[i][j][n-1]), name='d_inc_lb_%d_%d_%d' % (i,j,n) )
 
-                            m.addConstr(p[i][j][n-1] <= p[i][j][n] + p[i][(j+1) % np][n])
-                            m.addConstr(p[i][j][n] + p[i][(j+1) % np][n] <= 1)
-                            m.addConstr(d[i][j][n] >= d[i][j][n-1] + p[i][j][n-1] * DT[n-1] - 10*P_MAX[i][j] * (1 - p[i][j][n-1]), name='d_inc_ub_%d_%d_%d' % (i,j,n) )
-                            m.addConstr(d[i][j][n] <= d[i][j][n-1] + p[i][j][n-1] * DT[n-1] + 10*P_MAX[i][j] * (1 - p[i][j][n-1]), name='d_inc_lb_%d_%d_%d' % (i,j,n) )
+                                m.addConstr(d[i][j][n] >= d[i][j][n-1] - 10*P_MAX[i][j] * p[i][j][n],name='d_hold_ub_%d_%d_%d' % (i,j,n) )
+                                m.addConstr(d[i][j][n] <= d[i][j][n-1] + 10*P_MAX[i][j] * p[i][j][n-1],name='d_hold_lb_%d_%d_%d' % (i,j,n))
+                            elif init_prev_file:
+                                m.addConstr(p[i][j][n] == p0[i][j])
+                                m.addConstr(d[i][j][n] == d0[i][j])
 
-                            m.addConstr(d[i][j][n] >= d[i][j][n-1] - 10*P_MAX[i][j] * p[i][j][n],name='d_hold_ub_%d_%d_%d' % (i,j,n) )
-                            m.addConstr(d[i][j][n] <= d[i][j][n-1] + 10*P_MAX[i][j] * p[i][j][n-1],name='d_hold_lb_%d_%d_%d' % (i,j,n))
-
-                    if args.fixed_cycle:
+                    if args.fixed_cycle and n > 0:
                         m.addConstr(d[i][0][n-1] + quicksum([d[i][j][n] for j in range(1,np)]) <= c_fixed[i] + C_MAX[i] * (1 - ( p[i][0][n] - p[i][0][n-1])))
                         m.addConstr(d[i][0][n-1] + quicksum([d[i][j][n] for j in range(1,np)]) >= c_fixed[i] - C_MAX[i] * (1 - ( p[i][0][n] - p[i][0][n-1])))
-
-                    m.addConstr(c_on[i][n] == 1 - ( p[i][0][n] - p[i][0][n-1]))
-                    m.addConstr(tct[i][n] == d[i][0][n-1] + quicksum([d[i][j][n] for j in range(1,np)]))
-
-                    if TRANSIT and any([xx[n] for xx in p_transit[i]]) is False:
+                    if n > 0:
+                        m.addConstr(c_on[i][n] == 1 - ( p[i][0][n] - p[i][0][n-1]))
+                        m.addConstr(tct[i][n] == d[i][0][n-1] + quicksum([d[i][j][n] for j in range(1,np)]))
+                    else:
+                        m.addConstr(c_on[i][n] == 0)
+                        m.addConstr(tct[i][n] == 0)
+                    if TRANSIT and any([xx[n] for xx in p_transit[i]]) is False and n > 0:
                     #if any(p_transit[i]) is False:
                         relax_constr.append(m.addConstr(d[i][0][n-1] + quicksum([d[i][j][n] for j in range(1,np)]) <= C_MAX[i] ))
                         rhspen.append(2)
@@ -1305,78 +1494,87 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             print status_codes[m.status][2]
             print 'Obj:', m.objVal
             print 'Total Travel Time:', total_travel_time.x
+            print 'Total Stops      :', total_stops.x
             print 'Setup time: %s seconds' % setup_time
             print 'Solve time: %s seconds' % solve_time
 
-            print 'Testing for traffic withholding:',
-            withholding = False
-            error_msg = ''
+            if solver_model != 'CTM' and no_warning == False:
 
-            for i in range(Q):
-                for n in range(1,N):
-                    error_data = []
-                    try:
-                        error_data.append('in_%d  : %s' % (i,in_q[i][n].x))
-                        error_data.append('Q_in_%d: %s' % (i,Q_in[i][n]))
-                        numpy.testing.assert_almost_equal([in_q[i][n].x],[Q_in[i][n]])
-                    except AssertionError,e:
-                        if withholding == False:
-                            withholding = True
-                            print
-                            error_msg =  'Traffic withholding at input: in_%d t=%s' %(i,time[n])
-                        print 'WARNING Traffic withholding at input: in_%d t=%s' %(i,time[n])
-                        for msg in error_data:
-                            print '   ',msg
-                for flow in data['Flows'].keys():
-                    x = int(flow.split('_')[0])
-                    j = int(flow.split('_')[1])
-                    f_ij = data['Flows'][flow]
-                    if x == i:
-                        F_ij = f_ij["F_MAX"]
-                        if 'Pr' in f_ij:
-                            Pr_ij = f_ij["Pr"]
-                        else:
-                            Pr_ij = 1.0
-                        for n in range(N):
-                            error_data = []
-                            error_data.append('Pr=%s' % Pr_ij)
-                            F_max = F_ij
-                            if "F_Y" in f_ij:
-                                for f_xy in f_ij["F_Y"]:
-                                    x = int(f_xy.split('_')[0])
-                                    y = int(f_xy.split('_')[1])
-                                    if f_xy in data['Flows']:
-                                        F_xy = data['Flows'][f_xy]['F_MAX']
-                                        F_max *= (1.0 / F_xy)  * (F_xy - f[x][y][n].x)
-                            if Q_p[i] != None:
-                                sum_p = sum([ p[Q_p[i][0]][q_p][n].x for q_p in Q_p[i][1:] ])
-                                if sum_p < 0.5:
-                                    F_max = 0
-                                error_data.append('sum_p_%d=%d' % (i,sum_p))
-                            try:
-                                error_data.append('Pr_ij * F_max: %s' % (F_max)) #Pr_ij * F_max
-                                error_data.append('(1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x): %s'% ((1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x)))
-                                error_data.append('1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x): %s' % ((1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x)))
-                                error_data.append('min = %s' % min( Pr_ij * F_max, (1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x), (1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x)))
-                                error_data.append('f_%d,%d = %s' % (i,j,f[i][j][n].x))
-                                numpy.testing.assert_almost_equal([f[i][j][n].x],[min( F_max, #Pr_ij * F_max
-                                                                                    (1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x),
-                                                                                    (1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x))])
+                print 'Testing for traffic withholding:',
+                withholding = False
+                error_msg = ''
+                WITHHOLDING_TEST_TOLERANCE = 6 # AMD Opterons in cluster trip test at 7 DP.
+                for i in range(Q):
+                    for n in range(0,N):
+                        error_data = []
+                        try:
+                            error_data.append('in_%d  : %s' % (i,in_q[i][n].x))
+                            error_data.append('Q_in_%d: %s' % (i,Q_in[i][n]))
+                            numpy.testing.assert_almost_equal([in_q[i][n].x],[Q_in[i][n]])
+                        except AssertionError,e:
+                            if withholding == False:
+                                withholding = True
+                                print
+                                error_msg =  'Traffic withholding at input: in_%d t=%s' %(i,time[n])
+                            print 'WARNING Traffic withholding at input: in_%d t=%s' %(i,time[n])
+                            for msg in error_data:
+                                print '   ',msg
+                    for flow in data['Flows'].keys():
+                        x = int(flow.split('_')[0])
+                        j = int(flow.split('_')[1])
+                        f_ij = data['Flows'][flow]
+                        if x == i:
+                            F_ij = f_ij["F_MAX"]
+                            if 'Pr' in f_ij:
+                                Pr_ij = f_ij["Pr"]
+                            else:
+                                Pr_ij = 1.0
+                            for n in range(N):
+                                error_data = []
+                                error_data.append('Pr=%s' % Pr_ij)
+                                F_max = F_ij
+                                if "F_Y" in f_ij:
+                                    for f_xy in f_ij["F_Y"]:
+                                        x = int(f_xy.split('_')[0])
+                                        y = int(f_xy.split('_')[1])
+                                        if f_xy in data['Flows']:
+                                            F_xy = data['Flows'][f_xy]['F_MAX']
+                                            F_max *= (1.0 / F_xy)  * (F_xy - f[x][y][n].x)
+                                if Q_p[i] != None:
+                                    if fixed_plan is None:
+                                        sum_p = sum([ p[Q_p[i][0]][q_p][n].x for q_p in Q_p[i][1:] ])
+                                        error_data.append('sum_p_%d=%d %s' % (i,sum_p,[ p[Q_p[i][0]][q_p][n].x for q_p in Q_p[i][1:] ]))
+                                    else:
+                                        sum_p = sum([ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ])
+                                        error_data.append('sum_p_%d=%d %s' % (i,sum_p,[ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]))
+                                    if sum_p < 0.5:
+                                        F_max = 0
 
-                            except AssertionError,e:
-                                if withholding == False:
-                                    withholding = True
-                                    print
-                                    error_msg =  'Traffic withholding: q_%d f_%d,%d t=%s' %(i,i,j,time[n])
-                                print 'WARNING Traffic withholding: q_%d f_%d,%d t=%s' %(i,i,j,time[n])
-                                for msg in error_data:
-                                    print '   ',msg
+                                try:
+                                    error_data.append('Pr_ij * F_max: %s' % (F_max)) #Pr_ij * F_max
+                                    error_data.append('(1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x): %s'% ((1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x)))
+                                    error_data.append('1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x): %s' % ((1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x)))
+                                    error_data.append('min = %s' % min( Pr_ij * F_max, (1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x), (1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x)))
+                                    error_data.append('f_%d,%d = %s' % (i,j,f[i][j][n].x))
+                                    numpy.testing.assert_almost_equal([f[i][j][n].x],[min( F_max, #Pr_ij * F_max
+                                                                      (1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x),
+                                                                      (1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x))],
+                                                                      decimal = WITHHOLDING_TEST_TOLERANCE)
 
-            if withholding:
-                if no_assertion_fail == False:
-                    raise AssertionError(error_msg)
-            else:
-                print 'None.'
+                                except AssertionError,e:
+                                    if withholding == False:
+                                        withholding = True
+                                        print
+                                        error_msg =  'Traffic withholding: q_%d f_%d,%d t=%s, n=%d' %(i,i,j,time[n],n)
+                                    print 'WARNING Traffic withholding: q_%d f_%d,%d t=%s n=%d' %(i,i,j,time[n],n)
+                                    for msg in error_data:
+                                        print '   ',msg
+
+                if withholding:
+                    if no_assertion_fail == False:
+                        raise AssertionError(error_msg)
+                else:
+                    print 'None.'
 
             #
             t=t0
@@ -1416,6 +1614,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             data_out['beta'] = beta_obj
             data_out['gamma'] = gamma_obj
             data_out['total_travel_time'] = total_travel_time.x
+            data_out['total_stops'] = total_stops.x
             data_out['seed'] = seed
             data_out['cpu'] = get_processor_name()
             data_out['num_vars'] = m.NumVars
@@ -1423,6 +1622,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             data_out['num_constrs'] = m.NumConstrs
             data_out['lost_time'] = lost_time
             data_out['solver_model'] = solver_model
+            data_out['buffer_input'] = buffer_input
             if timelimit<1e30:
                 data_out['time_limit'] = timelimit
             else:
@@ -1447,9 +1647,9 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 data_out[r'q_{%d,out}' % i] = [q_out[i][n].x for n in range(N-1)]
                 data_out[r'total_q_{%d,out}' % i] = sum(data_out[r'q_{%d,out}' % i])
                 if major_frame==0: print 'total q_out,%d=' % i, sum(data_out[r'q_{%d,out}' % i])
-                data_out[r'dq_{%d,out}' % i] = [d_q_out[i][n].x for n in range(N-1)]
-                data_out[r'dq_{%d,in}' % i] = [d_q_in[i][n].x for n in range(N-1)]
-                data_out[r'dq_%d' % i] = [d_q_in[i][n].x + d_q_out[i][n].x for n in range(N-1)]
+                data_out[r'dq_{%d,1}' % i] = [d_1[i][n].x for n in range(N - 1)]
+                data_out[r'dq_{%d,2}' % i] = [d_2[i][n].x for n in range(N-1)]
+                data_out[r'stops_q_%d' % i] = [d_1[i][n].x + d_2[i][n].x for n in range(N - 1)]
                 data_out[r'in_%d' % i] = [in_q[i][n].x for n in range(N-1)]
                 data_out[r'out_%d' % i] = [out_q[i][n].x for n in range(N-1)]
 
@@ -1521,7 +1721,7 @@ def rm_vars(data):
         if key[0:2] in ['q_','d_','p_','f_','dq','c_','qw','qm','in','ou','co','tc','df','to'] or key in ['Fixed_Plan']:
             del data[key]
 
-def DT_alpha_blend(dt_0,dt_1,N):
+def DT_alpha_n_blend(dt_0,dt_1,N):
     DT = []
     t = 0
     n = 1
@@ -1532,15 +1732,14 @@ def DT_alpha_blend(dt_0,dt_1,N):
         t += DT[-1]
     return DT
 
-def DT_alpha_t_blend(dt_0,dt_1,t_blend):
+def DT_alpha_t_blend(dt_0,dt_1,t0,t1):
     DT = []
-    t = 0
-    n = 1
-    while n <= N:
-        alpha = float(n) / float(N)
-        DT.append(dt_0 * (1 - alpha) + dt_1 * alpha)
-        n += 1
-        t += DT[-1]
+    t=t0
+    if t1 != t0:
+        while t <= t1:
+            alpha = (t-t0)/(t1-t0)
+            DT.append(dt_0 * (1-alpha) + dt_1 * alpha)
+            t+=DT[-1]
     return DT
 
 def plan_solver(data,args):
@@ -1566,7 +1765,7 @@ def plan_solver(data,args):
             blend_frame = args.vplan[3]
             DT_start = args.vplan[4]
             DT_stop = args.vplan[5]
-            DT = DT_alpha_t_blend(DT_start,DT_stop, blend_frame)
+            DT = DT_alpha_t_blend(DT_start,DT_stop, 0, major_frame - minor_frame)
             plan =  {
                 "label": "$\\Delta t=%f,%f$, $\\Pi=%f$, $\\pi=%f$" % (DT_start,DT_stop,major_frame,minor_frame),
                 "minor_frame": minor_frame,
@@ -1574,8 +1773,7 @@ def plan_solver(data,args):
                 "horizon" : horizon,
                 "blend_frame" : blend_frame,
                 "N" : None,
-                "DT_vari": [{ "DT": DT_start, "start": 0.0, "stop": 0.5},
-                        { "DT": DT_stop, "start": 0.5, "stop": 1.0}]
+                "DT_vari": [{ "DT": DT_start, "DT_vec": DT}] # "DT_vari": [{ "DT": DT_start, "start": 0.0, "stop": 0.5}, { "DT": DT_stop, "start": 0.5, "stop": 1.0}]
 
             }
         elif args.vplan2:
@@ -1585,7 +1783,7 @@ def plan_solver(data,args):
             rate = args.vplan2[3]
             DT_start = args.vplan2[4]
             DT_stop = args.vplan2[5]
-            DT = DT_alpha_blend(DT_start,DT_stop, N - (minor_frame / DT_start))
+            DT = DT_alpha_n_blend(DT_start,DT_stop, N - (minor_frame / DT_start))
             major_frame = minor_frame + sum(DT)
             blend_frame = major_frame - minor_frame
             plan =  {
@@ -1598,6 +1796,27 @@ def plan_solver(data,args):
                 "DT_vari": [{ "DT": DT_start, "DT_vec": DT}]
 
             }
+        # elif args.vplan3:
+        #     vplan3 = json.loads(args.vplan3)
+        #     minor_frame = vplan3.get('minor_frame')
+        #     horizon =  vplan3.get('major_frame')
+        #     N = args.vplan2[2]
+        #     rate = args.vplan2[3]
+        #     DT_list = vplan3.get('DT_steps')
+        #     DT_stop = args.vplan2[5]
+        #     DT = DT_alpha_blend(DT_start,DT_stop, N - (minor_frame / DT_start))
+        #     major_frame = minor_frame + sum(DT)
+        #     blend_frame = major_frame - minor_frame
+        #     plan =  {
+        #         "label": "$\\Delta t=%f,%f$, $\\Pi=%f$, $\\pi=%f$" % (DT_start,DT_stop,major_frame,minor_frame),
+        #         "minor_frame": minor_frame,
+        #         "major_frame": major_frame,
+        #         "horizon" : horizon,
+        #         "blend_frame" : None,
+        #         "N" : N,
+        #         "DT_vari": [{ "DT": DT_start, "DT_vec": DT}]
+        #
+        #     }
 
         elif args.fplan:
             minor_frame = args.fplan[0]
@@ -1657,9 +1876,14 @@ def plan_solver(data,args):
                 print
                 print '------------ Run %d Frame %d ----------' % (run + 1, k + 1)
                 print
+                if args.seed == 0:
+                    seed = 0
+                else:
+                    seed = random.randint(1,1e9)
                 if milp_solver(data,t0=t0,t1=t1,n_samples=n_samples, DT_vari=DT_vari,minor_frame=minor_frame,major_frame=major_frame,blend_frame=blend_frame,fixed_plan=None,nthreads=args.threads,timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
                        label=label+' step %d' % k,
-                       step=k,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed=args.seed,tune=tune,tune_file=tune_file,param=args.param,lost_time = args.lost_time, solver_model=args.solver_model) is None:
+                       step=k,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed=seed,tune=tune,tune_file=tune_file,param=args.param,lost_time = args.lost_time, solver_model=args.solver_model,
+                               no_assertion_fail=args.no_assertion_fail,no_warning=args.no_warning,buffer_input=args.buffer_input) is None:
                     return None
                 t0+=minor_frame
                 if run_index != None:
@@ -1673,9 +1897,9 @@ def plan_solver(data,args):
                 print 'total_q_in=',total_q_in
                 print 'total_q_out=',total_q_out
                 if total_q_in < epsilon and total_q_out < epsilon:
-                    print 'No more traffic flow. Finished at %f in %d steps' % (k * minor_frame, k + 1)
+                    print 'No more traffic flow. Finished at %f in %d steps' % ((k + 1) * minor_frame, k + 1)
                     #del data_step[k]
-                    k -= 1
+                    # k -= 1
                     break
                     #print 'total_steps:',type(total_steps),total_steps
                     #print 'k:',type(k),k
@@ -1694,10 +1918,14 @@ def plan_solver(data,args):
                 fixed_plan = data['Out']['Run'][run]['Fixed_Plan'] = dict()
             else:
                 fixed_plan = data['Out']['Fixed_Plan'] = dict()
-            fixed_plan['t'] = []
-            fixed_plan['DT'] = []
-
+            DT = args.DT_final
+            minor_frame_n = int(minor_frame / DT)
+            print 'minor_frame_n:',minor_frame_n
+            fixed_plan['DT'] = [DT] * (K_steps * minor_frame_n)
+            fixed_plan['t'] = list(np.arange(0,K_horizon,DT))
+            # f, ax = plt.subplots(len(data['Lights'])*2, 1, sharex=True,figsize=(12,12))
             t0 = 0
+            n = 0
             for k in range(K_steps):
 
                 t1 = t0+minor_frame
@@ -1706,38 +1934,55 @@ def plan_solver(data,args):
                 else:
                     step_data = data['Out']['Step'][k]
                 step_time = step_data['t']
+                # for i in range(len(data['Lights'])):
+                #     ax[i * 2].plot(step_data['t'][0:minor_frame_n],step_data[r'p_{%d,%d}' % (i,0)][0:minor_frame_n],'k:')
+                #     ax[i * 2 + 1].plot(step_data['t'][0:minor_frame_n],step_data[r'd_{%d,%d}' % (i,0)][0:minor_frame_n],'k:')
 
-                n=0
-                while n< len(step_time) and t0>step_time[n]: n+=1
-                while n< len(step_time) and step_time[n]<t1:
-                    ratio = int(step_data['DT'][n]/DT)
+                for i,l_i in enumerate(data['Lights']):
+                    for j, _ in enumerate(l_i['p0']):
+                        if r'p_{%d,%d}' % (i,j) not in fixed_plan:
+                            fixed_plan[r'p_{%d,%d}' % (i,j)] = [0] * (K_steps * minor_frame_n)
+                            fixed_plan[r'd_{%d,%d}' % (i,j)] = [0] * (K_steps * minor_frame_n)
+                        fixed_plan[r'p_{%d,%d}' % (i,j)][n:n + minor_frame_n] = step_data[r'p_{%d,%d}' % (i,j)][0:minor_frame_n]
+                        fixed_plan[r'd_{%d,%d}' % (i,j)][n:n + minor_frame_n] = step_data[r'd_{%d,%d}' % (i,j)][0:minor_frame_n]
 
-                    for dt_i in range(ratio):
-                        for i,l_i in enumerate(data['Lights']):
-                            for j, _ in enumerate(l_i['p0']):
-                                if r'p_{%d,%d}' % (i,j) not in fixed_plan:
-                                    fixed_plan[r'p_{%d,%d}' % (i,j)]=[]
-                                    fixed_plan[r'd_{%d,%d}' % (i,j)]=[]
-                                fixed_plan[r'p_{%d,%d}' % (i,j)].append(step_data[r'p_{%d,%d}' % (i,j)][n])
-                                fixed_plan[r'd_{%d,%d}' % (i,j)].append(step_data[r'd_{%d,%d}' % (i,j)][n])
+                # while n < len(step_time) and t0 > step_time[n]: n+=1
+                # while n < len(step_time) and step_time[n] <= t1:
+                #     #ratio = int(step_data['DT'][n]/DT)
+                #     DT  = step_data['DT'][n]
+                #     #for dt_i in range(ratio):
+                #     for i,l_i in enumerate(data['Lights']):
+                #         for j, _ in enumerate(l_i['p0']):
+                #             if r'p_{%d,%d}' % (i,j) not in fixed_plan:
+                #                 fixed_plan[r'p_{%d,%d}' % (i,j)]=[]
+                #                 fixed_plan[r'd_{%d,%d}' % (i,j)]=[]
+                #             fixed_plan[r'p_{%d,%d}' % (i,j)].append(step_data[r'p_{%d,%d}' % (i,j)][n])
+                #             fixed_plan[r'd_{%d,%d}' % (i,j)].append(step_data[r'd_{%d,%d}' % (i,j)][n])
 
-                        fixed_plan['DT'].append(DT)
-                        if n>0:
-                            fixed_plan['t'].append(fixed_plan['t'][-1]+DT)
-                        else:
-                            fixed_plan['t'].append(step_time[0])
-                    n+=1
-                t0+=minor_frame
+                    # fixed_plan['DT'].append(DT)
+                    # if n>0:
+                    #     fixed_plan['t'].append(fixed_plan['t'][-1]+DT)
+                    # else:
+                    #     fixed_plan['t'].append(step_time[0])
+                n += minor_frame_n
+                t0 += minor_frame
+            #print "FIXED_PLAN t:",fixed_plan['t']
             #print r'd_{%d,%d}=' % (0,0),fixed_plan[r'd_{%d,%d}' % (0,0)]
             if args.DT_final != None:
                 DT_final = args.DT_final
             else:
                 DT_final = fixed_plan['DT'][0]
             if milp_solver(data,t0=0,t1=K_horizon,n_samples=int(K_horizon/DT_final), fixed_plan=fixed_plan,nthreads=args.threads,
-                   timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
-                   label=label,step=None,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,param=args.param) is None:
+                   timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,seed=args.seed,
+                   label=label,step=None,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,param=args.param,
+                    lost_time = args.lost_time, solver_model = args.solver_model,no_assertion_fail=args.no_assertion_fail,no_warning=args.no_warning,
+                           buffer_input=args.buffer_input) is None:
                 return None
-
+            # for i in range(len(data['Lights'])):
+            #     ax[i * 2].plot(data['Out']['t'],data['Out'][r'p_{%d,%d}' % (i,0)],'k-')
+            #     ax[i * 2 + 1].plot(data['Out']['t'],data['Out'][r'd_{%d,%d}' % (i,0)],'k-')
+            # plt.xlim(0,30)
+            # plt.show()
             if run_index != None:
                 print data['Out']['Run'][run].keys()
                 print data['Out'].keys()
@@ -1764,6 +2009,7 @@ def plan_solver(data,args):
             data['Out']['DT_offset'] = args.DT_offset
             data['Out']['av_travel_time'] = av_travel_time / (run + 1)
             data['Out']['av_solve_time'] = av_solve_time / total_steps
+            data['Out']['seed'] = args.seed
             write_file(data,args)
 
             #if args.average>1:
@@ -1800,7 +2046,8 @@ def DT_final_solver(data,args):
     data=milp_solver(data,t0=args.t0,t1=args.t1,n_samples=args.nsamples, fixed_plan=fixed,nthreads=args.threads,timelimit=args.timelimit,accuracy=args.accuracy,
                     verbose=args.verbose,
                     step=0,
-                    obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed=args.seed)
+                    obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed=args.seed,
+                    no_warning=args.no_warning,buffer_input=args.buffer_input)
 
     DT = args.DT_final
     fixed_plan = data['Out']['Fixed_Plan'] = dict()
@@ -1840,7 +2087,8 @@ def DT_final_solver(data,args):
 
     if milp_solver(data,t0=t0,t1=t1,n_samples=int((t1-t0)/DT), fixed_plan=data['Out']['Fixed_Plan'],nthreads=args.threads,
            timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
-           step=None,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma) is None:
+           step=None,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,
+           no_warning=args.no_warning,buffer_input=args.buffer_input) is None:
         return None
 
 
@@ -1850,11 +2098,15 @@ def DT_final_solver(data,args):
     print (data['Out']).keys()
     return data
 
-def bootstrap_solver(data,args):
+def bootstrap_solver(data,args,average_runs=1):
+    if args.seed:
+        random.seed(args.seed)
+    else:
+        random.seed(0)
     av_travel_time=0
     av_solve_time=0
     start_time = clock_time.time()
-    for run in range(int(args.average)):
+    for run in range(average_runs):
         base_N = args.nsamples
         for i in range(args.bootstrap+1):
             print 'base_N=',base_N
@@ -1864,7 +2116,7 @@ def bootstrap_solver(data,args):
         accuracy = args.accuracy
         #prev_run = None
         data_itr = copy.deepcopy(data)
-        if args.average and args.average==1:
+        if average_runs==1:
             run_index=None
         else:
             run_index=run
@@ -1877,13 +2129,17 @@ def bootstrap_solver(data,args):
                 mip_start = 'final'
             else:
                 mip_start = 'step'
+            if args.seed == 0:
+                seed = 0
+            else:
+                seed = random.randint(1,1e9)
             if milp_solver(data,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=int(base_N),DT_file=args.DT_file, fixed_plan=fixed,nthreads=args.threads,
                 timelimit=args.timelimit,accuracy=accuracy,
                 verbose=args.verbose,step=k,run=run_index,
                 obj=args.obj,alpha_obj=args.alpha,
-                beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed = args.seed,
-                tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=mip_start,
-                lost_time = args.lost_time, solver_model = args.solver_model) is None:
+                beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed = seed,
+                tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=mip_start,no_assertion_fail=args.no_assertion_fail,
+                lost_time = args.lost_time, solver_model = args.solver_model,no_warning=args.no_warning,buffer_input=args.buffer_input) is None:
                 return None
             #prev_run = copy.deepcopy(data_itr)
             base_N *= 2
@@ -1916,8 +2172,8 @@ def bootstrap_solver(data,args):
     solve_time = clock_time.time() - start_time
 
     data['Out']['solve_time'] = solve_time
-    data['Out']['av_travel_time'] = av_travel_time / (args.average)
-    data['Out']['av_solve_time'] = av_solve_time / (args.average)
+    data['Out']['av_travel_time'] = av_travel_time / (average_runs)
+    data['Out']['av_solve_time'] = av_solve_time / (average_runs)
     print 'Average Bootstrap Solve time: %s seconds' % data['Out']['av_solve_time']
     print 'Total Bootstrap Solve time: %s seconds' % solve_time
     return data
@@ -1994,11 +2250,14 @@ if __name__ == '__main__':
     parser.add_argument("--Q_IN_limit", help="limit in flow weights to Q_IN ", action="store_true", default=False)
     parser.add_argument("--bootstrap", help="iterativly solve for fixed DT using N iteratations of MIP start bootstraping ", type=int)
     parser.add_argument("--no_assertion_fail", help="Do not fail on assertion errors", action="store_true", default=False)
+    parser.add_argument("--no_warning", help="Do not warn about taffic withholding fails", action="store_true", default=False)
     parser.add_argument("--lost_time", help="lost_time per phase", type=float,default=0.0)
     parser.add_argument("--solver_model", help="Solver traffic flow model to use (QTM or CTM)", default="QTM")
+    parser.add_argument("--buffer_input", help="buffer all input queues to prevent spill back impeding inflow", action="store_true", default=False)
 
     args = parser.parse_args()
     if args.debug: DEBUG = True
+    print 'Gurobi Version:','.'.join(map(str,gurobi.version()))
     print 'CPU:', get_processor_name()
     f = open(args.file,'r')
     data = json.load(f)
@@ -2037,9 +2296,9 @@ if __name__ == '__main__':
                     verbose=args.verbose,obj=args.obj,alpha_obj=args.alpha,
                     beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed = args.seed,
                     tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,no_assertion_fail=args.no_assertion_fail, lost_time = args.lost_time,
-                             solver_model = args.solver_model)
+                    solver_model = args.solver_model,no_warning=args.no_warning, buffer_input=args.buffer_input)
         else:
-            data = bootstrap_solver(data,args)
+            data = bootstrap_solver(data,args,average_runs=args.average)
 
 
 

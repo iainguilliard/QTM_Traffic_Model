@@ -2,6 +2,7 @@
     "Plot" : {
         "bg_image" : "canberra_cbd.png",
         "bg_alpha" : 0.35,
+        "bg_extent" : [-380,380,-200,200],
         "fig_size" : [18,10],
         "extent" : [-380,380,-200,200],
         "line_width" : 1,

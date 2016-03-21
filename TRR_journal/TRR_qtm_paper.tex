@@ -1,0 +1,311 @@
+%% TODO(fwt): Check consistency: traffic signal vs traffic light
+
+%
+% Transportation Research Board conference paper template
+% version 1.1
+% 
+% David R. Pritchard, http://davidpritchard.org
+%   1.0 - Mar. 2009
+%   1.1 - Sep. 2011, fixes for captions
+%   2.0 - Mar. 2012, Reorganized title page incl. automatic counters
+
+% PAGE LAYOUT
+%------------------------------------------
+
+% Custom paper settings...
+\documentclass[titlepage,oneside,12pt]{article}
+
+\oddsidemargin 0.0in
+\topmargin -0.5in
+\headheight 0.3in
+\headsep 0.2in
+\textwidth 6.5in
+\textheight 9.0in
+\setlength{\parindent}{0.5in}
+
+% PAGE HEADER
+%------------------------------------------
+% Adjust the header text below (INSERT AUTHORS HERE)
+\oddsidemargin 0.0in
+\usepackage[tiny,rm]{titlesec}
+\newpagestyle{trbstyle}{
+	\sethead{Guilliard, Sanner, Trevizan, and Williams}{}{\thepage}
+}
+\pagestyle{trbstyle}
+
+% HEADINGS
+%------------------------------------------
+\renewcommand*{\refname}{\uppercase{References}}
+\titleformat{\section}{\bfseries}{}{0pt}{\uppercase}
+\titlespacing*{\section}{0pt}{12pt}{*0}
+\titleformat{\subsection}{\bfseries}{}{0pt}{}
+\titlespacing*{\subsection}{0pt}{12pt}{*0}
+\titleformat{\subsubsection}{\itshape}{}{0pt}{}
+\titlespacing*{\subsubsection}{0pt}{12pt}{*0}
+
+% LISTS
+%------------------------------------------
+% Adjust lists a little. Not quite perfectly fitting TRB style, but vaguely
+% close at least.
+\usepackage{enumitem}
+\setlist[1]{labelindent=0.5in,leftmargin=*}
+\setlist[2]{labelindent=0in,leftmargin=*}
+
+% CAPTIONS
+%------------------------------------------
+% Get the captions right. Authors must still be careful to use "Title Case"
+% for table captions, and "Sentence case." for figure captions.
+\usepackage{ccaption}
+\usepackage{amsmath,stmaryrd}
+\makeatletter
+\renewcommand{\fnum@figure}{\textbf{FIGURE~\thefigure} }
+\renewcommand{\fnum@table}{\textbf{TABLE~\thetable} }
+\makeatother
+\captiontitlefont{\bfseries \boldmath}
+\captiondelim{\;}
+%\precaption{\boldmath}
+
+
+% CITATIONS
+%------------------------------------------
+% TRB uses an Author (num) citation style. I haven't found a way to make
+% LaTeX/Bibtex do this automatically using the standard \cite macro, but
+% this modified \trbcite macro does the trick.
+
+% sort&compress option?
+\usepackage[sort,numbers]{natbib}
+	\newcommand{\trbcite}[1]{\citeauthor{#1} ({\it \citenum{#1}})}
+	\newcommand{\trbcitenum}[1]{({\it \citenum{#1}})}
+\setcitestyle{round}
+
+
+% LINE NUMBERING
+%------------------------------------------
+% TRB likes line numbers on drafts to help reviewers refer to parts of the
+% document. The numbering is activated with the \linenumbers command immediately
+% after \begin{document} You may need to install the lineno  package from CTAN.
+\usepackage[pagewise,displaymath, mathlines]{lineno}
+	\renewcommand\linenumberfont{\normalfont\small}
+
+
+% COUNTERS
+%------------------------------------------
+% TRB requires the total number of words, figures, and tables to be displayed on
+% the title page. This is possible under the totcount package on CTAN.
+\usepackage{totcount}
+	\regtotcounter{table} 	%count tables
+	\regtotcounter{figure} 	%count figures
+\newtotcounter{citnum} %From the package documentation
+\def\oldbibitem{} \let\oldbibitem=\bibitem
+\def\bibitem{\stepcounter{citnum}\oldbibitem}
+
+% NOTE: for my system 'count.txt' literally makes the file ``'count.txt'''.  -Scott
+\newcommand\wordcount{
+    \immediate\write18{texcount -inc -sum -1 -opt=tcrules \jobname.tex > 'count.txt'}
+    \IfFileExists{./count.txt}{\input{count.txt}}{?? }}
+\newcommand\weightedTotal{
+    \immediate\write18{texcount -inc -sum=1,1,1,0,250,1,1 -1 -opt=tcrules \jobname.tex > 'weightedCount.txt'}
+    \IfFileExists{./weightedCount.txt}{\input{weightedCount.txt}}{?? }}
+
+
+% FONTS
+%------------------------------------------
+% Times for text and math
+%\usepackage{fontspec}
+%\setmainfont{Times New Roman}
+\usepackage{times} 
+%\usepackage{mathptmx}
+%\usepackage{newtxmath} 
+%\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+% Some pdf conversion tricks? Unsure.
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+% Fonts will be broken by Sweave without this option
+\usepackage[noae]{Sweave}
+
+
+% OTHER PACKAGES
+%------------------------------------------
+% Add any additional \usepackage declarations here.
+\usepackage{marginnote}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{subfigure}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{mathtools}
+\usepackage[capitalise,noabbrev]{cleveref}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\graphicspath{{plots/},{results/},{TRR_plots/}}
+\usepackage[normalem]{ulem}
+%\usepackage{changes}
+\usepackage{xspace}
+
+%% Toggle comments on next two lines to turn on/off editorial remarks
+\newcommand{\remark}[1]{\color{red} #1 \color{black}}
+\newcommand{\fnremark}[1]{\remark{\footnote{\remark{#1}}}}
+\newcommand{\toIain}[1]{\footnote{\textbf{To Iain}: #1}}
+\newcommand{\toFelipe}[1]{\footnote{\textbf{To Felipe}: #1}}
+\newcommand{\comment}[1]{}
+\newcommand{\revision}[2]{\protect\marginnote{\color{cyan}\textbf{[R#2]}\color{black}} \color{red}#1\color{black}\xspace} \newcommand{\revout}[1]{\color{red}\sout{#1}\color{black}\xspace}
+\newcommand{\revinout}[3]{\protect\marginnote{\color{cyan}\textbf{[R#3]}\color{black}}\color{red}#1\xspace\sout{#2}\color{black}\xspace}
+%% FWT: I'm using this to highlight parts of the text that might need polishing.
+\newcommand{\authorHighlight}[1]{\textcolor{red}{#1}}
+
+
+%%
+%% Final version: Uncomment the lines bellow to turn off all the high-lights and
+%% other remarks
+%%
+%\renewcommand{\remark}[1]{}
+%\renewcommand{\fnremark}[1]{}
+%\renewcommand{\toIain}[1]{}
+%\renewcommand{\toFelipe}[1]{}
+%\renewcommand{\comment}[1]{}
+%\renewcommand{\authorHighlight}[1]{#1}
+\renewcommand{\revision}[2]{#1\xspace}
+\renewcommand{\revout}[1]{}
+\renewcommand{\revinout}[3]{#1\xspace}
+
+
+
+
+%\renewcommand{\authorHighlight}[1]{#1}
+
+% All math definitions before start document
+\input{./tex/MathDef.tex}
+
+
+%% Macros for constraints
+\newcounter{constraintcounter}
+% Use \tagconstrain{labelName} to tag the constraint as C.X and label
+% it as labelName
+\newcommand{\tagconstrain}[1]{\refstepcounter{constraintcounter}\tag{C\theconstraintcounter}\label{#1}}
+% Use the cAlign as the align environment for constraint
+\newenvironment{cAlign}{\align}{\endalign}
+% defining the name for the labels of the type cAlign
+\crefname{equation}{constraint}{constraints}
+
+
+
+
+\newcommand*\patchAmsMathEnvironmentForLineno[1]{%
+  \expandafter\let\csname old#1\expandafter\endcsname\csname #1\endcsname
+  \expandafter\let\csname oldend#1\expandafter\endcsname\csname end#1\endcsname
+  \renewenvironment{#1}%
+     {\linenomath\csname old#1\endcsname}%
+     {\csname oldend#1\endcsname\endlinenomath}}% 
+\newcommand*\patchBothAmsMathEnvironmentsForLineno[1]{%
+  \patchAmsMathEnvironmentForLineno{#1}%
+  \patchAmsMathEnvironmentForLineno{#1*}}%
+\AtBeginDocument{%
+\patchBothAmsMathEnvironmentsForLineno{equation}%
+\patchBothAmsMathEnvironmentsForLineno{align}%
+\patchBothAmsMathEnvironmentsForLineno{flalign}%
+\patchBothAmsMathEnvironmentsForLineno{alignat}%
+\patchBothAmsMathEnvironmentsForLineno{gather}%
+\patchBothAmsMathEnvironmentsForLineno{multline}%
+}
+
+
+% TITLEPAGE
+%-----------------------------------------
+\begin{document}
+
+	%\linenumbers % comment out for final manuscript
+	\thispagestyle{empty}
+
+\begin{titlepage}
+\begin{flushleft}
+
+% Title
+{\LARGE \bfseries A Non-homogeneous Time Mixed Integer LP Formulation for Traffic Signal Control}\\[1cm]
+
+Iain Guilliard\\
+National ICT Australia\\
+7 London Circuit\\
+Canberra, ACT, Australia\\
+iguilliard@nicta.com.au\\[0.5cm]
+
+Scott Sanner\\
+Oregon State University\\
+1148 Kelley Engineering Center\\
+Corvallis, OR 97331\\
+scott.sanner@oregonstate.edu\\[5mm]
+
+Felipe W. Trevizan\\
+National ICT Australia\\
+7 London Circuit\\
+Canberra, ACT, Australia\\
+felipe.trevizan@nicta.com.au\\[5mm]
+
+Brian C. Williams\\
+Massachusetts Institute of Technology\\
+77 Massachusetts Avenue\\
+Cambridge, MA 02139\\
+williams@csail.mit.edu\\[5mm]
+
+%Gregory S. Macfarlane\\
+%Georgia Institute of Technology \\
+%790 Atlantic Drive \\
+%Atlanta, GA 30332-0335 \\
+%gregmacfarlane@gatech.edu\\[1cm]
+
+% WARNING: Scott had to set wordcount manually above, does not work on cygwin.
+%\renewcommand{\wordcount}{4516\ }
+
+\wordcount words + \total{figure} figures + \total{table} table +
+\total{citnum} citations
+
+(Weighted total words: \weightedTotal{} out of 7000 + 35 references)
+%(Weighted total words: 6516 out of 7000 + 35 references)
+
+%% FWT: weightedTotal does not take into account the words in the references
+%% and according to http://onlinepubs.trb.org/onlinepubs/AM/InfoForAuthors.pdf
+%% the limits are 7500 words including references OR 7000 words + 35 references.
+%% The latter seems to be the best deal for us since ours 23 references already
+%% take a bit more than 500 words.
+%\remark{(Weighted total words: \weightedTotal{} out of 7000 + 35 references)}
+
+
+March 17, 2016 %\today -- this will show as August 2 if compiled in Australia
+\end{flushleft}
+\end{titlepage}
+
+
+\newpage
+
+\thispagestyle{empty}
+
+% Note: in Steve Smith's TRB article, Abstract on unnumbered page 1, so this seems OK
+%       https://www.ri.cmu.edu/pub_files/2014/1/TRB14UTC.pdf
+\input{./tex/Abstract.tex} 
+
+\newpage
+
+% Note: in Steve Smith's TRB article, Intro on numbered page 2, so this seems OK
+\input{./tex/Introduction.tex}
+
+\input{./tex/Model.tex}
+
+\input{./tex/Experiments.tex}
+
+%% The related work is integrated in the introduction
+%\input{./tex/RelatedWork.tex}
+
+\input{./tex/Conclusion.tex}
+
+\input{./tex/Acknowledgment.tex}
+
+\bibliographystyle{trb}
+\bibliography{Transport}
+
+% End line numbering
+\nolinenumbers
+\end{document}

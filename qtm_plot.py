@@ -1351,6 +1351,7 @@ def open_data_file(file):
             debug('   Decoding json   : ...',True)
             data = json.loads(json_file)
             debug( 'Done. %.2f sec' % (clock_time.time() - start_time))
+            zf.close()
         else:
             start_time = clock_time.time()
             debug( '  Loading file:  ...' ,True)
@@ -1362,6 +1363,7 @@ def open_data_file(file):
             debug('Done. %.2f sec' % (clock_time.time() - start_time))
             f.close()
     else:
+        print 'file not found:',file
         data = None
     debug('Done. %.2f sec' % (clock_time.time() - start_time_open_file))
     return data
@@ -1399,7 +1401,7 @@ def read_files(plot_files, return_file_sets=False,DEBUG = False):
         for file in files:
             data = open_data_file(file)
             if data is not None:
-                data_files.append(open_data_file(file))
+                data_files.append(data)
                 files_opened.append(file)
             #if os.path.isfile(file):
                 # if zipfile.is_zipfile(file):
@@ -1422,6 +1424,7 @@ def read_files(plot_files, return_file_sets=False,DEBUG = False):
         data_sets.append(data_files)
         file_sets.append(files_opened)
     gc.enable()
+    gc.collect()
     if return_file_sets:
         return data_sets,file_sets
     else:
@@ -1828,13 +1831,11 @@ def plot_av_travel_time_N(args):
                 label =  d_out
             else:
                 d_out = results
-
             #print 'Runs=',runs
             #print d_out.keys()
             if args.plot_travel_time_DT:
                 N = int(1/d_out['DT'][0])
                 #N = results['DT'][0]
-
             elif 'Step' in d_out:
                 if 'N' in d_out['Step'][0]:
                     N = d_out['Step'][0]['N']
@@ -1948,7 +1949,7 @@ def plot_av_travel_time_N(args):
     if ref_file != None:
         min_TT = ref_file['Out']['total_travel_time']
         #min_TT = calc_total_travel_time(ref_file,ref_file['Out']) #get_av_delay(ref_file,args)
-    print 'time_limit_Y:',time_limit_Y
+    # print 'time_limit_Y:',time_limit_Y
     i=0
     c_i=0
     m_i=0
@@ -2463,7 +2464,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                         #
                         #     else:
                         #         if n>0: p[n]=p[n-1]
-                    t_samp = np.linspace(0,t[-1],N*100)
+                    t_samp = np.linspace(t[0],t[-1],N*100)
                     ax[i].plot(t_samp,p_f(t_samp), label=results['label'], marker=None, linestyle = ls, color=col)
                     ax[i].plot(t,p, marker=marker, linestyle = ' ', color=col)
                     ax[i].set_ylim(-0.1,1.1)
@@ -2487,7 +2488,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                         #     else:
                         #         if n>0: p[n]=p[n-1]
                     os_factor = 100
-                    t_samp = np.linspace(0,t[-1],N*os_factor)
+                    t_samp = np.linspace(t[0],t[-1],N*os_factor)
                     d_switch = interp.interp1d(t,[0 if -1e-6 < d[nx + 1] < 1e-6 or d[nx] == d[nx +1] else 1 for nx in range(len(t)-1)] + [0],kind='zero')
                     d_f = [d_f1(tx) if d_switch(tx)==0 else d_f2(tx) for tx in t_samp]
                     ax[i].plot(t_samp,d_f, label=results['label'], marker=None, linestyle = ls, color=col)
@@ -2499,9 +2500,12 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                         DT = results['DT']
                         #ax[i].plot(t,[results[var][0]]+[results[var][x]/DT[x-1] for x in range(1,len(t))],marker=marker, label=label, linestyle = ls, color=col) #/DT[x_i]
                         if args.io_vars_as_rate == True:
-                            plot_f = interp.interp1d(t,[results[var][x]/DT[x] for x in range(0,len(t))],kind='zero')
-                            t_x = np.linspace(t[0],t[-1],len(t) * 100)
-                            ax[i].plot(t_x,plot_f(t_x),marker=marker, label=label, linestyle = ls, color=col)
+                            over_samp = 100
+                            var_rate = [results[var][x] / DT[x] for x in range(0, len(t))]
+                            plot_f = interp.interp1d(t,var_rate,kind='zero')
+                            t_samp = np.linspace(t[0],t[-1],len(t) * over_samp)
+                            ax[i].plot(t_samp,plot_f(t_samp), label=label, linestyle = ls, color=col,markevery=over_samp)
+                            ax[i].plot(t, var_rate, marker=marker, label=label, linestyle = ' ', color=col)
                             #ax[i].plot(t,[results[var][x]/DT[x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
                         else:
                             ax[i].plot(t,[results[var][x] for x in range(0,len(t))],marker=marker, label=label, linestyle = ls, color=col)
@@ -2509,10 +2513,44 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                         ax[i].plot(t,[results[var][x] for x in range(len(t))],marker=marker, label=label, linestyle = ls, color=col)
                     #else:
                     #    ax[i].plot(t,results[var], color=colors[j])
+                else:
+                    if var[0:3]=='obj':
+                        wh_test = None
+                        if var[4] != '{':
+                            var_str = var.split('_')[1] + '_' +  var.split('_')[2]
+                            qvar = results[var_str]
+
+                        else:
+                            f_ij = var.split('{')[1][0:-1].split(',')
+                            # print f_ij
+                            f_i = int(f_ij[0])
+                            f_j = int(f_ij[1])
+                        # print 'obj: %d,%d' % (f_i,f_j)
+                            qvar = results['f_{%d,%d}' % (f_i,f_j)]
+                            wh_ij = 'wh_{%d,%d}' % (f_i,f_j)
+                            if wh_ij in results:
+                                wh_test = results[wh_ij]
+                        T_MAX = t[-1]
+                        beta = results['beta']
+                        obj_val = [(T_MAX - t_x + 1) * qvar[t_i] for t_i, t_x in enumerate(t)]
+                        obj_val_cumu = [sum(obj_val[0:t_i]) for t_i in range(len(t))]
+                        ax[i].plot(t, obj_val_cumu, marker=marker, label=label,
+                                  linestyle=ls, color=col)
+                        if wh_test is not None:
+                            wh = []
+                            t_wh = []
+                            for t_i in range(len(t)):
+                                if wh_test[t_i] == 1:
+                                    wh.append(obj_val_cumu[t_i])
+                                    t_wh.append(t[t_i])
+                            ax[i].plot(t_wh,wh, marker='x', label='withholding',
+                                   linestyle=' ', color='k')
+                        if args.y_limit != None:
+                            ax[i].set_ylim(args.y_limit[0], args.y_limit[1])
 
                 if ylabel == ' ':
-                    if '-' in var:
-                        ax[i].set_ylabel(r'$%s_{%s}$' % tuple(var.split('_')),fontsize=16)
+                    if '_' in var:
+                        ax[i].set_ylabel(r'$%s_{%s}$' % (var.split('_')[0],var.split('_')[1]),fontsize=16)
                     if var =='DT':
                         ax[i].set_ylabel(r'$\Delta t$',fontsize=12)
                     else:
@@ -2547,7 +2585,7 @@ def plot_vars(args): #data_sets,params,colors,line_styles,steps):
                         l = int(var[2:])
                         ax[i].set_ylim(-1,len(data['Lights'][l]['P_MAX']) )
                     elif var[0] == 'p':
-                        None
+                        ax[i].set_ylim(-0.1,1.1)
                     if args.y_limit is not None:
                         ax[i].set_ylim(args.y_limit[0],args.y_limit[1])
                     #else:
@@ -2892,7 +2930,7 @@ def dump_vars(args): #data_sets,params,colors,line_styles,steps):
 
     data_sets,loaded_file_sets = read_files(args.files,return_file_sets=True)
 
-    pd.options.display.float_format = '{:20,.2f}'.format
+    pd.options.display.float_format = '{:20,.5g}'.format
     table = {}
     file_names = []
     for file_i,data_files in enumerate(data_sets):
@@ -3108,7 +3146,7 @@ if __name__ == '__main__':
     parser.add_argument("--t0", help="start point along queue of plot",type=float,default=0)
     parser.add_argument("--t1", help="end point along queue of plot",type=float,default=1)
     parser.add_argument("--linestyle", help="list of strings of matplotlib line styles for each plot",nargs='*', default=['_','_','_','_'])
-    parser.add_argument("-c", "--color", help="list of matplotlib colors for each plot", default='rbgky')
+    parser.add_argument("-c", "--color", help="list of matplotlib colors for each plot", default='rbgkycm')
     parser.add_argument("-o", "--out", help="save the plot as OUT")
     parser.add_argument("-n", help="number of points to plot", type=int, default=0)
     parser.add_argument("--histogram", help="plot a histogram of delay with HISTOGRAM wide bins", type=float)

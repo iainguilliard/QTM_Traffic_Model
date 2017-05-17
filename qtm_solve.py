@@ -14,7 +14,6 @@ import zlib
 import numpy
 import scipy.interpolate as interp
 import math
-import numpy as np
 #import plot_model as pl
 #import matplotlib.pyplot as plt
 
@@ -52,43 +51,116 @@ def t_in_index(t_prop,t,t_prev):
     t_in = [x - t_prop for x in t]
     return [int(i) if i >= 0 else -int(math.ceil(-i)) for i in index(t_in)]
 
-def min2_constr(m,g,a,b):
-    # add min contraints to model m such that g == min(a,b,c)
+# def min2_constr(m,g,a,b,z1):
+#     # add min contraints to model m such that g == min(a,b)
+#     #z1 = m.addVar(vtype=GRB.BINARY,name='z1_%d @ %d' % (i,n))
+#     #m.update()
+#     constr = []
+#     L = -1e9
+#     U = 1e9
+#     constr.append(m.addConstr(0 <= b - g))
+#     constr.append(m.addConstr(b - g <= U * (1 - z1)))
+#     constr.append(m.addConstr(0 <= a - g))
+#     constr.append(m.addConstr(a - g <= U * z1))
+#     constr.append(m.addConstr(L * (1 - z1) <= a - b))
+#     constr.append(m.addConstr(a - b <= U * z1))
+#     return constr
+
+def min2_constr(m,g,a,b,z1):
+    # add min contraints to model m such that g == min(a,b)
+    #z1 = m.addVar(vtype=GRB.BINARY,name='z1_%d @ %d' % (i,n))
+    #m.update()
+    #L = -1e9
+    M = 1e9
+    constr = []
+    constr.append(m.addConstr(a - M * z1 <= g))
+    constr.append(m.addConstr(g <= a))
+    constr.append(m.addConstr(b - M * (1 - z1) <= g))
+    constr.append(m.addConstr(g <= b))
+    return constr
+
+def min2_test(a,b):
+    m = Model("min2_test")
+    m.reset()
+    g = m.addVar(lb=-GRB.INFINITY)
     z1 = m.addVar(vtype=GRB.BINARY)
     m.update()
-    L = -1e6
-    U = 1e6
-    m.addConstr(0 <= b - g)
-    m.addConstr(b - g <= U * (1 - z1))
-    m.addConstr(0 <= a - g)
-    m.addConstr(a - g <= U * z1)
-    m.addConstr(L * (1 - z1) <= a - b)
-    m.addConstr(a - b <= U * z1)
-    return z1
+    #a = 3
+    #b = 1
+    min2_constr(m, g, a, b, z1)
+    m.setParam(GRB.Param.LogToConsole, 0)
+    m.optimize()
+    # assert g.x == min(a,b), 'g != min(a,b), g=%f, a=%f, b=%f' % (g.x,a,b)
+    numpy.testing.assert_almost_equal([g.x], [min(a,b)],
+                                      decimal=9)
+    # print '=================='
+    # print 'MIN2_TEST:'
+    # print 'a:',a
+    # print 'b:',b
+    # print 'min(a,b):',min(a,b)
+    # print 'g=',g.x
+
+    # m.reset()
+    # g = m.addVar()
+    # z1 = m.addVar(vtype=GRB.BINARY)
+    # m.update()
+    # a = 2
+    # b = 3
+    # min2_constr(m, g, a, b, z1)
+    # m.setParam(GRB.Param.LogToConsole, 0)
+    # m.optimize()
+    # print '=================='
+    # print 'MIN2_TEST 2:'
+    # print 'a:', a
+    # print 'b:', b
+    # print 'min(a,b):', min(a, b)
+    # print 'g=', g.x
+    # print '=================='
 
 
-def min3_constr(m,g,a,b,c):
+# def min3_constr(m,g,a,b,c,z1,z2,phi):
+#     # add min contraints to model m such that g == min(a,b,c)
+#     #z1 = m.addVar(vtype=GRB.BINARY,name='z1_%d @ %d' % (i,n))
+#     #z2 = m.addVar(vtype=GRB.BINARY,name='z2_%d @ %d' % (i,n))
+#     #phi = m.addVar(name='phi_%d @ %d' % (i,n))
+#     #m.update()
+#     L = -1e6
+#     U = 1e6
+#     constr = []
+#     constr.append(m.addConstr(0 <= b - phi))
+#     constr.append(m.addConstr(b - phi <= U * (1 - z1)))
+#     constr.append(m.addConstr(0 <= a - phi))
+#     constr.append(m.addConstr(a - phi <= U * z1))
+#     constr.append(m.addConstr(L * (1 - z1) <= a - b))
+#     constr.append(m.addConstr(a - b <= U * z1))
+#
+#     constr.append(m.addConstr(0 <= c - g))
+#     constr.append(m.addConstr(c - g <= U * (1 - z2)))
+#     constr.append(m.addConstr(0 <= phi - g))
+#     constr.append(m.addConstr(phi - g <= U * z2))
+#     constr.append(m.addConstr(L * (1 - z2) <= phi - c))
+#     constr.append(m.addConstr(phi - c <= U * z2))
+#     return constr
+
+def min3_constr(m,g,a,b,c,z1,z2,phi):
     # add min contraints to model m such that g == min(a,b,c)
-    z1 = m.addVar(vtype=GRB.BINARY)
-    z2 = m.addVar(vtype=GRB.BINARY)
-    phi = m.addVar()
-    m.update()
-    L = -1e6
-    U = 1e6
-    m.addConstr(0 <= b - phi)
-    m.addConstr(b - phi <= U * (1 - z1))
-    m.addConstr(0 <= a - phi)
-    m.addConstr(a - phi <= U * z1)
-    m.addConstr(L * (1 - z1) <= a - b)
-    m.addConstr(a - b <= U * z1)
+    #z1 = m.addVar(vtype=GRB.BINARY,name='z1_%d @ %d' % (i,n))
+    #z2 = m.addVar(vtype=GRB.BINARY,name='z2_%d @ %d' % (i,n))
+    #phi = m.addVar(name='phi_%d @ %d' % (i,n))
+    #m.update()
 
-    m.addConstr(0 <= c - g)
-    m.addConstr(c - g <= U * (1 - z2))
-    m.addConstr(0 <= phi - g)
-    m.addConstr(phi - g <= U * z2)
-    m.addConstr(L * (1 - z2) <= phi - c)
-    m.addConstr(phi - c <= U * z2)
-    return z1,z2
+    M = 1e6
+    constr = []
+    constr.append(m.addConstr(b - M * z1 <= phi))
+    constr.append(m.addConstr(phi <= b))
+    constr.append(m.addConstr(c - M * (1 - z1) <= phi))
+    constr.append(m.addConstr(phi <= c))
+    constr.append(m.addConstr(a - M * z2 <= g))
+    constr.append(m.addConstr(g <= a))
+    constr.append(m.addConstr(phi - M * (1 - z2) <= g))
+    constr.append(m.addConstr(g <= phi))
+    return constr
+
 
 def read_flows(flow_data):
     flow = {}
@@ -204,7 +276,7 @@ def convert_model_to_ctm(data,dt):
 def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=None,minor_frame=0,major_frame=0,blend_frame=None,nthreads=0,fixed_plan=None,
            timelimit=0,accuracy=0,verbose=False,label=None,step=None,run=None,obj='NEW',alpha_obj=1.0,beta_obj=0.001,gamma_obj=0.0001,
            DT_offset=0,seed=0,tune=False,tune_file='',param=None, in_weight=1.0,mip_start=None,refine=False,no_assertion_fail=False, lost_time=0,
-                solver_model='QTM',no_warning=False,buffer_input=False):
+                solver_model='QTM',no_warning=False,buffer_input=False,exact=False):
     start_time = clock_time.time()
     try:
 
@@ -229,21 +301,20 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                         t+=DT[-1]
                         n+=1
             elif len(DT_vari)==1:
-                while t<t0+minor_frame:
-                    DT.append(DT_vari[0]['DT']*DT_factor)
-                    t+=DT[-1]
-                DT += DT_vari[0]['DT_vec']
+                DT = DT_vari[0]['DT_vec']
             elif len(DT_vari)==2:
                 while t<t0+minor_frame:
                     DT.append(DT_vari[0]['DT']*DT_factor)
                     t+=DT[-1]
                 blend_start_i = len(DT)
-                if blend_frame == None:
-                    blend_frame=major_frame-minor_frame
-                while t <= t0+minor_frame+blend_frame:
-                    alpha = (t-minor_frame-t0)/(blend_frame)
-                    DT.append(DT_vari[0]['DT']*DT_factor*(1-alpha) + DT_vari[1]['DT']*DT_factor*alpha)
-                    t+=DT[-1]
+                if blend_frame != None:
+                    while t <= t0+minor_frame+blend_frame:
+                        alpha = (t-minor_frame-t0)/(blend_frame)
+                        DT.append(DT_vari[0]['DT']*DT_factor*(1-alpha) + DT_vari[1]['DT']*DT_factor*alpha)
+                        t+=DT[-1]
+                else:
+                    DT += DT_vari[0]['DT_vec']
+                    t = t0 + sum(DT)
                 blend_stop_i = len(DT)
                 print 'blend_rate=',blend_frame / (blend_stop_i - blend_start_i),'len',blend_frame,'start',blend_start_i,'stop',blend_stop_i
                 while t <= t0+major_frame:
@@ -610,6 +681,25 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         # Create a new model
         m = Model("flow")
 
+        # feasrelax contraint and variable lists and penalties
+        relax_constr=[]
+        relax_vars=[]
+        lbpen=[]
+        ubpen=[]
+        rhspen=[]
+
+        min_relax_constr=[]
+        min_relax_vars=[]
+        min_lbpen=[]
+        min_ubpen=[]
+        min_rhspen=[]
+
+        fij_relax_constr=[]
+        fij_relax_vars=[]
+        fij_lbpen=[]
+        fij_ubpen=[]
+        fij_rhspen=[]
+
         # Create variables
         p = [[[m.addVar(vtype=GRB.BINARY, name="p%d_%d_%d" % (i,j,n))  for n in range(N)] for j in range(len(l[i]))] for i in range(L)]
         d = [[[m.addVar(name="d%d_%d @ %d" % (i,j,n))  for n in range(N)] for j in range(len(l[i]))] for i in range(L)]
@@ -624,20 +714,35 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         fij = [[m.addVar(lb=0, name="fij_%d_in @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
         fxy = [[m.addVar(lb=0, name="fxy_%d_in @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
 
+
         in_q = [[m.addVar(lb=0, name="in_q%d @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
         out_q = [[m.addVar(lb=0, ub=Q_OUT[i], name="out_q%d @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
-
+        zout = [[m.addVar(vtype=GRB.BINARY, name="zout_%d @ %d" % (i,n)) for n in range(N)] for i in range(Q)]
         total_stops = m.addVar(lb=0, name = "stops")
 
         f = [[[None for n in range(N)] for j in range(Q)] for i in range(Q)]
+        z1 = [[[None for n in range(N)] for j in range(Q)] for i in range(Q)]
+        z2 = [[[None for n in range(N)] for j in range(Q)] for i in range(Q)]
+        phi = [[[None for n in range(N)] for j in range(Q)] for i in range(Q)]
+        g = [[[None for n in range(N)] for j in range(Q)] for i in range(Q)]
         f_set = [[] for n in range(N)]
         for i in range(Q):
             for j in range(Q):
                 for n in range(N):
                     f_ij = '%d_%d' % (i,j)
                     if f_ij in data['Flows']:
-                        f[i][j][n] = m.addVar(lb=0, ub=data['Flows'][f_ij]['F_MAX'], name="f_%d,%d_%d" % (i,j,n))
+                        f[i][j][n] = m.addVar(lb=0, ub=data['Flows'][f_ij]['F_MAX'], name="f_%d,%d @ %d" % (i,j,n))
+                        z1[i][j][n] = m.addVar(vtype=GRB.BINARY, name="z1_%d,%d @ %d" % (i,j,n))
+                        z2[i][j][n] = m.addVar(vtype=GRB.BINARY, name="z2_%d,%d @ %d" % (i,j,n))
+                        phi[i][j][n] = m.addVar(name="phi_%d,%d @ %d" % (i,j,n))
+                        g[i][j][n] = m.addVar(name="g_%d,%d @ %d" % (i,j,n))
                         f_set[n].append(f[i][j][n])
+                        min_relax_vars.append(phi[i][j][n])
+                        min_ubpen.append(1)
+                        min_lbpen.append(1)
+                        fij_relax_vars.append(f[i][j][n])
+                        fij_ubpen.append(1)
+                        fij_lbpen.append(1)
 
         for i in range(Q):
             total_Pr_ij = 0
@@ -677,11 +782,14 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         m.update()
 
         if mip_start is not None and step > 0:
+            #if mip_start == 'step' or mip_start == 'final':
             out=data['Out']
             if run != None:
                 out = out['Run'][run]
             if step != None and step > 0:
                 out = out['Step'][step-1]
+            #else:
+            #    out = mip_start
             prev_mp_dt = out['DT']
             prev_mp_t = out['t']
             prev_mp_t += [prev_mp_t[-1] + prev_mp_dt[-1]]
@@ -711,9 +819,17 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             #print 'time:',time[0],time[n_samples],time
             for i in range(L):
                 for j in range(len(l[i])):
-                    time_x = numpy.linspace(time[0],time[n_samples],n_samples)
+                    time_x_samples = int((t_fixed_plan[-1] - t_fixed_plan[0]) / DT[0])
+                    time_x = numpy.linspace(t_fixed_plan[0],t_fixed_plan[-1],time_x_samples)
+                    print len(t_fixed_plan),len(fixed_plan['p_{%d,%d}' % (i,j)])
                     p_fixed_f = interp.interp1d(t_fixed_plan,fixed_plan['p_{%d,%d}' % (i,j)],kind='zero')
-                    p_fixed_plan[i][j][0:n_samples] = p_fixed_f(time[0:n_samples])
+                    print 't_fixed_plan:',t_fixed_plan[0],t_fixed_plan[-1]
+                    print 'time:', time[0], time[-1]
+                    print 'n_samples',n_samples
+                    print 'time[n_samples-1]:',time[n_samples-1]
+                    print 'time_x[-1]',time_x[-1]
+                    print 'time_x_samples', time_x_samples
+                    p_fixed_plan[i][j][0:time_x_samples] = p_fixed_f(time_x[0:time_x_samples])
 
                     for n in range(1,len(p_fixed_plan[i][j])):
                         if p_fixed_plan[i][j][n] == 1 and p_fixed_plan[i][j][n-1] == 0:
@@ -800,6 +916,20 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             #print 'in_flows:',[ i for i in range(Q) ]
             print 'flows:',flow_pairs
             m.setObjective(alpha_obj * (out_flow  + in_flow) - (1.0 - alpha_obj) * total_stops + beta_obj * flow, GRB.MAXIMIZE)
+        elif obj == 'MAX_OUT4':
+            flows = []
+            flow_pairs = []
+            for f_ij in data['Flows'].keys():
+                i = int(f_ij.split('_')[0])
+                j = int(f_ij.split('_')[1])
+                flows.append(f[i][j])
+                flow_pairs.append((i,j))
+            external_flow = quicksum([ quicksum([ (T_MAX - time[n] + 1) * DT[n] * (out_q[i][n] + in_q[i][n]) for n in range(N)])  for i in range(Q) ])
+            internal_flow = quicksum([ quicksum([ (T_MAX - time[n] + 1) * DT[n] * f_ij[n] for f_ij in flows ]) for n in range(N) ])
+            #print 'out_flows:',[ i if Q_OUT[i]  > 0 else 0 for i in range(Q) ]
+            #print 'in_flows:',[ i for i in range(Q) ]
+            print 'flows:',flow_pairs
+            m.setObjective(alpha_obj * external_flow - (1.0 - alpha_obj) * total_stops + beta_obj * internal_flow, GRB.MAXIMIZE)
         elif obj == 'MAX_QOUT':
             flow = quicksum([ quicksum([ (T_MAX-time[n] + 1) * q_out[i][n] for n in range(N)]) if Q_OUT[i]>0 else 0 for i in range(Q) ])
             in_flow = quicksum( [ quicksum([ (T_MAX-time[n] + 1) * in_q[i][n] * DT[n-1] for i in range(Q) ]) for n in range(0,N)])
@@ -893,12 +1023,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         #                 m.addConstr( quicksum([ (1 + time[n]) * (1 + f[i][j][n]) for n in range(0,N)])
         #                             >=
         #                              quicksum([ (1 + time[n]) * (1 + f[x][y][n]) for n in range(0,N)]))
-        # feasrelax contraint and variable lists and penalties
-        relax_constr=[]
-        relax_vars=[]
-        lbpen=[]
-        ubpen=[]
-        rhspen=[]
+
 
         cars_in =0
         cars_in_1 =0
@@ -1023,23 +1148,40 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
 
                 else: # QTM
 
-                    m.addConstr(q_in[i][n] == in_q[i][n] * DT[n] + quicksum([f[j][i][n]*DT[n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)]))
-
+                    fij_relax_constr.append(m.addConstr(q_in[i][n] == in_q[i][n] * DT[n] + quicksum([f[j][i][n]*DT[n] if '%d_%d' % (j,i) in data['Flows'] and i != j else 0 for j in range(Q)])))
+                    fij_rhspen.append(1)
                     if obj == 'MIN_LIN_WANG':
                         if Q_OUT[i] > 0:
                             m.addConstr(out_q[i][n] == q[i][n])
-                    else:
-                        m.addConstr(out_q[i][n] <= Q_OUT[i])
-
-                    m.addConstr(q_out[i][n] == out_q[i][n] * DT[n] + quicksum([f[i][j][n]*DT[n] if '%d_%d' % (i,j) in data['Flows'] and i != j else 0 for j in range(Q)]))
-
+                    # else:
+                    #     if Q_OUT[i] > 0:
+                    #         m.addConstr(out_q[i][n] == q[i][n] + q_stop[i][n])
+                    #     else:
+                    #         m.addConstr(out_q[i][n] == 0)
+                    if exact: # and n < N - 1:
+                        min2_constr(m, out_q[i][n], Q_OUT[i],
+                                    (1.0 / DT[n]) * (q[i][n] + q_stop[i][n]),
+                                    zout[i][n])
+                    fij_relax_constr.append(m.addConstr(q_out[i][n] == out_q[i][n] * DT[n] + quicksum([f[i][j][n]*DT[n] if '%d_%d' % (i,j) in data['Flows'] and i != j else 0 for j in range(Q)])))
+                    fij_rhspen.append(1)
 
                     if n == N - 1:
                         m.addConstr( q_out[i][n] <= q[i][n] + q_stop[i][n])
                     if n > 0:
                         m.addConstr(q[i][n] == q[i][n-1] - q_out[i][n-1]  + q_stop[i][n-1] ) #q_in[i][m0-1] * (DT[n-1]/DT[m0-1])  )
 
-
+                    # relax_vars.append(q_out[i][n])
+                    # ubpen.append(100)
+                    # lbpen.append(100)
+                    # relax_vars.append(q_in[i][n])
+                    # ubpen.append(100)
+                    # lbpen.append(100)
+                    # relax_vars.append(q[i][n])
+                    # ubpen.append(100)
+                    # lbpen.append(100)
+                    # relax_vars.append(q_stop[i][n])
+                    # ubpen.append(100)
+                    # lbpen.append(100)
 
                     t_m = time[n]-Q_DELAY[i]
                     t_w = time[n]-Q_DELAY[i] + DT[n]
@@ -1207,7 +1349,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                 Pr_ij = data['Flows'][f_ij]['Pr']
                             else:
                                 Pr_ij = 1.0
-                            if (i,j) not in dominant_flows and "F_Y" not in data['Flows'][f_ij]: # and False:
+                            if (i,j) not in dominant_flows and "F_Y" not in data['Flows'][f_ij] and not exact: # and False:
                                 if Q_p[i] != None:
                                     m.addConstr( f[i][j][n] <= F_ij * quicksum([ p[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]) )
                                 m.addConstr( f[i][j][n] <= Pr_ij * ( quicksum([f[i][k][n] if '%d_%d' % (i,k) in data['Flows'] and i != k else 0 for k in range(Q)]) ) )
@@ -1229,9 +1371,13 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                     else:
                                         F_max = F_ij
                                         #print 'Adding min3 for %s yielding to %s ' % (f_ij,f_xy)
-                                min3_constr(m, f[i][j][n], F_max, # Pr_ij * F_max
-                                    Pr_ij * (1.0/DT[n]) * (Q_MAX[j] - q[j][n]),
-                                    Pr_ij * (1.0/DT[n]) * (q_stop[i][n] + q[i][n]))
+                                constr = min3_constr(m, f[i][j][n], F_max, # Pr_ij * F_max
+                                                     Pr_ij * (1.0/DT[n]) * (Q_MAX[j] - q[j][n]),
+                                                     Pr_ij * (1.0/DT[n]) * (q_stop[i][n] + q[i][n]),
+                                                     z1[i][j][n], z2[i][j][n], phi[i][j][n])
+                                for c in constr:
+                                    min_relax_constr.append(c)
+                                    min_rhspen.append(1)
 
                                 #m.addConstr( f[i][j][n] <= F_max)
                                 #m.addConstr( f[i][j][n] <= Pr_ij * ( quicksum([f[i][k][n] if '%d_%d' % (i,k) in data['Flows'] and i != k else 0 for k in range(Q)]) ) )
@@ -1264,9 +1410,17 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                 Pr_ij = data['Flows'][f_ij]['Pr']
                             else:
                                 Pr_ij = 1.0
-                            if (i,j) not in dominant_flows and "F_Y" not in data['Flows'][f_ij] and False:
+                            if (i,j) not in dominant_flows and "F_Y" not in data['Flows'][f_ij] and not exact: # and False:
                                 if Q_p[i] != None:
-                                    m.addConstr( f[i][j][n] <= F_ij * quicksum([ p[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]) )
+                                    sum_fixed = sum([p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:]])
+                                    if sum_fixed < 0: print 'WARNING: sum(p_fixed_plan[q_%d,l_%d] @ n = %d) = %f' % (
+                                    i, Q_p[i][0], n, sum_fixed)
+                                    state = [p_fixed_plan[Q_p[i][0]][q_p][n] > 0 for q_p in Q_p[i][1:]]
+                                    if True in state:
+                                        F_max = F_ij  # * quicksum([ p[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ])
+                                    else:
+                                        F_max = 0
+                                    m.addConstr(f[i][j][n] <= F_max) # m.addConstr( f[i][j][n] <= F_ij * quicksum([ p[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]) )
                                 m.addConstr( f[i][j][n] <= Pr_ij * ( quicksum([f[i][k][n] if '%d_%d' % (i,k) in data['Flows'] and i != k else 0 for k in range(Q)]) ) )
 
                             else:
@@ -1292,10 +1446,14 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                     else:
                                         F_max = F_ij
                                         #print 'Adding min3 for %s yielding to %s ' % (f_ij,f_xy)
-                                min3_constr(m, f[i][j][n], F_max, # Pr_ij * F_max
-                                    Pr_ij * (1.0/DT[n]) * (Q_MAX[j] - q[j][n]),
-                                    Pr_ij * (1.0/DT[n]) * (q_stop[i][n] + q[i][n]))
-
+                                constr = min3_constr(m, g[i][j][n], F_max, # Pr_ij * F_max
+                                                     Pr_ij * (1.0/DT[n]) * (Q_MAX[j] - q[j][n]),
+                                                     Pr_ij * (1.0/DT[n]) * (q_stop[i][n] + q[i][n]),
+                                                     z1[i][j][n], z2[i][j][n], phi[i][j][n])
+                                m.addConstr(f[i][j][n] == g[i][j][n])
+                                for c in constr:
+                                    min_relax_constr.append(c)
+                                    min_rhspen.append(1)
 
                     # for j in range(Q):
                     #     f_ij = '%d_%d' % (i,j)
@@ -1382,8 +1540,8 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                             if n > 0:
                                 relax_constr.append(m.addConstr(d[i][j][n] <= P_MAX[i][j] * (1 - p[i][j][n] + p[i][j][n-1]), name='d_reset_%d_%d_%d' % (i,j,n)))
                                 rhspen.append(2)
-                                ubpen.append(1)
-                                lbpen.append(1)
+                                #ubpen.append(1)
+                                #lbpen.append(1)
 
                                 m.addConstr(p[i][j][n-1] <= p[i][j][n] + p[i][(j+1) % np][n])
                                 #m.addConstr(p[i][j][n] + p[i][(j+1) % np][n] <= 1)
@@ -1439,6 +1597,9 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             m.read(param)
         print 'relax_constr=',len(relax_constr)
         print 'rhspen=',len(rhspen)
+        print 'relax_vars=',len(relax_vars)
+        print 'ubpen=',len(ubpen)
+        print 'lbpen=',len(lbpen)
         setup_time = clock_time.time() - start_time
         m.optimize()
         solve_time = clock_time.time() - start_time
@@ -1472,13 +1633,26 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
         ]
 
         if m.status == GRB.INFEASIBLE or m.status == GRB.INF_OR_UNBD:
-            print "Model Infeasible, calulating IIS: ",
-            m.computeIIS()
-            m.write('model_iis.ilp')
-            print 'Done. Wrote to model_iis.ilp'
-        #    m.feasRelax(1,True,None,None,None,relax_constr,rhspen)
-        #    #m.feasRelax(1,True,relax_vars,lbpen,ubpen,relax_constr,rhspen)
-        #    m.optimize()
+            #print "Model Infeasible, calulating IIS: ",
+            #m.computeIIS()
+            #m.write('model_iis.ilp')
+            #print 'Done. Wrote to model_iis.ilp'
+
+            print 'min_relax_constr=',len(min_relax_constr)
+            print 'min_rhspen=',len(min_rhspen)
+            print 'min_relax_vars=',len(min_relax_vars)
+            print 'min_ubpen=',len(min_ubpen)
+            print 'min_lbpen=',len(min_lbpen)
+            print 'fij_relax_vars=',len(min_relax_vars)
+            print 'fij_ubpen=',len(min_ubpen)
+            print 'fij_lbpen=',len(min_lbpen)
+            print 'Model is infeasible, relaxing model...'
+            # relax_obj = m.feasRelax(1,False,None,None,None,relax_constr,rhspen)
+            # relax_obj = m.feasRelax(1,False,None,None,None,fij_relax_constr,fij_rhspen)
+            # relax_obj = m.feasRelax(2,False,min_relax_vars,min_lbpen,min_ubpen,min_relax_constr,min_rhspen)
+            relax_obj = m.feasRelax(2,False,fij_relax_vars,fij_lbpen,fij_ubpen,None,None)
+            print 'Relaxation objective value:',relax_obj
+            m.optimize()
             solve_time = clock_time.time() - start_time
 
         if m.status == GRB.INFEASIBLE or m.status == GRB.INF_OR_UNBD:
@@ -1495,22 +1669,24 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             print 'Obj:', m.objVal
             print 'Total Travel Time:', total_travel_time.x
             print 'Total Stops      :', total_stops.x
+            # print 'Kappa            :', m.Kappa
             print 'Setup time: %s seconds' % setup_time
             print 'Solve time: %s seconds' % solve_time
-
+            wh_test = {}
             if solver_model != 'CTM' and no_warning == False:
 
                 print 'Testing for traffic withholding:',
                 withholding = False
                 error_msg = ''
-                WITHHOLDING_TEST_TOLERANCE = 6 # AMD Opterons in cluster trip test at 7 DP.
+                WITHHOLDING_TEST_TOLERANCE = 5 # AMD Opterons in cluster trip at 6 DP.
                 for i in range(Q):
-                    for n in range(0,N):
+                    for n in range(0,N - 1):
                         error_data = []
                         try:
                             error_data.append('in_%d  : %s' % (i,in_q[i][n].x))
                             error_data.append('Q_in_%d: %s' % (i,Q_in[i][n]))
-                            numpy.testing.assert_almost_equal([in_q[i][n].x],[Q_in[i][n]])
+                            numpy.testing.assert_almost_equal([in_q[i][n].x],[Q_in[i][n]],
+                                                              decimal = WITHHOLDING_TEST_TOLERANCE)
                         except AssertionError,e:
                             if withholding == False:
                                 withholding = True
@@ -1519,19 +1695,40 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                             print 'WARNING Traffic withholding at input: in_%d t=%s' %(i,time[n])
                             for msg in error_data:
                                 print '   ',msg
+                    for n in range(0, N - 1):
+                        error_data = []
+                        try:
+                            error_data.append('out_%d                           : %s' % (i, out_q[i][n].x))
+                            error_data.append('(1.0/DT[n]) * (q_stop_%d + q_%d) : %s' % (i, i, (1.0/DT[n]) * (q_stop[i][n].x + q[i][n].x)))
+                            error_data.append('Q_OUT_%d                         : %s' % (i, Q_OUT[i]))
+                            numpy.testing.assert_almost_equal([out_q[i][n].x],
+                                                              [ min((1.0/DT[n]) * (q_stop[i][n].x + q[i][n].x), Q_OUT[i]) ],
+                                                              decimal = WITHHOLDING_TEST_TOLERANCE)
+
+                        except AssertionError, e:
+                            if withholding == False:
+                                withholding = True
+                                print
+                                error_msg = 'Traffic withholding at output: out_%d t=%s' % (i, time[n])
+                            print 'WARNING Traffic withholding at output: out_%d t=%s' % (i, time[n])
+                            for msg in error_data:
+                                print '   ', msg
+
                     for flow in data['Flows'].keys():
                         x = int(flow.split('_')[0])
                         j = int(flow.split('_')[1])
                         f_ij = data['Flows'][flow]
+
                         if x == i:
+                            wh_ij = [0] * (N - 1)
                             F_ij = f_ij["F_MAX"]
                             if 'Pr' in f_ij:
                                 Pr_ij = f_ij["Pr"]
                             else:
                                 Pr_ij = 1.0
-                            for n in range(N):
+                            for n in range(N - 1):
                                 error_data = []
-                                error_data.append('Pr=%s' % Pr_ij)
+                                error_data.append('Pr_ij = %s' % Pr_ij)
                                 F_max = F_ij
                                 if "F_Y" in f_ij:
                                     for f_xy in f_ij["F_Y"]:
@@ -1543,17 +1740,17 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                 if Q_p[i] != None:
                                     if fixed_plan is None:
                                         sum_p = sum([ p[Q_p[i][0]][q_p][n].x for q_p in Q_p[i][1:] ])
-                                        error_data.append('sum_p_%d=%d %s' % (i,sum_p,[ p[Q_p[i][0]][q_p][n].x for q_p in Q_p[i][1:] ]))
+                                        error_data.append('sum_p = %d %s' % (sum_p,[ 'p_{%d,%d}=%d' % (Q_p[i][0],q_p,p[Q_p[i][0]][q_p][n].x) for q_p in Q_p[i][1:] ]))
                                     else:
                                         sum_p = sum([ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ])
-                                        error_data.append('sum_p_%d=%d %s' % (i,sum_p,[ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]))
+                                        error_data.append('sum_p = %d %s' % (sum_p,[ p_fixed_plan[Q_p[i][0]][q_p][n] for q_p in Q_p[i][1:] ]))
                                     if sum_p < 0.5:
                                         F_max = 0
 
                                 try:
                                     error_data.append('Pr_ij * F_max: %s' % (F_max)) #Pr_ij * F_max
                                     error_data.append('(1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x): %s'% ((1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x)))
-                                    error_data.append('1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x): %s' % ((1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x)))
+                                    error_data.append('(1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x): %s' % ((1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x)))
                                     error_data.append('min = %s' % min( Pr_ij * F_max, (1.0/DT[n]) * Pr_ij * (q_stop[i][n].x + q[i][n].x), (1.0/DT[n]) * Pr_ij * (Q_MAX[j] - q[j][n].x)))
                                     error_data.append('f_%d,%d = %s' % (i,j,f[i][j][n].x))
                                     numpy.testing.assert_almost_equal([f[i][j][n].x],[min( F_max, #Pr_ij * F_max
@@ -1569,6 +1766,9 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                                     print 'WARNING Traffic withholding: q_%d f_%d,%d t=%s n=%d' %(i,i,j,time[n],n)
                                     for msg in error_data:
                                         print '   ',msg
+                                    wh_ij[n] = 1
+                            wh_test[flow] = wh_ij
+                        # print wh_ij
 
                 if withholding:
                     if no_assertion_fail == False:
@@ -1623,6 +1823,7 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
             data_out['lost_time'] = lost_time
             data_out['solver_model'] = solver_model
             data_out['buffer_input'] = buffer_input
+            data_out['withholding'] = withholding
             if timelimit<1e30:
                 data_out['time_limit'] = timelimit
             else:
@@ -1691,6 +1892,12 @@ def milp_solver(data,t0,t1,n_samples,dt0=None,dt1=None,DT_file=False,DT_vari=Non
                 i = int(i); j = int(j)
                 # f_i['f0'] = f[i][j][n].x
                 data_out[r'f_{%d,%d}' % (i,j)] = [f[i][j][n].x for n in range(N-1)]
+                data_out[r'z1_{%d,%d}' % (i,j)] = [z1[i][j][n].x for n in range(N-1)]
+                data_out[r'z2_{%d,%d}' % (i,j)] = [z2[i][j][n].x for n in range(N-1)]
+                data_out[r'phi_{%d,%d}' % (i,j)] = [phi[i][j][n].x for n in range(N-1)]
+                data_out[r'g_{%d,%d}' % (i,j)] = [g[i][j][n].x for n in range(N-1)]
+                if f_ij in wh_test:
+                    data_out[r'wh_{%d,%d}' % (i, j)] = wh_test[f_ij]
 
     except GurobiError,e:
         print 'Error reported: ',e.message
@@ -1757,7 +1964,7 @@ def plan_solver(data,args):
         av_travel_time=0
         av_solve_time=0
         total_steps=0
-
+        DT_start = None
         if args.vplan:
             minor_frame = args.vplan[0]
             major_frame = args.vplan[1]
@@ -1765,7 +1972,17 @@ def plan_solver(data,args):
             blend_frame = args.vplan[3]
             DT_start = args.vplan[4]
             DT_stop = args.vplan[5]
-            DT = DT_alpha_t_blend(DT_start,DT_stop, 0, major_frame - minor_frame)
+            t=0
+            DT = []
+            while t < minor_frame:
+                DT.append(DT_start)
+                t += DT[-1]
+            DT += DT_alpha_t_blend(DT_start,DT_stop, 0, blend_frame)
+            t = sum(DT)
+            #DT.append(minor_frame + blend_frame - t)
+            while t < major_frame:
+                DT.append(DT_stop)
+                t += DT[-1]
             plan =  {
                 "label": "$\\Delta t=%f,%f$, $\\Pi=%f$, $\\pi=%f$" % (DT_start,DT_stop,major_frame,minor_frame),
                 "minor_frame": minor_frame,
@@ -1823,6 +2040,7 @@ def plan_solver(data,args):
             major_frame = args.fplan[1]
             horizon = args.fplan[2]
             DT_fixed = args.fplan[3]
+            DT_start = DT_fixed
             plan =  {
                 "label": "$\\Delta t=%f, $\\Pi=%f$, $\\pi=%f$" % (DT_fixed,major_frame,minor_frame),
                 "minor_frame": minor_frame,
@@ -1835,7 +2053,7 @@ def plan_solver(data,args):
             plan = data['Plans'][args.plan]
 
         minor_frame = plan['minor_frame']
-        major_frame = int(plan['major_frame'])
+        major_frame = plan['major_frame']
         horizon = plan['horizon']
         label = plan['label']
         blend_frame=None
@@ -1880,10 +2098,13 @@ def plan_solver(data,args):
                     seed = 0
                 else:
                     seed = random.randint(1,1e9)
-                if milp_solver(data,t0=t0,t1=t1,n_samples=n_samples, DT_vari=DT_vari,minor_frame=minor_frame,major_frame=major_frame,blend_frame=blend_frame,fixed_plan=None,nthreads=args.threads,timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,
-                       label=label+' step %d' % k,
-                       step=k,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed=seed,tune=tune,tune_file=tune_file,param=args.param,lost_time = args.lost_time, solver_model=args.solver_model,
-                               no_assertion_fail=args.no_assertion_fail,no_warning=args.no_warning,buffer_input=args.buffer_input) is None:
+                if milp_solver(data,t0=t0,t1=t1,n_samples=n_samples, DT_vari=DT_vari,minor_frame=minor_frame,major_frame=major_frame,
+                               blend_frame=blend_frame,fixed_plan=None,nthreads=args.threads,timelimit=args.timelimit,
+                               accuracy=args.accuracy,verbose=args.verbose,
+                               label=label+' step %d' % k,
+                               step=k,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,
+                               seed=seed,tune=tune,tune_file=tune_file,param=args.param,lost_time = args.lost_time, solver_model=args.solver_model,
+                               no_assertion_fail=args.no_assertion_fail,no_warning=args.no_warning,buffer_input=args.buffer_input,exact=args.exact) is None:
                     return None
                 t0+=minor_frame
                 if run_index != None:
@@ -1918,11 +2139,13 @@ def plan_solver(data,args):
                 fixed_plan = data['Out']['Run'][run]['Fixed_Plan'] = dict()
             else:
                 fixed_plan = data['Out']['Fixed_Plan'] = dict()
-            DT = args.DT_final
+            DT = DT_start #args.DT_final
             minor_frame_n = int(minor_frame / DT)
             print 'minor_frame_n:',minor_frame_n
             fixed_plan['DT'] = [DT] * (K_steps * minor_frame_n)
-            fixed_plan['t'] = list(np.arange(0,K_horizon,DT))
+            print 'k,minor_frame,K_horizon',k,minor_frame,K_horizon
+            print 'DT',DT
+            fixed_plan['t'] = list(numpy.arange(0,K_horizon,DT))
             # f, ax = plt.subplots(len(data['Lights'])*2, 1, sharex=True,figsize=(12,12))
             t0 = 0
             n = 0
@@ -1972,11 +2195,12 @@ def plan_solver(data,args):
                 DT_final = args.DT_final
             else:
                 DT_final = fixed_plan['DT'][0]
+
             if milp_solver(data,t0=0,t1=K_horizon,n_samples=int(K_horizon/DT_final), fixed_plan=fixed_plan,nthreads=args.threads,
                    timelimit=args.timelimit,accuracy=args.accuracy,verbose=args.verbose,seed=args.seed,
                    label=label,step=None,run=run_index,obj=args.obj,alpha_obj=args.alpha,beta_obj=args.beta,gamma_obj=args.gamma,param=args.param,
                     lost_time = args.lost_time, solver_model = args.solver_model,no_assertion_fail=args.no_assertion_fail,no_warning=args.no_warning,
-                           buffer_input=args.buffer_input) is None:
+                           buffer_input=args.buffer_input,exact=args.sim_exact | args.exact) is None:
                 return None
             # for i in range(len(data['Lights'])):
             #     ax[i * 2].plot(data['Out']['t'],data['Out'][r'p_{%d,%d}' % (i,0)],'k-')
@@ -1984,8 +2208,8 @@ def plan_solver(data,args):
             # plt.xlim(0,30)
             # plt.show()
             if run_index != None:
-                print data['Out']['Run'][run].keys()
-                print data['Out'].keys()
+                #print data['Out']['Run'][run].keys()
+                #print data['Out'].keys()
                 av_travel_time += data['Out']['Run'][run]['total_travel_time']
             else:
                 av_travel_time += data['Out']['total_travel_time']
@@ -2098,7 +2322,7 @@ def DT_final_solver(data,args):
     print (data['Out']).keys()
     return data
 
-def bootstrap_solver(data,args,average_runs=1):
+def bootstrap_solver(data,args,average_runs=1,boot_accuracy=None):
     if args.seed:
         random.seed(args.seed)
     else:
@@ -2133,17 +2357,43 @@ def bootstrap_solver(data,args,average_runs=1):
                 seed = 0
             else:
                 seed = random.randint(1,1e9)
+            if boot_accuracy is not None and k < len(boot_accuracy) - 1:
+                accuracy = boot_accuracy[k]
+            else:
+                accuracy = args.accuracy
+
             if milp_solver(data,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=int(base_N),DT_file=args.DT_file, fixed_plan=fixed,nthreads=args.threads,
                 timelimit=args.timelimit,accuracy=accuracy,
                 verbose=args.verbose,step=k,run=run_index,
                 obj=args.obj,alpha_obj=args.alpha,
                 beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed = seed,
                 tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,mip_start=mip_start,no_assertion_fail=args.no_assertion_fail,
-                lost_time = args.lost_time, solver_model = args.solver_model,no_warning=args.no_warning,buffer_input=args.buffer_input) is None:
+                lost_time = args.lost_time, solver_model = args.solver_model,no_warning=args.no_warning,buffer_input=args.buffer_input,exact=args.exact) is None:
                 return None
             #prev_run = copy.deepcopy(data_itr)
             base_N *= 2
-            #accuracy *= 2
+            write_file(data, args)
+
+        if boot_accuracy is not None:
+            base_N *= 0.5
+            final_accuracy_step = boot_accuracy[-1]
+            final_accuracy = accuracy - final_accuracy_step
+            while final_accuracy > args.accuracy:
+                if milp_solver(data, t0=args.t0, t1=args.t1, dt0=args.dt0, dt1=args.dt1, n_samples=int(base_N),
+                               DT_file=args.DT_file, fixed_plan=fixed, nthreads=args.threads,
+                               timelimit=args.timelimit, accuracy=accuracy,
+                               verbose=args.verbose, step=k, run=run_index,
+                               obj=args.obj, alpha_obj=args.alpha,
+                               beta_obj=args.beta, gamma_obj=args.gamma, DT_offset=args.DT_offset, seed=seed,
+                               tune=tune, tune_file=tune_file, param=args.param, in_weight=args.in_weight,
+                               mip_start=data['Out']['Run'][run], no_assertion_fail=args.no_assertion_fail,
+                               lost_time=args.lost_time, solver_model=args.solver_model, no_warning=args.no_warning,
+                               buffer_input=args.buffer_input,exact=args.exact) is None:
+                    return None
+                write_file(data, args)
+                final_accuracy -= final_accuracy_step
+                k += 1
+                #
         #data = data_itr
 
         run_solve_time = clock_time.time() - run_start_time
@@ -2178,16 +2428,83 @@ def bootstrap_solver(data,args,average_runs=1):
     print 'Total Bootstrap Solve time: %s seconds' % solve_time
     return data
 
+def sim_solver(data,fixed_files, loaded_files, args):
+    if 'Out' in data:
+        data['Out'] = None
+    for k,fixed_data in enumerate(fixed_files):
+        if 'Out' in fixed_data:
+            fixed_data = fixed_data['Out']
+            if 'Run' not in fixed_data:
+                run_data = [fixed_data]
+                run_index = None
+            else:
+                run_data = fixed_data['Run']
+                run_index = True
+            runs = len(run_data)
+            av_travel_time = 0
+            for run in range(runs):
+                print
+                print '------------ Run %d ----------' % (run + 1)
+                print
+                if args.t0 is None or args.t1 is None or args.nsamples is None:
+                    t0 = run_data[run]['t'][0]
+                    t1 = run_data[run]['t'][-1]
+                    nsamples = run_data[run]['N']
+                else:
+                    t0 = args.t0
+                    t1 = args.t1
+                    nsamples = args.nsamples
+                if run_index is not None:
+                    run_index = run
+                data = milp_solver(data, t0=t0, t1=t1, dt0=args.dt0, dt1=args.dt1,
+                                   n_samples=nsamples, DT_file=args.DT_file, fixed_plan=run_data[run],
+                                   nthreads=args.threads, run=run_index,
+                                   timelimit=args.timelimit, accuracy=args.accuracy,
+                                   verbose=args.verbose, obj=args.obj, alpha_obj=args.alpha,
+                                   beta_obj=args.beta, gamma_obj=args.gamma, DT_offset=args.DT_offset,
+                                   seed=args.seed, param=args.param, in_weight=args.in_weight,
+                                   no_assertion_fail=args.no_assertion_fail, lost_time=args.lost_time,
+                                   solver_model=args.solver_model, no_warning=args.no_warning,
+                                   buffer_input=args.buffer_input, exact=args.exact | args.sim_exact)
+                if run_index is not None:
+                    av_travel_time += data['Out']['Run'][run]['total_travel_time']
+                    data_run = data['Out']['Run'][run_index]
+                else:
+                    av_travel_time += data['Out']['total_travel_time']
+                    data_run = data['Out']
+                data['Out']['av_travel_time'] = av_travel_time / (run + 1)
+                if 'Step' in run_data[run]:
+                    data_run['Step'] = [dict()]
+                    data_run['Step'][0]['N'] = run_data[run]['Step'][0]['N']
+                    data_run['Step'][0]['t'] = run_data[run]['Step'][0]['t']
 
-def write_file(data,args):
-    out_file = 'out_'+args.file
-    if args.out:
-        out_file=args.out
+        else:
+            print 'File %s does not containt a solution to use as a signal plan for simulation' % args.fixed
+        if args.out is not None:
+            if len(args.out.split('.')) == 1:
+                out_file = loaded_files[k].split('.')[0] + '_' + args.out + '.' + loaded_files[k].split('.')[1]
+            else:
+                out_file = args.out
+            print out_file
+            write_file(data, args, out_file=out_file)
+    return None
+
+def write_file(data, args, out_file=None):
+    if out_file is None:
+        if args.out is None:
+            out_file = 'out_' + args.file
+        else:
+            out_file=args.out
     if not args.novars:
         if args.zip:
             out_file_zip = os.path.splitext(out_file)[0]+".zip"
             zf = zipfile.ZipFile(out_file_zip, mode='w',compression=zipfile.ZIP_DEFLATED)
             zf.writestr(out_file, json.dumps(data))
+            zf.write('qtm_solve.py')
+            if 'JOB_ID' in os.environ and 'JOB_NAME' in os.environ:
+                job_id = os.environ['JOB_ID']
+                job_name = os.environ['JOB_NAME']
+                zf.write(job_name + '.o' + job_id)
             zf.close()
         else:
             f = open(out_file,'w')
@@ -2206,6 +2523,56 @@ def write_file(data,args):
         f = open(out_file+'.meta','w')
         json.dump(data,f)
         f.close()
+
+def open_data_file(file):
+    if os.path.isfile(file):
+        if zipfile.is_zipfile(file):
+            path,file_json = os.path.split(os.path.splitext(file)[0]+".json")
+            zf = zipfile.ZipFile(file)
+            json_file = zf.read(file_json)
+            data = json.loads(json_file)
+            zf.close()
+        else:
+            f = open(str(file),'r')
+            data  = json.load(f)
+            f.close()
+    else:
+        print 'file not found:',file
+        data = None
+    return data
+
+def read_files(plot_file, return_files_opened=False):
+    gc.disable()
+    files = []
+    if os.path.isfile(plot_file):
+        path,name = os.path.split(plot_file)
+        type = name.split('.')[-1]
+        if type == 'json' or type == 'zip':
+            files.append(plot_file)
+        else:
+            if len(path) > 0: path += '/'
+            f = open(str(plot_file),'r')
+            for line in f:
+                fields = line.split(' ')
+                if len(fields) > 0 and len(fields[0].strip()) > 0:
+                    files.append(path+fields[0].strip())
+            f.close()
+        data_files = []
+        files_opened = []
+        for file in files:
+            data = open_data_file(file)
+            if data is not None:
+                data_files.append(data)
+                files_opened.append(file)
+        gc.enable()
+        gc.collect()
+        if return_files_opened:
+            return data_files,files_opened
+        else:
+            return data_files
+    else:
+        print 'unable to open file:',plot_file
+
 
 
 if __name__ == '__main__':
@@ -2254,32 +2621,42 @@ if __name__ == '__main__':
     parser.add_argument("--lost_time", help="lost_time per phase", type=float,default=0.0)
     parser.add_argument("--solver_model", help="Solver traffic flow model to use (QTM or CTM)", default="QTM")
     parser.add_argument("--buffer_input", help="buffer all input queues to prevent spill back impeding inflow", action="store_true", default=False)
+    parser.add_argument("--boot_accuracy", help="list of MIP gap accuracies for each step", nargs='+',type=float )
+    parser.add_argument("--exact", help="use exact formulation for flow contraints", action="store_true", default=False)
+    parser.add_argument("--sim_exact", help="use exact formulation for flow contraints in simulation", action="store_true", default=False)
 
     args = parser.parse_args()
     if args.debug: DEBUG = True
     print 'Gurobi Version:','.'.join(map(str,gurobi.version()))
     print 'CPU:', get_processor_name()
-    f = open(args.file,'r')
-    data = json.load(f)
-    f.close()
+    # min2_test(2,3)
+    # min2_test(4,1)
+    # min2_test(5,5)
+    # min2_test(0,0)
+    # min2_test(0,6)
+    # min2_test(6,0)
+    # min2_test(6, -1)
+    # min2_test(-5, -1)
+    # min2_test(-5, -10)
+    # min2_test(-8, 0)
+    # min2_test(0, -7)
+    # min2_test(-15, -15)
+    # f = open(args.file,'r')
+    data = open_data_file(args.file)
+    # f.close()
 
     if args.out:
         data['out_filename']= args.out
     else:
         data['out_filename']= args.file
 
-    fixed=None
     if args.fixed:
-        f = open(args.fixed,'r')
-        fixed = json.load(f)
-        f.close()
+        # f = open(args.fixed,'r')
+        fixed_files,loaded_files = read_files(args.fixed,return_files_opened=True)
+        data = sim_solver(data,fixed_files, loaded_files, args)
+        # f.close()
 
-        if 'Out' not in fixed:
-            print 'File %s does not containt a solution to use as a fixed plan' % args.fixed
-            fixed=None
-        else:
-            fixed = fixed['Out']
-    if args.plan or args.vplan or args.vplan2 or args.fplan:
+    elif args.plan or args.vplan or args.vplan2 or args.fplan:
         data=plan_solver(data,args)
     elif args.DT_final and not args.plan:
         DT_final_solver(data,args)
@@ -2291,18 +2668,19 @@ if __name__ == '__main__':
             tune=False
             tune_file = ''
         if args.bootstrap is None:
-            data=milp_solver(data,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=args.nsamples,DT_file=args.DT_file, fixed_plan=fixed,nthreads=args.threads,
+
+            data=milp_solver(data,t0=args.t0,t1=args.t1,dt0=args.dt0,dt1=args.dt1,n_samples=args.nsamples,DT_file=args.DT_file, fixed_plan=None,nthreads=args.threads,
                     timelimit=args.timelimit,accuracy=args.accuracy,
                     verbose=args.verbose,obj=args.obj,alpha_obj=args.alpha,
                     beta_obj=args.beta,gamma_obj=args.gamma,DT_offset=args.DT_offset,seed = args.seed,
                     tune = tune,tune_file=tune_file,param=args.param,in_weight=args.in_weight,no_assertion_fail=args.no_assertion_fail, lost_time = args.lost_time,
-                    solver_model = args.solver_model,no_warning=args.no_warning, buffer_input=args.buffer_input)
+                    solver_model = args.solver_model,no_warning=args.no_warning, buffer_input=args.buffer_input,exact=args.exact)
         else:
-            data = bootstrap_solver(data,args,average_runs=args.average)
+            data = bootstrap_solver(data,args,average_runs=args.average,boot_accuracy = args.boot_accuracy)
 
 
 
-    if data != None:
+    if data is not None:
         write_file(data,args)
         # out_file = 'out_'+args.file
         # if args.out:
